@@ -51,3 +51,18 @@
 - 한글이 포함된 문서, SQL, 설정 파일을 확인할 때는 반드시 UTF-8 인코딩을 명시하여 읽고, 콘솔 출력이 깨져 보이는 경우 원문이 깨졌다고 단정하지 않는다.
 - 한글 깨짐 또는 SQL 문법 오류를 판단하기 전에는 `Get-Content -Encoding UTF8` 등으로 재확인하고, 깨진 출력만 근거로 오류를 보고하지 않는다.
 - git 커밋 시 Co-Authored-By 등 Agent(Claude)를 contributor로 추가하지 않는다.
+
+## Git 작업 규칙
+
+- Agent(Claude)는 커밋(`git commit`)을 직접 실행하지 않는다. 작업 완료 후 커밋할 내용을 정리하여 보고하고, 사용자가 직접 커밋한다.
+- Agent(Claude)는 `git push` 실행 전 반드시 사용자에게 확인을 받는다.
+- 확인 없이 원격 저장소에 push하지 않는다.
+- force push(`--force`, `--force-with-lease`)는 반드시 사전 설명 및 확인 후 실행한다.
+
+## 환경변수 규칙
+
+- `.env` 파일은 절대 git에 커밋하지 않는다.
+- 모든 모듈에 `.env.example` 파일을 함께 제공하여 필요한 환경변수 항목을 명시한다.
+- 민감 정보(DB 패스워드, JWT 시크릿, API 토큰 등)는 반드시 환경변수로 관리한다.
+- Spring Boot의 경우 `application.yml`에 민감 정보를 직접 작성하지 않으며, `application-local.yml`로 분리하여 관리한다. (`application-local.yml`은 gitignore 대상)
+- `.vscode/`, `.claude/`, `__pycache__/`, `node_modules/`, `dist/`, YOLO 모델 가중치(`*.pt`, `*.pth`)는 git에 커밋하지 않는다.
