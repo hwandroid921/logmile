@@ -10,7 +10,7 @@
   - `logmile_요구사항정의서.md`
   - `logmile_DB설계서.md`
   - `logmile_프로젝트구조도.md`
-  - `logmile_team_feature_order.md`
+  - `logmile_팀원별_기능구현_브랜치순서.md`
 - WBS 양식 기준 컬럼: 단계, 요구사항 ID, 작업 내용, 설명, 산출물, 담당자, 시작일, 종료일, 상태
 
 ---
