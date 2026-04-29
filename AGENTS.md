@@ -52,22 +52,9 @@
 - 한글 깨짐 또는 SQL 문법 오류를 판단하기 전에는 `Get-Content -Encoding UTF8` 등으로 재확인하고, 깨진 출력만 근거로 오류를 보고하지 않는다.
 - git 커밋 시 Co-Authored-By 등 Agent(Claude)를 contributor로 추가하지 않는다.
 
-## 커밋 메시지 규칙
+## Git 작업 규칙
 
-모든 커밋 메시지는 아래 팀원 형식을 따른다. Agent(Claude)가 커밋을 생성할 때도 동일하게 적용한다.
-
-```
-[YYYY.MM.DD hwan] 작업 내용 요약
-[YYYY.MM.DD ks] 작업 내용 요약
-```
-
-- `hwan`: 유환희 커밋
-- `ks`: 백경서 커밋
-- Agent가 유환희 작업을 보조할 경우 `hwan` 형식으로 작성한다.
-- Agent가 백경서 작업을 보조할 경우 `ks` 형식으로 작성한다.
-
-## 원격 Push 규칙
-
+- Agent(Claude)는 커밋(`git commit`)을 직접 실행하지 않는다. 작업 완료 후 커밋할 내용을 정리하여 보고하고, 사용자가 직접 커밋한다.
 - Agent(Claude)는 `git push` 실행 전 반드시 사용자에게 확인을 받는다.
 - 확인 없이 원격 저장소에 push하지 않는다.
 - force push(`--force`, `--force-with-lease`)는 반드시 사전 설명 및 확인 후 실행한다.
