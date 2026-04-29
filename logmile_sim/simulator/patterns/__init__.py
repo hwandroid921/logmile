@@ -1,0 +1,1 @@
+"""Reusable GPS scenario patterns."""
