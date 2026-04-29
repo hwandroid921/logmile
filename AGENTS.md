@@ -50,3 +50,36 @@
 - 코드 작성 시 반드시 산출물을 기반으로 작성해야하며 수정이 필요할 시 산출물 작업이 우선되어야 하며 반드시 보고한다. 
 - 한글이 포함된 문서, SQL, 설정 파일을 확인할 때는 반드시 UTF-8 인코딩을 명시하여 읽고, 콘솔 출력이 깨져 보이는 경우 원문이 깨졌다고 단정하지 않는다.
 - 한글 깨짐 또는 SQL 문법 오류를 판단하기 전에는 `Get-Content -Encoding UTF8` 등으로 재확인하고, 깨진 출력만 근거로 오류를 보고하지 않는다.
+- git 커밋 시 Co-Authored-By 등 Agent(Claude)를 contributor로 추가하지 않는다.
+
+## 커밋 메시지 규칙
+
+커밋 메시지는 아래 두 형식 중 하나를 사용한다.
+
+**팀원 직접 커밋**
+```
+[YYYY.MM.DD hwan] 작업 내용 요약
+[YYYY.MM.DD ks] 작업 내용 요약
+```
+
+**Agent(Claude) 보조 커밋**
+```
+{type}: 작업 내용 요약
+```
+
+| type | 설명 |
+|---|---|
+| feat | 새 기능 추가 |
+| fix | 버그 수정 |
+| refactor | 코드 리팩토링 |
+| docs | 문서 수정 |
+| chore | 빌드/설정/환경 변경 |
+| test | 테스트 추가 |
+
+## 환경변수 규칙
+
+- `.env` 파일은 절대 git에 커밋하지 않는다.
+- 모든 모듈에 `.env.example` 파일을 함께 제공하여 필요한 환경변수 항목을 명시한다.
+- 민감 정보(DB 패스워드, JWT 시크릿, API 토큰 등)는 반드시 환경변수로 관리한다.
+- Spring Boot의 경우 `application.yml`에 민감 정보를 직접 작성하지 않으며, `application-local.yml`로 분리하여 관리한다. (`application-local.yml`은 gitignore 대상)
+- `.vscode/`, `.claude/`, `__pycache__/`, `node_modules/`, `dist/`, YOLO 모델 가중치(`*.pt`, `*.pth`)는 git에 커밋하지 않는다.
