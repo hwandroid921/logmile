@@ -6,7 +6,7 @@
 
 시스템은 다음 구성 요소를 결합합니다.
 
-- FastAPI + YOLOv8 + EasyOCR 기반 번호판 인식
+- FastAPI + YOLO11 + EasyOCR 기반 번호판 인식
 - 운행 시나리오 생성을 위한 Python GPS 시뮬레이터
 - REST API, 피로도 점수 산정, 인증, 데이터 저장을 담당하는 Spring Boot
 - 관제 대시보드를 담당하는 Vue.js
@@ -24,7 +24,7 @@
 - 휴식 판단 로직
 - JWT / Spring Security
 - FastAPI 번호판 인식
-- YOLOv8 + EasyOCR
+- YOLO11 + EasyOCR
 
 ### 백경서: 프론트엔드 + GPS 시뮬레이터 + 문서
 
@@ -39,7 +39,7 @@
 
 - Backend: Java 21, Spring Boot 3.5.14, Spring Data JPA, Spring Security + JWT
 - Frontend: Vue.js 3, Vite, Pinia, Axios, Chart.js
-- AI/Python: Python 3.11, FastAPI, YOLOv8n, EasyOCR
+- AI/Python: Python 3.11, FastAPI, YOLO11n, EasyOCR
 - Database: PostgreSQL 16
 - Infra: Docker, Docker Compose
 

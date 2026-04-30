@@ -47,12 +47,17 @@ CREATE TABLE IF NOT EXISTS admin (
     status      VARCHAR(20)     NOT NULL DEFAULT 'ACTIVE',
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_admin_company
-        FOREIGN KEY (company_id) REFERENCES company (id)
-        ON DELETE SET NULL,
+        FOREIGN KEY (company_id) REFERENCES company (id),
     CONSTRAINT chk_admin_role
         CHECK (role IN ('ROLE_SUPER_ADMIN', 'ROLE_ADMIN')),
     CONSTRAINT chk_admin_status
-        CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED'))
+        CHECK (status IN ('PENDING', 'ACTIVE', 'INACTIVE', 'REJECTED', 'SUSPENDED')),
+    CONSTRAINT chk_admin_role_company
+        CHECK (
+            (role = 'ROLE_SUPER_ADMIN' AND company_id IS NULL)
+            OR
+            (role = 'ROLE_ADMIN' AND company_id IS NOT NULL)
+        )
 );
 
 COMMENT ON TABLE  admin               IS '관리자 계정 및 권한 정보';
@@ -60,7 +65,7 @@ COMMENT ON COLUMN admin.company_id    IS '소속 업체 ID (SUPER_ADMIN은 NULL)
 COMMENT ON COLUMN admin.email         IS '관리자 로그인 이메일 (unique)';
 COMMENT ON COLUMN admin.password      IS 'BCrypt 암호화 패스워드';
 COMMENT ON COLUMN admin.role          IS '권한 (ROLE_SUPER_ADMIN: 최상위, ROLE_ADMIN: 업체 관리자)';
-COMMENT ON COLUMN admin.status        IS '계정 상태 (ACTIVE, INACTIVE, SUSPENDED)';
+COMMENT ON COLUMN admin.status        IS '계정 상태 (PENDING, ACTIVE, INACTIVE, REJECTED, SUSPENDED)';
 
 -- ============================================================
 -- 3. vehicle (차량) — driver FK는 아래 ALTER TABLE로 추가

@@ -100,7 +100,7 @@ test: 피로도 계산 단위 테스트 추가
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
 | 23 | `feature/ai-fastapi-server` | FastAPI 서버 구조, 라우터, 환경 설정 | AI 프로젝트 구조 |
-| 24 | `feature/ai-ocr-license-plate` | YOLOv8 + EasyOCR 번호판 인식 API | FastAPI 서버 |
+| 24 | `feature/ai-ocr-license-plate` | YOLO11 + EasyOCR 번호판 인식 API | FastAPI 서버 |
 | 25 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | OCR API |
 
 ---
