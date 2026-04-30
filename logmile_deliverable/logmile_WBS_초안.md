@@ -13,6 +13,7 @@
   - `logmile_프로젝트구조도.md`
   - `logmile_최상위관리자_수정사항정리.md`
   - `logmile_팀원별_기능구현_브랜치순서.md`
+  - `logmile_릴리즈전략.md`
 - WBS 양식 기준 컬럼: 단계, 요구사항 ID, 작업 내용, 설명, 산출물, 담당자, 시작일, 종료일, 상태
 
 ---
@@ -42,10 +43,11 @@
 | 프로젝트 기획 및 설계 | PL-005 | 최상위 관리자 권한 구조 확정 | ROLE_SUPER_ADMIN/ROLE_COMPANY_ADMIN, 승인 상태, company 구조, API 정의까지 확정 | 최상위관리자_수정사항정리.md, 요구사항·DB 반영 | 백경서/유환희 | 2026-04-29 | 2026-04-30 | 완료 |
 | 프로젝트 기획 및 설계 | PL-006 | WBS 작성 | 기능 구현 순서와 일정 계획 수립 | WBS 문서 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
 | 공통/인프라 | ENV-001 | Git 브랜치 전략 정리 | `main`, `dev`, `feature/*`, `release/*` 브랜치 운영 규칙 정리 | 브랜치 전략 문서 | 공통 | 2026-04-28 | 2026-04-29 | 완료 |
-| 공통/인프라 | ENV-002 | 루트 `.gitignore` 정리 | FE/BE/AI/SIM 생성물, 환경변수, 빌드 결과물 제외 | `.gitignore` | 공통 | 2026-04-29 | 2026-04-29 | 완료 |
-| 공통/인프라 | ENV-003 | Docker Compose 구성 | Backend, Frontend, AI, PostgreSQL, Simulator 실행 환경 구성 | `docker-compose.yml` | 공통 | 2026-04-30 | 2026-05-02 | 예정 |
-| 공통/인프라 | ENV-004 | 환경변수 정리 | DB 접속, JWT, CORS, API URL, AI/SIM URL 설정 | `.env.example`, 설정 문서 | 공통 | 2026-05-01 | 2026-05-03 | 예정 |
-| 공통/인프라 | ENV-005 | DB 초기화 스크립트 정리 | PostgreSQL DDL(9테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 예정 |
+| 공통/인프라 | ENV-002 | 릴리즈 전략 정리 | `v0.1.0`~`v1.0.1` 버전별 범위와 검증 기준 정리 | 릴리즈 전략 문서 | 공통 | 2026-04-30 | 2026-04-30 | 완료 |
+| 공통/인프라 | ENV-003 | 루트 `.gitignore` 정리 | FE/BE/AI/SIM 생성물, 환경변수, 빌드 결과물 제외 | `.gitignore` | 공통 | 2026-04-29 | 2026-04-29 | 완료 |
+| 공통/인프라 | ENV-004 | Docker Compose 구성 | Backend, Frontend, AI, PostgreSQL, Simulator 실행 환경 구성 | `docker-compose.yml` | 공통 | 2026-04-30 | 2026-05-02 | 예정 |
+| 공통/인프라 | ENV-005 | 환경변수 정리 | DB 접속, JWT, CORS, API URL, AI/SIM URL 설정 | `.env.example`, 설정 문서 | 공통 | 2026-05-01 | 2026-05-03 | 예정 |
+| 공통/인프라 | ENV-006 | DB 초기화 스크립트 정리 | PostgreSQL DDL(9테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 예정 |
 | 백엔드 개발 | BE-001 | Entity/Repository 구현 | DB 설계 기반 JPA Entity, Repository 매핑 (company 포함) | Entity, Repository | 유환희 | 2026-04-29 | 2026-05-02 | 진행 |
 | 백엔드 개발 | BE-002 | 관리자 권한 구조 반영 | ROLE_SUPER_ADMIN/ROLE_COMPANY_ADMIN Enum, AdminStatus Enum, CompanyStatus Enum, Security 설정 | AdminRole, AdminStatus, CompanyStatus, SecurityConfig | 유환희 | 2026-05-02 | 2026-05-04 | 예정 |
 | 백엔드 개발 | BE-003 | 인증/JWT 구현 | 로그인(ACTIVE만), JWT 발급/검증, Security Filter 구성 | Auth API, Security 설정 | 유환희 | 2026-05-04 | 2026-05-06 | 예정 |
