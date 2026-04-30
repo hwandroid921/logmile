@@ -4,7 +4,7 @@
 
 - 프로젝트명: `logmile`
 - 버전: v1.5
-- 기준 산출물: `logmile_프로젝트개요서_v1.5.docx`, `logmile_요구사항정의서_v1.5.docx`
+- 기준 산출물: `logmile_프로젝트개요서.md`, `logmile_요구사항정의서.md`, `docx/logmile_ERD_v1.5.docx`, `docx/logmile_테이블정의서_v1.5.docx`
 - 작성 기준일: 2026.04.30
 - DBMS: PostgreSQL 16
 - 담당: 백경서
