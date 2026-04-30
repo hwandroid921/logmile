@@ -3,11 +3,11 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 버전: v4.0
-- 기준 산출물: `logmile_요구사항정의서_v4.docx`, `AGENTS.md`
-- 작성 기준일: 2026.04.28
+- 버전: v1.5
+- 기준 산출물: `logmile_요구사항정의서_v1.5.docx`, `AGENTS.md`
+- 작성 기준일: 2026.04.30
 - 플랫폼: 웹 브라우저 기반 SPA
-- 주요 사용자: 관제 관리자, 시스템 관리자
+- 주요 사용자: 최상위 관리자, 일반 관리자(업체별)
 
 ## 1. 프로젝트 개요
 
@@ -15,19 +15,30 @@
 
 피로도 판단은 연속 운행 시간, 휴식 여부, 일일 총 운행 시간, 야간 운행 시간을 기준으로 산정하며, 결과는 정상, 주의, 위험 등급으로 표시한다.
 
+최상위 관리자(`ROLE_SUPER_ADMIN`)와 일반 관리자(`ROLE_COMPANY_ADMIN`) 이중 권한 구조를 적용하여 업체(company) 기준으로 차량, 운전자, 운행 데이터를 격리한다.
+
 ## 2. 사용자 및 권한
 
 | 사용자 | 권한 | 주요 기능 |
 |---|---|---|
-| 관제 관리자 | ROLE_ADMIN | 대시보드 조회, 차량/운전자 관리, 운행 이력 조회, 피로도 임계값 관리 |
-| 시스템 관리자 | ROLE_ADMIN | 관리자 인증, 시스템 설정, API 문서 확인 |
+| 최상위 관리자 | `ROLE_SUPER_ADMIN` | 일반 관리자 회원가입 승인/거절/정지/해제, 업체 목록 조회 |
+| 일반 관리자 | `ROLE_COMPANY_ADMIN` | 대시보드 조회, 차량/운전자 관리, 운행 이력 조회, 피로도 임계값 관리 (소속 업체 데이터만) |
+
+### 일반 관리자 계정 상태
+
+| 상태 | 설명 |
+|---|---|
+| `PENDING` | 회원가입 완료 후 최상위 관리자 승인 대기 상태 |
+| `ACTIVE` | 승인 완료 후 서비스 사용 가능 상태 |
+| `REJECTED` | 가입 요청이 거절된 상태 |
+| `SUSPENDED` | 사용이 일시 정지된 상태 |
 
 ## 3. 팀원 역할
 
 | 담당 | 역할 | 범위 |
 |---|---|---|
-| 유환희 | 백엔드 + AI | Spring Boot API, DB Entity, 피로도 계산, 휴식 판단, JWT, FastAPI 번호판 인식 |
-| 백경서 | 프론트엔드 + GPS 시뮬레이터 + 산출물 | Vue 대시보드, Chart.js, Pinia/Axios, Python GPS 시나리오, ERD/문서/화면 설계 |
+| 유환희 | 백엔드 + AI | Spring Boot API, DB Entity, 피로도 계산, 휴식 판단, JWT, 최상위 관리자 승인/거절/정지 API, TenantAccessService, FastAPI 번호판 인식 |
+| 백경서 | 프론트엔드 + GPS 시뮬레이터 + 산출물 | Vue 대시보드, Chart.js, Pinia/Axios, 회원가입/승인대기/최상위관리자 화면, Python GPS 시나리오, ERD/문서/화면 설계 |
 
 ## 4. 기능 요구사항
 
@@ -35,7 +46,7 @@
 
 | ID | 기능 | 요구사항 | 담당 |
 |---|---|---|---|
-| FR-A01 | 통계 요약 카드 | 운행 중 차량, 주의/위험 차량, 오늘 완료 운행, 평균 피로 점수를 표시한다. | 경서/환희 |
+| FR-A01 | 통계 요약 카드 | 운행 중 차량, 주의/위험 차량, 오늘 완료 운행, 평균 피로 점수를 표시한다. (소속 업체 기준) | 경서/환희 |
 | FR-A02 | 차량 목록 테이블 | 차량번호, 운전자, 현재 속도, 연속 운행, 일일 총 운행, 야간 운행, 휴식 횟수, 피로 점수, 등급을 표시한다. | 경서/환희 |
 | FR-A03 | 피로도 배지 | 정상/주의/위험 등급을 색상 배지로 표시한다. | 경서 |
 | FR-A04 | 차량 상세 패널 | 점수 산정 근거, 최근 휴식 시간, 휴식 누락 횟수, 피로도 이벤트 타임라인을 표시한다. | 경서/환희 |
@@ -66,15 +77,15 @@
 
 | ID | 기능 | 요구사항 | 담당 |
 |---|---|---|---|
-| FR-C01 | 차량 CRUD | 차량 등록, 조회, 수정, 삭제 기능을 제공한다. | 경서/환희 |
-| FR-C02 | 운전자 CRUD | 운전자 등록, 조회, 수정, 삭제 및 차량 배정 기능을 제공한다. | 경서/환희 |
+| FR-C01 | 차량 CRUD | 차량 등록, 조회, 수정, 삭제 기능을 제공한다. (소속 업체 데이터만 접근 가능) | 경서/환희 |
+| FR-C02 | 운전자 CRUD | 운전자 등록, 조회, 수정, 삭제 및 차량 배정 기능을 제공한다. (소속 업체 데이터만) | 경서/환희 |
 | FR-C03 | 피로도 임계값 설정 | 연속 운행, 일일 운행, 야간 운행, 휴식 보정, 등급 점수 범위를 조정할 수 있다. | 경서/환희 |
 
 ### 4.5 운행 이력 및 통계
 
 | ID | 기능 | 요구사항 | 담당 |
 |---|---|---|---|
-| FR-D01 | 운행 이력 목록 | 총 운행 시간, 야간 운행 시간, 휴식 횟수, 최고 피로 점수/등급을 표시한다. | 경서/환희 |
+| FR-D01 | 운행 이력 목록 | 총 운행 시간, 야간 운행 시간, 휴식 횟수, 최고 피로 점수/등급을 표시한다. (소속 업체 기준) | 경서/환희 |
 | FR-D02 | 운행 상세 | 속도 변화, 피로 점수 변화, 휴식 이벤트 타임라인, 판단 근거를 표시한다. | 경서/환희 |
 | FR-E01 | 피로도 통계 | 일별 총 운행 시간, 야간 운행 시간, 휴식 누락, 평균 피로 점수를 Chart.js 차트로 표시한다. | 경서/환희 |
 
@@ -85,7 +96,26 @@
 | FR-OCR01 | 출발 번호판 인식 | YOLOv8 + EasyOCR로 번호판을 인식하고 운행 시작에 활용한다. | 환희 |
 | FR-OCR02 | 도착 번호판 인식 | 도착 차량 번호판을 재인식하고 운행 종료에 활용한다. | 환희 |
 | FR-OCR03 | 미인식 예외 처리 | OCR 신뢰도 0.85 미만 시 수동 입력 fallback을 제공한다. | 환희 |
-| FR-AUTH01 | 관리자 로그인 | JWT 기반 ROLE_ADMIN 인증을 제공한다. | 환희 |
+| FR-AUTH01 | 관리자 로그인 | JWT 기반 인증을 제공한다. `ACTIVE` 상태의 관리자만 로그인할 수 있다. | 환희 |
+| FR-AUTH02 | 일반 관리자 회원가입 | 업체명, 담당자 정보, 계정 정보를 입력해 가입 요청을 생성한다. 상태는 `PENDING`으로 설정된다. | 환희 |
+| FR-AUTH03 | 승인 대기 처리 | `PENDING` 상태 계정은 로그인 후 주요 기능 접근을 제한한다. | 환희 |
+
+### 4.7 최상위 관리자 기능
+
+| ID | 기능 | 요구사항 | 담당 |
+|---|---|---|---|
+| FR-SUPER01 | 승인 대기 목록 조회 | 최상위 관리자는 가입 승인 대기 중인 일반 관리자 목록을 조회한다. | 경서/환희 |
+| FR-SUPER02 | 가입 승인 | 최상위 관리자는 일반 관리자 계정을 승인하고 상태를 `ACTIVE`로 변경한다. | 환희 |
+| FR-SUPER03 | 가입 거절 | 최상위 관리자는 가입 요청을 거절하고 상태를 `REJECTED`로 변경한다. | 환희 |
+| FR-SUPER04 | 계정 정지/해제 | 최상위 관리자는 일반 관리자 계정을 `SUSPENDED` 또는 `ACTIVE`로 변경한다. | 환희 |
+| FR-SUPER05 | 업체 목록 조회 | 최상위 관리자는 등록된 업체 목록 및 상태를 조회한다. | 경서/환희 |
+
+### 4.8 업체(Company) 데이터 접근 제한
+
+| ID | 기능 | 요구사항 | 담당 |
+|---|---|---|---|
+| FR-COMPANY01 | 내 업체 정보 조회 | 일반 관리자는 자신의 소속 업체 정보를 조회한다. | 경서/환희 |
+| FR-COMPANY02 | 업체별 데이터 접근 제한 | 일반 관리자는 소속 업체의 차량, 운전자, 운행 데이터만 조회/관리할 수 있다. | 환희 |
 
 ## 5. 피로도 점수 기준
 
@@ -116,10 +146,11 @@
 
 | 테이블 | 주요 컬럼 |
 |---|---|
-| `admin` | `id`, `email`, `password`, `name`, `phone`, `role` |
-| `driver` | `id`, `name`, `phone`, `license_type`, `vehicle_id` |
-| `vehicle` | `id`, `plate_no`, `type`, `driver_id`, `is_active` |
-| `drive_log` | `id`, `vehicle_id`, `driver_id`, `started_at`, `ended_at`, `scenario_type`, `status`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level` |
+| `company` | `id`, `name`, `business_no`, `contact_email`, `contact_phone`, `status`, `created_at`, `updated_at` |
+| `admin` | `id`, `company_id(FK)`, `email`, `password`, `name`, `phone`, `role`, `status`, `approved_at`, `approved_by`, `created_at`, `updated_at` |
+| `driver` | `id`, `company_id(FK)`, `name`, `phone`, `license_type`, `vehicle_id` |
+| `vehicle` | `id`, `company_id(FK)`, `plate_no`, `type`, `driver_id`, `is_active` |
+| `drive_log` | `id`, `company_id(FK)`, `vehicle_id`, `driver_id`, `started_at`, `ended_at`, `scenario_type`, `status`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level` |
 | `gps_data` | `id`, `drive_log_id`, `latitude`, `longitude`, `speed_kmh`, `recorded_at` |
 | `rest_event` | `id`, `drive_log_id`, `rest_started_at`, `rest_ended_at`, `rest_minutes`, `rest_type` |
 | `fatigue_event` | `id`, `drive_log_id`, `fatigue_score`, `fatigue_level`, `continuous_driving_minutes`, `daily_total_driving_minutes`, `night_driving_minutes`, `rest_count`, `rest_violation_count`, `reason`, `occurred_at` |
@@ -131,7 +162,8 @@
 |---|---|
 | 성능 | GPS 데이터 수신 후 피로도 재계산 및 대시보드 반영은 5초 이내로 처리한다. |
 | 사용 환경 | 관제 대시보드는 Chrome/Edge 최신 버전과 PC 1280px 이상 해상도를 기준으로 한다. |
-| 보안 | 번호판, 연락처 등 개인정보는 인증된 관리자만 열람할 수 있다. |
+| 보안 | 번호판, 연락처 등 개인정보는 인증된 관리자만 열람할 수 있다. `PENDING`/`REJECTED`/`SUSPENDED` 상태 계정은 관제 기능에 접근할 수 없다. |
+| 데이터 격리 | 일반 관리자는 소속 업체의 데이터만 조회/관리할 수 있다. |
 | 데이터 보존 | `gps_data`는 30일 보존하고, 운행 이력 및 피로도 이벤트는 1년 보존한다. |
 | 문서화 | Swagger/Springdoc으로 API 문서를 자동 생성한다. |
 | 시연성 | 외부 API 없이 자체 데이터 기반으로 시연 가능해야 한다. |
@@ -169,6 +201,9 @@
 | GPS 시뮬레이션 | A/B/C 시나리오 데이터가 생성되고 백엔드로 전송되어야 한다. |
 | 피로도 계산 | 운행, 휴식, 야간 운행 기준으로 정상/주의/위험 등급이 산정되어야 한다. |
 | 대시보드 | 차량 목록, 피로도 점수, 등급, 판단 근거가 화면에 표시되어야 한다. |
-| 관리 기능 | 차량, 운전자, 피로도 임계값을 관리할 수 있어야 한다. |
+| 관리 기능 | 차량, 운전자, 피로도 임계값을 관리할 수 있어야 한다. (업체별 격리) |
 | 이력/통계 | 운행 이력과 피로도 통계를 조회할 수 있어야 한다. |
-| 인증 | 관리자 로그인 후 보호된 기능에 접근할 수 있어야 한다. |
+| 인증 | `ACTIVE` 상태 관리자만 로그인 후 보호된 기능에 접근할 수 있어야 한다. |
+| 회원가입/승인 | 일반 관리자 회원가입 → `PENDING` → 최상위 관리자 승인 → `ACTIVE` 흐름이 동작해야 한다. |
+| 권한 분리 | 최상위 관리자는 승인/거절/정지 기능을, 일반 관리자는 관제 기능을 이용할 수 있어야 한다. |
+| 데이터 격리 | 일반 관리자는 소속 업체 데이터만 조회/관리할 수 있어야 한다. |
