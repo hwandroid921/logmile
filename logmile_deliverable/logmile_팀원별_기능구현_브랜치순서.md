@@ -1,6 +1,6 @@
 # logmile 팀원별 기능 구현 및 브랜치 순서
 
-> 프로젝트명: logmile  
+> 프로젝트명: logmile | 버전: v1.5  
 > 기준 브랜치: `dev`  
 > 원칙: feature 브랜치는 미리 전부 만들지 않고, 해당 기능 개발을 시작할 때 `dev`에서 생성 후 원격 push한다.
 
@@ -47,51 +47,61 @@ test: 피로도 계산 단위 테스트 추가
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 1 | `feature/be-entity-db` | JPA Entity, Repository, 기본 DB 매핑 구현 | DB 초기 설계 |
-| 2 | `feature/be-auth-jwt` | Spring Security, JWT 로그인, ROLE_ADMIN 인증/인가 | Entity 구조 |
-| 3 | `feature/be-swagger` | Springdoc Swagger 설정 및 API 문서 기반 구성 | 기본 Controller 구조 |
+| 1 | `feature/be-entity-db` | JPA Entity, Repository 구현 (Company, Admin, Vehicle, Driver 등 전체) | DB 설계 v1.5 |
+| 2 | `feature/be-company-entity` | Company Entity, Repository, CompanyService 분리 | Entity 구조 |
+| 3 | `feature/be-auth-jwt` | Spring Security, JWT 로그인 (`ACTIVE` 상태만), AdminRole/AdminStatus Enum | Entity 구조 |
+| 4 | `feature/be-swagger` | Springdoc Swagger 설정 및 API 문서 기반 구성 | 기본 Controller 구조 |
 
-### Phase 2. 차량/운전자 관리 API
-
-| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
-|---:|---|---|---|
-| 4 | `feature/be-vehicle-crud` | 차량 등록/조회/수정/삭제 API | Entity 구현 |
-| 5 | `feature/be-driver-crud` | 운전자 등록/조회/수정/삭제, 차량 배정 API | 차량 API |
-
-### Phase 3. 운행 및 GPS 데이터 수신
+### Phase 2. 회원가입 / 승인 / 업체 관리 API
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 6 | `feature/be-gps-receiver` | GPS 데이터 수신 API, `gps_data` 저장 | Entity 구현 |
-| 7 | `feature/be-simulation-control` | 시뮬레이션 시작/중지 API, `drive_log` 상태 관리 | GPS 수신 API |
+| 5 | `feature/be-auth-signup` | 일반 관리자 회원가입 API (업체 생성 + admin PENDING) | Entity, Company 구조 |
+| 6 | `feature/be-admin-approval` | 최상위 관리자 승인/거절/정지/해제 API, AdminApprovalService | 회원가입 API |
+| 7 | `feature/be-company-api` | 업체 목록/상세 조회 API, CompanyController | Company Entity |
+| 8 | `feature/be-tenant-access` | TenantAccessService - 업체별 데이터 접근 제한 검증 | Auth 구조 |
 
-### Phase 4. 피로도 핵심 로직
-
-| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
-|---:|---|---|---|
-| 8 | `feature/be-rest-event` | `speed_kmh <= 3`, 15분 이상 유효 휴식 판단 및 저장 | GPS 데이터 |
-| 9 | `feature/be-fatigue-continuous-driving` | 유효 휴식 전까지 연속 운행 시간 계산 | 휴식 이벤트 |
-| 10 | `feature/be-fatigue-daily-driving` | 운전자 기준 일일 총 운행 시간 누적 계산 | 운행 로그 |
-| 11 | `feature/be-fatigue-night-driving` | 22:00~06:00 야간 운행 시간 계산 | GPS 데이터 |
-| 12 | `feature/be-fatigue-score` | 피로도 점수 합산 및 정상/주의/위험 등급 결정 | 피로도 항목 계산 |
-| 13 | `feature/be-fatigue-reason` | `fatigue_event.reason`에 판단 근거 저장 | 점수 계산 |
-| 14 | `feature/be-fatigue-threshold` | 피로도 임계값 key/value 조회 및 수정 API | 점수 계산 |
-
-### Phase 5. 대시보드/이력/통계 API
+### Phase 3. 차량/운전자 관리 API
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 15 | `feature/be-dashboard-summary` | 운행 중 차량 수, 주의/위험 차량 수, 평균 피로 점수 API | 피로도 이벤트 |
-| 16 | `feature/be-drive-history` | 운행 이력 목록/상세 조회 API | 운행 로그, 피로도 이벤트 |
-| 17 | `feature/be-fatigue-stats` | 일별 운행/야간/휴식 누락/평균 점수 통계 API | 이력 데이터 |
+| 9 | `feature/be-vehicle-crud` | 차량 등록/조회/수정/삭제 API (TenantAccess 적용) | Entity, TenantAccess |
+| 10 | `feature/be-driver-crud` | 운전자 등록/조회/수정/삭제, 차량 배정 API (TenantAccess 적용) | 차량 API |
 
-### Phase 6. AI 번호판 인식
+### Phase 4. 운행 및 GPS 데이터 수신
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 18 | `feature/ai-fastapi-server` | FastAPI 서버 구조, 라우터, 환경 설정 | AI 프로젝트 구조 |
-| 19 | `feature/ai-ocr-license-plate` | YOLOv8 + EasyOCR 번호판 인식 API | FastAPI 서버 |
-| 20 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | OCR API |
+| 11 | `feature/be-gps-receiver` | GPS 데이터 수신 API, TenantAccess 검증, `gps_data` 저장 | Entity 구현 |
+| 12 | `feature/be-simulation-control` | 시뮬레이션 시작/중지 API, `drive_log` 상태 관리 (company_id 포함) | GPS 수신 API |
+
+### Phase 5. 피로도 핵심 로직
+
+| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
+|---:|---|---|---|
+| 13 | `feature/be-rest-event` | `speed_kmh <= 3`, 15분 이상 유효 휴식 판단 및 저장 | GPS 데이터 |
+| 14 | `feature/be-fatigue-continuous-driving` | 유효 휴식 전까지 연속 운행 시간 계산 | 휴식 이벤트 |
+| 15 | `feature/be-fatigue-daily-driving` | 운전자 기준 일일 총 운행 시간 누적 계산 | 운행 로그 |
+| 16 | `feature/be-fatigue-night-driving` | 22:00~06:00 야간 운행 시간 계산 | GPS 데이터 |
+| 17 | `feature/be-fatigue-score` | 피로도 점수 합산 및 정상/주의/위험 등급 결정 | 피로도 항목 계산 |
+| 18 | `feature/be-fatigue-reason` | `fatigue_event.reason`에 판단 근거 저장 | 점수 계산 |
+| 19 | `feature/be-fatigue-threshold` | 피로도 임계값 key/value 조회 및 수정 API | 점수 계산 |
+
+### Phase 6. 대시보드/이력/통계 API
+
+| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
+|---:|---|---|---|
+| 20 | `feature/be-dashboard-summary` | 업체별 운행 중 차량 수, 주의/위험 차량 수, 평균 피로 점수 API | 피로도 이벤트 |
+| 21 | `feature/be-drive-history` | 업체별 운행 이력 목록/상세 조회 API | 운행 로그, 피로도 이벤트 |
+| 22 | `feature/be-fatigue-stats` | 일별 운행/야간/휴식 누락/평균 점수 통계 API | 이력 데이터 |
+
+### Phase 7. AI 번호판 인식
+
+| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
+|---:|---|---|---|
+| 23 | `feature/ai-fastapi-server` | FastAPI 서버 구조, 라우터, 환경 설정 | AI 프로젝트 구조 |
+| 24 | `feature/ai-ocr-license-plate` | YOLOv8 + EasyOCR 번호판 인식 API | FastAPI 서버 |
+| 25 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | OCR API |
 
 ---
 
@@ -108,52 +118,62 @@ test: 피로도 계산 단위 테스트 추가
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 3 | `feature/fe-auth-login` | 로그인 화면, JWT 토큰 저장 및 인증 처리 | 백엔드 인증 API |
-| 4 | `feature/fe-router-guard` | Vue Router 인증 가드, 미로그인 redirect | 로그인 화면 |
+| 3 | `feature/fe-auth-login` | 로그인 화면, JWT 토큰 저장, role/status 기반 redirect | 백엔드 Auth API |
+| 4 | `feature/fe-signup` | 일반 관리자 회원가입 화면 (업체명, 담당자 정보 입력) | 회원가입 API |
+| 5 | `feature/fe-approval-pending` | 승인 대기 안내 화면 (PENDING 상태 redirect) | 로그인 화면 |
+| 6 | `feature/fe-router-guard` | Vue Router 가드 (role + status 기반 접근 제어) | 로그인, 승인 화면 |
 
-### Phase 3. 차량/운전자 관리 화면
-
-| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
-|---:|---|---|---|
-| 5 | `feature/fe-vehicle-management` | 차량 등록/조회/수정/삭제 페이지 | 차량 API |
-| 6 | `feature/fe-driver-management` | 운전자 등록/조회/수정/삭제 및 차량 배정 페이지 | 운전자 API |
-
-### Phase 4. GPS 시뮬레이터
+### Phase 3. 최상위 관리자 화면
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 7 | `feature/sim-scenario-a-normal` | 시나리오 A - 정상 운행 패턴 생성 | 시뮬레이터 구조 |
-| 8 | `feature/sim-rest-pattern` | 휴식 패턴 삽입, 15분/30분 휴식 데이터 생성 | 시나리오 A |
-| 9 | `feature/sim-night-pattern` | 22:00~06:00 야간 운행 패턴 생성 | 시나리오 A |
-| 10 | `feature/sim-scenario-b-caution` | 시나리오 B - 주의 운행 패턴 생성 | 휴식/야간 패턴 |
-| 11 | `feature/sim-scenario-c-danger` | 시나리오 C - 위험 운행 패턴 생성 | 휴식/야간 패턴 |
-| 12 | `feature/sim-gps-data-sender` | 생성 GPS 데이터를 백엔드 API로 HTTP POST 전송 | GPS 수신 API |
+| 7 | `feature/fe-super-admin-dashboard` | 최상위 관리자 전용 홈 화면 | 라우터 가드 |
+| 8 | `feature/fe-super-admin-approval` | 승인 대기 목록, 승인/거절/정지/해제 처리 UI | SuperAdmin API |
+| 9 | `feature/fe-super-admin-company` | 업체 목록 및 상태 조회 화면 | Company API |
 
-### Phase 5. 시뮬레이션 UI
+### Phase 4. 차량/운전자 관리 화면
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 13 | `feature/fe-simulation-panel` | 시나리오 선택, 실행/중지, 진행 상태 표시 | 시뮬레이션 API, GPS sender |
+| 10 | `feature/fe-vehicle-management` | 차량 등록/조회/수정/삭제 페이지 (소속 업체) | 차량 API |
+| 11 | `feature/fe-driver-management` | 운전자 등록/조회/수정/삭제 및 차량 배정 페이지 | 운전자 API |
 
-### Phase 6. 대시보드 UI
-
-| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
-|---:|---|---|---|
-| 14 | `feature/fe-dashboard-summary-card` | 운행 중/주의/위험/완료/평균 피로 점수 요약 카드 | 대시보드 요약 API |
-| 15 | `feature/fe-dashboard-vehicle-table` | 차량 목록 테이블, 속도/운행시간/피로점수 표시 | 차량 상태 API |
-| 16 | `feature/fe-dashboard-fatigue-badge` | 정상/주의/위험 등급 배지 색상 표시 | 피로도 점수 데이터 |
-| 17 | `feature/fe-dashboard-detail-panel` | 차량 상세 패널, 점수 근거, 휴식 타임라인 | 피로도 상세 API |
-| 18 | `feature/fe-dashboard-call-link` | 위험 차량 운전자 `tel:` 링크 연결 | 운전자 연락처 데이터 |
-| 19 | `feature/fe-dashboard-polling` | Axios 5초 polling으로 차량 상태 갱신 | 대시보드 UI |
-
-### Phase 7. 이력/통계/설정 화면
+### Phase 5. GPS 시뮬레이터
 
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
-| 20 | `feature/fe-fatigue-threshold-settings` | 피로도 임계값 설정 UI | 임계값 API |
-| 21 | `feature/fe-drive-history-list` | 운행 이력 목록 페이지 | 운행 이력 API |
-| 22 | `feature/fe-drive-history-detail` | 속도/피로점수 변화, 이벤트 타임라인 상세 | 운행 상세 API |
-| 23 | `feature/fe-fatigue-stats-chart` | Chart.js 기반 일별 운행/야간/휴식/평균 피로 차트 | 통계 API |
+| 12 | `feature/sim-scenario-a-normal` | 시나리오 A - 정상 운행 패턴 생성 | 시뮬레이터 구조 |
+| 13 | `feature/sim-rest-pattern` | 휴식 패턴 삽입, 15분/30분 휴식 데이터 생성 | 시나리오 A |
+| 14 | `feature/sim-night-pattern` | 22:00~06:00 야간 운행 패턴 생성 | 시나리오 A |
+| 15 | `feature/sim-scenario-b-caution` | 시나리오 B - 주의 운행 패턴 생성 | 휴식/야간 패턴 |
+| 16 | `feature/sim-scenario-c-danger` | 시나리오 C - 위험 운행 패턴 생성 | 휴식/야간 패턴 |
+| 17 | `feature/sim-gps-data-sender` | 생성 GPS 데이터를 백엔드 API로 HTTP POST 전송 | GPS 수신 API |
+
+### Phase 6. 시뮬레이션 UI
+
+| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
+|---:|---|---|---|
+| 18 | `feature/fe-simulation-panel` | 시나리오 선택, 실행/중지, 진행 상태 표시 | 시뮬레이션 API, GPS sender |
+
+### Phase 7. 대시보드 UI
+
+| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
+|---:|---|---|---|
+| 19 | `feature/fe-dashboard-summary-card` | 운행 중/주의/위험/완료/평균 피로 점수 요약 카드 | 대시보드 요약 API |
+| 20 | `feature/fe-dashboard-vehicle-table` | 차량 목록 테이블, 속도/운행시간/피로점수 표시 | 차량 상태 API |
+| 21 | `feature/fe-dashboard-fatigue-badge` | 정상/주의/위험 등급 배지 색상 표시 | 피로도 점수 데이터 |
+| 22 | `feature/fe-dashboard-detail-panel` | 차량 상세 패널, 점수 근거, 휴식 타임라인 | 피로도 상세 API |
+| 23 | `feature/fe-dashboard-call-link` | 위험 차량 운전자 `tel:` 링크 연결 | 운전자 연락처 데이터 |
+| 24 | `feature/fe-dashboard-polling` | Axios 5초 polling으로 차량 상태 갱신 | 대시보드 UI |
+
+### Phase 8. 이력/통계/설정 화면
+
+| 순서 | 브랜치 | 구현 내용 | 선행 조건 |
+|---:|---|---|---|
+| 25 | `feature/fe-fatigue-threshold-settings` | 피로도 임계값 설정 UI | 임계값 API |
+| 26 | `feature/fe-drive-history-list` | 운행 이력 목록 페이지 (소속 업체) | 운행 이력 API |
+| 27 | `feature/fe-drive-history-detail` | 속도/피로점수 변화, 이벤트 타임라인 상세 | 운행 상세 API |
+| 28 | `feature/fe-fatigue-stats-chart` | Chart.js 기반 일별 운행/야간/휴식/평균 피로 차트 | 통계 API |
 
 ---
 
@@ -165,7 +185,7 @@ test: 피로도 계산 단위 테스트 추가
 |---:|---|---|---|
 | 1 | `feature/infra-docker-compose` | Backend, Frontend, AI, PostgreSQL Docker Compose 구성 | 공통 |
 | 2 | `feature/infra-env-config` | `.env`, CORS, DB 접속, API URL 환경변수 정리 | 공통 |
-| 3 | `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL 및 시드 데이터 | 공통 |
+| 3 | `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (9테이블) 및 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) | 공통 |
 
 ---
 
@@ -175,16 +195,17 @@ test: 피로도 계산 단위 테스트 추가
 
 | 단계 | 병합 대상 |
 |---:|---|
-| 1 | Infra 초기 구성 |
-| 2 | Backend Entity/DB |
-| 3 | Auth + Frontend Login |
-| 4 | Vehicle/Driver API + 화면 |
-| 5 | GPS Receiver + Simulator |
-| 6 | Rest Event + Fatigue 계산 |
-| 7 | Dashboard API + Dashboard UI |
-| 8 | Drive History + Stats |
-| 9 | AI OCR |
-| 10 | Swagger, 문서, 발표용 QA |
+| 1 | Infra 초기 구성 (DB init, Docker) |
+| 2 | Backend Entity/DB (Company 포함) |
+| 3 | Auth 기반 (JWT, Signup, Approval) + Frontend Login/Signup/Pending |
+| 4 | SuperAdmin API + FE SuperAdmin 화면 |
+| 5 | Vehicle/Driver API + FE 차량/운전자 화면 |
+| 6 | GPS Receiver + Simulator |
+| 7 | Rest Event + Fatigue 계산 |
+| 8 | Dashboard API + Dashboard UI |
+| 9 | Drive History + Stats |
+| 10 | AI OCR |
+| 11 | Swagger, 문서, 발표용 QA |
 
 ---
 
@@ -194,8 +215,7 @@ test: 피로도 계산 단위 테스트 추가
 
 | 브랜치 | 생성 시점 |
 |---|---|
-| `release/v0.1.0` | 프로젝트 구조, Docker, DB Entity, 인증이 안정화된 뒤 |
-| `release/v0.2.0` | 피로도 계산, GPS 수신, OCR 1차 구현 완료 뒤 |
-| `release/v1.0.0` | 프론트엔드, 시뮬레이터, 백엔드 전체 통합 완료 뒤 |
-| `release/v1.0.1` | 발표 전 수정 및 QA 완료 뒤 |
-
+| `release/v0.1.0` | DB 스키마(v1.5), Docker, Entity, 인증/회원가입/승인 안정화 뒤 |
+| `release/v0.2.0` | 피로도 계산 전체, GPS 수신, OCR 1차 구현 완료 뒤 |
+| `release/v1.0.0` | 프론트엔드, 시뮬레이터, 백엔드 전체 통합 완료 뒤 (2026.05.27) |
+| `release/v1.0.1` | 발표용 마무리 수정 (2026.06.02) |
