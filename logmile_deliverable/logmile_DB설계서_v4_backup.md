@@ -3,9 +3,9 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 버전: v1.5
-- 기준 산출물: `logmile_프로젝트개요서_v1.5.docx`, `logmile_요구사항정의서_v1.5.docx`
-- 작성 기준일: 2026.04.30
+- 버전: v4.0
+- 기준 산출물: `logmile_프로젝트개요서_v4.docx`, `logmile_요구사항정의서_v4.docx`
+- 작성 기준일: 2026.04.29
 - DBMS: PostgreSQL 16
 - 담당: 백경서
 
@@ -17,10 +17,9 @@
 
 | 엔티티 | 테이블명 | 설명 |
 |---|---|---|
-| 업체 | `company` | 물류 업체 정보 및 상태 관리 |
-| 관리자 | `admin` | 최상위 관리자 및 일반 관리자 계정, 권한, 승인 상태 |
-| 차량 | `vehicle` | 업체 소속 화물차 정보 |
-| 운전자 | `driver` | 업체 소속 화물차 운전자 기본 정보 및 차량 배정 |
+| 관리자 | `admin` | 시스템 관리자 계정 및 권한 |
+| 차량 | `vehicle` | 가상 물류센터 화물차 정보 |
+| 운전자 | `driver` | 화물차 운전자 기본 정보 및 차량 배정 |
 | 운행 기록 | `drive_log` | 운행 시작/종료, 시나리오, OCR 인식 결과, 운행 요약 |
 | GPS 데이터 | `gps_data` | 운행 중 수집된 GPS 좌표 및 속도 |
 | 휴식 이벤트 | `rest_event` | 운행 중 감지된 휴식 시작/종료 및 유형 |
@@ -33,35 +32,18 @@
 
 ```mermaid
 erDiagram
-    company {
-        bigserial id PK
-        varchar   name         UK
-        varchar   business_no  UK
-        varchar   contact_email
-        varchar   contact_phone
-        varchar   status
-        timestamp created_at
-        timestamp updated_at
-    }
-
     admin {
         bigserial id PK
-        bigint    company_id  FK
-        varchar   email       UK
-        varchar   password
-        varchar   name
-        varchar   phone
-        varchar   role
-        varchar   status
-        timestamp approved_at
-        bigint    approved_by FK
-        timestamp created_at
-        timestamp updated_at
+        varchar    email       UK
+        varchar    password
+        varchar    name
+        varchar    phone
+        varchar    role
+        timestamp  created_at
     }
 
     vehicle {
         bigserial id PK
-        bigint    company_id  FK
         varchar   plate_no    UK
         varchar   type
         bigint    driver_id   FK
@@ -71,7 +53,6 @@ erDiagram
 
     driver {
         bigserial id PK
-        bigint    company_id  FK
         varchar   name
         varchar   phone
         varchar   license_type
@@ -81,7 +62,6 @@ erDiagram
 
     drive_log {
         bigserial id PK
-        bigint    company_id          FK
         bigint    vehicle_id          FK
         bigint    driver_id           FK
         timestamp started_at
@@ -139,16 +119,12 @@ erDiagram
         timestamp updated_at
     }
 
-    company    ||--o{ admin        : "1:N 관리자"
-    company    ||--o{ vehicle      : "1:N 차량"
-    company    ||--o{ driver       : "1:N 운전자"
-    company    ||--o{ drive_log    : "1:N 운행"
-    vehicle    ||--o|  driver      : "1:1 양방향 배정"
-    driver     ||--o{  drive_log   : "1:N 운행"
-    vehicle    ||--o{  drive_log   : "1:N 운행"
-    drive_log  ||--o{  gps_data    : "1:N GPS 수집"
-    drive_log  ||--o{  rest_event  : "1:N 휴식 감지"
-    drive_log  ||--o{  fatigue_event : "1:N 피로도 산정"
+    vehicle     ||--o|  driver        : "1:1 양방향 배정"
+    driver      ||--o{  drive_log     : "1:N 운행"
+    vehicle     ||--o{  drive_log     : "1:N 운행"
+    drive_log   ||--o{  gps_data      : "1:N GPS 수집"
+    drive_log   ||--o{  rest_event    : "1:N 휴식 감지"
+    drive_log   ||--o{  fatigue_event : "1:N 피로도 산정"
 ```
 
 ---
@@ -157,10 +133,6 @@ erDiagram
 
 | 관계 | 유형 | 설명 |
 |---|---|---|
-| `company` → `admin` | 1:N | 업체 1개에 여러 일반 관리자 등록 가능. 최상위 관리자는 company_id = NULL |
-| `company` → `vehicle` | 1:N | 업체 소속 차량 목록 |
-| `company` → `driver` | 1:N | 업체 소속 운전자 목록 |
-| `company` → `drive_log` | 1:N | 업체 기준 운행 이력 격리 |
 | `vehicle` ↔ `driver` | 1:1 (양방향) | 차량 1대에 운전자 1명 배정. `driver.vehicle_id`(FK) + `vehicle.driver_id`(FK) 양방향 참조. 순환 참조 방지를 위해 DDL에서 후행 `ALTER TABLE`로 처리 |
 | `vehicle` → `drive_log` | 1:N | 차량 1대가 여러 번 운행 가능 |
 | `driver` → `drive_log` | 1:N | 운전자 1명이 여러 운행 수행 가능 |
@@ -168,6 +140,7 @@ erDiagram
 | `drive_log` → `rest_event` | 1:N | 운행 1건에 다수의 휴식 이벤트 발생 |
 | `drive_log` → `fatigue_event` | 1:N | 운행 중 GPS 수신마다 피로도 재산정 기록 |
 | `fatigue_threshold` | 독립 | 다른 테이블과 FK 없음. 피로도 계산 로직에서 key로 조회 |
+| `admin` | 독립 | 관리자 인증 전용. 운행/차량 데이터와 FK 없음 |
 
 ---
 
@@ -175,9 +148,6 @@ erDiagram
 
 | 규칙 | 내용 |
 |---|---|
-| 관리자 권한 분리 | `ROLE_SUPER_ADMIN`: 전체 관리, `ROLE_COMPANY_ADMIN`: 소속 업체 관제 |
-| 일반 관리자 상태 | `PENDING` → `ACTIVE`(승인) / `REJECTED`(거절) / `SUSPENDED`(정지) |
-| 데이터 격리 | 일반 관리자는 `company_id` 기준으로 소속 업체 데이터만 접근 |
 | 휴식 판단 기준 | `gps_data.speed_kmh ≤ 3` 상태가 15분 이상 지속 시 `rest_event` 생성, `rest_type = VALID` |
 | 충분 휴식 기준 | 휴식 지속 30분 이상 시 `rest_type = SUFFICIENT` |
 | 휴식 미달 | 15분 미만 정차 종료 시 `rest_type = INVALID` |
@@ -194,8 +164,7 @@ erDiagram
 
 | 테이블 | 예상 행 수 (시연 기준) | 증가 유형 | 보존 정책 |
 |---|---|---|---|
-| `company` | 1~3건 | 거의 없음 | 영구 |
-| `admin` | 2~10건 | 거의 없음 | 영구 |
+| `admin` | 1~5건 | 거의 없음 | 영구 |
 | `vehicle` | 10건 | 거의 없음 | 영구 |
 | `driver` | 10건 | 거의 없음 | 영구 |
 | `drive_log` | 30~100건 | 시나리오 실행 시 | 1년 |
@@ -210,21 +179,12 @@ erDiagram
 
 | 테이블 | 인덱스명 | 컬럼 | 유형 | 목적 |
 |---|---|---|---|---|
-| `company` | (PK) | `id` | B-Tree | 기본키 |
-| `company` | (UK) | `name` | B-Tree | 업체명 중복 방지 |
-| `company` | (UK) | `business_no` | B-Tree | 사업자번호 중복 방지 |
 | `admin` | (PK) | `id` | B-Tree | 기본키 |
 | `admin` | (UK) | `email` | B-Tree | 로그인 조회 |
-| `admin` | `idx_admin_company_id` | `company_id` | B-Tree | 업체별 관리자 조회 |
-| `admin` | `idx_admin_role` | `role` | B-Tree | 권한별 조회 |
-| `admin` | `idx_admin_status` | `status` | B-Tree | 승인 대기 목록 조회 |
 | `vehicle` | (PK) | `id` | B-Tree | 기본키 |
 | `vehicle` | (UK) | `plate_no` | B-Tree | 번호판 중복 방지 및 OCR 조회 |
-| `vehicle` | `idx_vehicle_company_id` | `company_id` | B-Tree | 업체별 차량 조회 |
 | `driver` | (PK) | `id` | B-Tree | 기본키 |
-| `driver` | `idx_driver_company_id` | `company_id` | B-Tree | 업체별 운전자 조회 |
 | `drive_log` | (PK) | `id` | B-Tree | 기본키 |
-| `drive_log` | `idx_drive_log_company_id` | `company_id` | B-Tree | 업체별 운행 이력 조회 |
 | `drive_log` | `idx_drive_log_vehicle_id` | `vehicle_id` | B-Tree | 차량별 운행 이력 조회 |
 | `drive_log` | `idx_drive_log_driver_id` | `driver_id` | B-Tree | 운전자별 운행 이력 조회 |
 | `drive_log` | `idx_drive_log_started_at` | `started_at` | B-Tree | 날짜 기준 이력/통계 조회 |
@@ -245,10 +205,6 @@ erDiagram
 
 | FK | 참조 방향 | ON DELETE | 비고 |
 |---|---|---|---|
-| `admin.company_id` → `company.id` | admin → company | SET NULL | 업체 삭제 시 관리자 업체 정보 초기화 |
-| `vehicle.company_id` → `company.id` | vehicle → company | RESTRICT | 소속 업체 삭제 방지 |
-| `driver.company_id` → `company.id` | driver → company | RESTRICT | 소속 업체 삭제 방지 |
-| `drive_log.company_id` → `company.id` | drive_log → company | RESTRICT | 소속 업체 삭제 방지 |
 | `driver.vehicle_id` → `vehicle.id` | driver → vehicle | SET NULL | 차량 삭제 시 운전자 vehicle_id 초기화 |
 | `vehicle.driver_id` → `driver.id` | vehicle → driver | SET NULL | 운전자 삭제 시 차량 driver_id 초기화 |
 | `drive_log.vehicle_id` → `vehicle.id` | drive_log → vehicle | RESTRICT (기본) | 운행 중 차량 삭제 방지 |
@@ -263,121 +219,88 @@ erDiagram
 
 ---
 
-### 3.1 company (업체)
+### 3.1 admin (관리자 계정)
 
-**설명:** 물류 업체 정보 및 상태 관리. 일반 관리자·차량·운전자·운행 데이터의 격리 기준
-
-| # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
-|---|---|---|---|---|---|---|
-| 1 | `id` | `BIGSERIAL` | NOT NULL | auto | PK | 업체 식별자 (자동 증가) |
-| 2 | `name` | `VARCHAR(100)` | NOT NULL | - | UK | 업체명 (중복 불가) |
-| 3 | `business_no` | `VARCHAR(30)` | NULL | - | UK | 사업자번호 또는 업체 식별번호 |
-| 4 | `contact_email` | `VARCHAR(100)` | NULL | - | - | 업체 연락 이메일 |
-| 5 | `contact_phone` | `VARCHAR(30)` | NULL | - | - | 업체 연락처 |
-| 6 | `status` | `VARCHAR(20)` | NOT NULL | `'ACTIVE'` | CHECK | 업체 상태 (`ACTIVE`, `INACTIVE`) |
-| 7 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 업체 등록 시각 |
-| 8 | `updated_at` | `TIMESTAMP` | NULL | - | - | 업체 정보 수정 시각 |
-
-**인덱스:** PK(`id`), UK(`name`), UK(`business_no`)
-
----
-
-### 3.2 admin (관리자 계정)
-
-**설명:** 최상위 관리자 및 일반 관리자 계정, 권한, 승인 상태 관리. JWT 인증에 사용
+**설명:** 시스템 관리자 계정 및 권한 정보. JWT 인증에 사용
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
 | 1 | `id` | `BIGSERIAL` | NOT NULL | auto | PK | 관리자 식별자 (자동 증가) |
-| 2 | `company_id` | `BIGINT` | NULL | - | FK → company.id | 소속 업체 ID (최상위 관리자는 NULL) |
-| 3 | `email` | `VARCHAR(100)` | NOT NULL | - | UK | 로그인 이메일 (중복 불가) |
-| 4 | `password` | `VARCHAR(255)` | NOT NULL | - | - | BCrypt 암호화 패스워드 |
-| 5 | `name` | `VARCHAR(50)` | NOT NULL | - | - | 관리자 이름 |
-| 6 | `phone` | `VARCHAR(20)` | NULL | - | - | 관리자 연락처 |
-| 7 | `role` | `VARCHAR(30)` | NOT NULL | `'ROLE_COMPANY_ADMIN'` | CHECK | 권한 (`ROLE_SUPER_ADMIN`, `ROLE_COMPANY_ADMIN`) |
-| 8 | `status` | `VARCHAR(20)` | NOT NULL | `'PENDING'` | CHECK | 계정 상태 (`PENDING`, `ACTIVE`, `REJECTED`, `SUSPENDED`) |
-| 9 | `approved_at` | `TIMESTAMP` | NULL | - | - | 승인 처리 시각 |
-| 10 | `approved_by` | `BIGINT` | NULL | - | FK → admin.id | 승인한 최상위 관리자 ID |
-| 11 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 계정 생성 시각 |
-| 12 | `updated_at` | `TIMESTAMP` | NULL | - | - | 계정 정보 수정 시각 |
+| 2 | `email` | `VARCHAR(100)` | NOT NULL | - | UK | 로그인 이메일 (중복 불가) |
+| 3 | `password` | `VARCHAR(255)` | NOT NULL | - | - | BCrypt 암호화 패스워드 |
+| 4 | `name` | `VARCHAR(50)` | NOT NULL | - | - | 관리자 이름 |
+| 5 | `phone` | `VARCHAR(20)` | NULL | - | - | 관리자 연락처 |
+| 6 | `role` | `VARCHAR(20)` | NOT NULL | `'ROLE_ADMIN'` | - | 권한 (ROLE_ADMIN 고정) |
+| 7 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 계정 생성 시각 |
 
-**인덱스:** PK(`id`), UK(`email`), `idx_admin_company_id`, `idx_admin_role`, `idx_admin_status`
-
-**CHECK 제약:**
-- `chk_admin_role`: `role IN ('ROLE_SUPER_ADMIN', 'ROLE_COMPANY_ADMIN')`
-- `chk_admin_status`: `status IN ('PENDING', 'ACTIVE', 'REJECTED', 'SUSPENDED')`
-
-**비고:** 최상위 관리자는 `company_id = NULL`, `role = 'ROLE_SUPER_ADMIN'`, `status = 'ACTIVE'`로 seed 데이터 삽입
+**인덱스:** PK(`id`), UK(`email`)
 
 ---
 
-### 3.3 vehicle (차량)
+### 3.2 vehicle (차량)
 
-**설명:** 업체 소속 화물차 정보. 운전자와 1:1 배정 관계
+**설명:** 가상 물류센터 화물차 정보. 운전자와 1:1 배정 관계
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
 | 1 | `id` | `BIGSERIAL` | NOT NULL | auto | PK | 차량 식별자 (자동 증가) |
-| 2 | `company_id` | `BIGINT` | NOT NULL | - | FK → company.id | 소속 업체 ID |
-| 3 | `plate_no` | `VARCHAR(20)` | NOT NULL | - | UK | 차량 번호판 (중복 불가) |
-| 4 | `type` | `VARCHAR(50)` | NOT NULL | - | - | 차종 (예: 5톤 카고, 11톤 윙바디) |
-| 5 | `driver_id` | `BIGINT` | NULL | - | FK → driver.id, UK | 현재 배정된 운전자 ID (1:1 유일) |
-| 6 | `is_active` | `BOOLEAN` | NOT NULL | `TRUE` | - | 차량 활성 여부 |
-| 7 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 차량 등록 시각 |
+| 2 | `plate_no` | `VARCHAR(20)` | NOT NULL | - | UK | 차량 번호판 (중복 불가) |
+| 3 | `type` | `VARCHAR(50)` | NOT NULL | - | - | 차종 (예: 5톤 카고, 11톤 윙바디) |
+| 4 | `driver_id` | `BIGINT` | NULL | - | FK → driver.id | 현재 배정된 운전자 ID |
+| 5 | `is_active` | `BOOLEAN` | NOT NULL | `TRUE` | - | 차량 활성 여부 |
+| 6 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 차량 등록 시각 |
 
-**인덱스:** PK(`id`), UK(`plate_no`), UK(`driver_id`), `idx_vehicle_company_id`
+**인덱스:** PK(`id`), UK(`plate_no`)
 
 **비고:** `driver_id` FK는 순환 참조 방지를 위해 `driver` 테이블 생성 후 `ALTER TABLE`로 추가
 
 ---
 
-### 3.4 driver (운전자)
+### 3.3 driver (운전자)
 
-**설명:** 업체 소속 화물차 운전자 기본 정보 및 차량 배정 상태
+**설명:** 화물차 운전자 기본 정보 및 차량 배정 상태
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
 | 1 | `id` | `BIGSERIAL` | NOT NULL | auto | PK | 운전자 식별자 (자동 증가) |
-| 2 | `company_id` | `BIGINT` | NOT NULL | - | FK → company.id | 소속 업체 ID |
-| 3 | `name` | `VARCHAR(50)` | NOT NULL | - | - | 운전자 이름 |
-| 4 | `phone` | `VARCHAR(20)` | NOT NULL | - | - | 연락처 (위험 시 전화 연결에 사용) |
-| 5 | `license_type` | `VARCHAR(30)` | NOT NULL | - | - | 면허 종류 (예: 1종 대형, 1종 보통) |
-| 6 | `vehicle_id` | `BIGINT` | NULL | - | FK → vehicle.id, UK | 배정된 차량 ID (1:1 유일) |
-| 7 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 운전자 등록 시각 |
+| 2 | `name` | `VARCHAR(50)` | NOT NULL | - | - | 운전자 이름 |
+| 3 | `phone` | `VARCHAR(20)` | NOT NULL | - | - | 연락처 (위험 시 전화 연결에 사용) |
+| 4 | `license_type` | `VARCHAR(30)` | NOT NULL | - | - | 면허 종류 (예: 1종 대형, 1종 보통) |
+| 5 | `vehicle_id` | `BIGINT` | NULL | - | FK → vehicle.id | 배정된 차량 ID |
+| 6 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 운전자 등록 시각 |
 
-**인덱스:** PK(`id`), UK(`vehicle_id`), `idx_driver_company_id`
+**인덱스:** PK(`id`)
 
 ---
 
-### 3.5 drive_log (운행 기록)
+### 3.4 drive_log (운행 기록)
 
 **설명:** 운행 시작/종료, 시나리오 유형, OCR 번호판 인식 결과, 운행 완료 요약 저장
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
 | 1 | `id` | `BIGSERIAL` | NOT NULL | auto | PK | 운행 기록 식별자 |
-| 2 | `company_id` | `BIGINT` | NOT NULL | - | FK → company.id | 소속 업체 ID (데이터 격리용) |
-| 3 | `vehicle_id` | `BIGINT` | NOT NULL | - | FK → vehicle.id | 운행 차량 ID |
-| 4 | `driver_id` | `BIGINT` | NOT NULL | - | FK → driver.id | 운행 운전자 ID |
-| 5 | `started_at` | `TIMESTAMP` | NOT NULL | - | - | 운행 시작 시각 |
-| 6 | `ended_at` | `TIMESTAMP` | NULL | - | - | 운행 종료 시각 (진행 중이면 NULL) |
-| 7 | `scenario_type` | `VARCHAR(10)` | NOT NULL | - | CHECK | 시나리오 유형 (`A`: 정상, `B`: 주의, `C`: 위험) |
-| 8 | `status` | `VARCHAR(20)` | NOT NULL | `'RUNNING'` | CHECK | 운행 상태 (`RUNNING` / `COMPLETED` / `STOPPED`) |
-| 9 | `recognized_plate_no` | `VARCHAR(20)` | NULL | - | - | OCR 인식 번호판 텍스트 |
-| 10 | `ocr_confidence` | `DOUBLE PRECISION` | NULL | - | CHECK | OCR 신뢰도 (0.0~1.0) |
-| 11 | `is_manual_input` | `BOOLEAN` | NOT NULL | `FALSE` | - | 수동 입력 여부 |
-| 12 | `total_driving_minutes` | `INTEGER` | NULL | - | - | 총 운행 시간(분), 운행 종료 시 기록 |
-| 13 | `night_driving_minutes` | `INTEGER` | NULL | - | - | 야간 운행 시간(분), 종료 시 기록 |
-| 14 | `total_rest_count` | `INTEGER` | NULL | - | - | 유효 휴식 총 횟수, 종료 시 기록 |
-| 15 | `max_fatigue_score` | `INTEGER` | NULL | - | - | 최고 피로 점수, 종료 시 기록 |
-| 16 | `max_fatigue_level` | `VARCHAR(20)` | NULL | - | CHECK | 최고 피로 등급 (`NORMAL`/`CAUTION`/`DANGER`) |
-| 17 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 레코드 생성 시각 |
+| 2 | `vehicle_id` | `BIGINT` | NOT NULL | - | FK → vehicle.id | 운행 차량 ID |
+| 3 | `driver_id` | `BIGINT` | NOT NULL | - | FK → driver.id | 운행 운전자 ID |
+| 4 | `started_at` | `TIMESTAMP` | NOT NULL | - | - | 운행 시작 시각 |
+| 5 | `ended_at` | `TIMESTAMP` | NULL | - | - | 운행 종료 시각 (진행 중이면 NULL) |
+| 6 | `scenario_type` | `VARCHAR(10)` | NOT NULL | - | - | 시나리오 유형 (`A`: 정상, `B`: 주의, `C`: 위험) |
+| 7 | `status` | `VARCHAR(20)` | NOT NULL | `'RUNNING'` | - | 운행 상태 (`RUNNING` / `COMPLETED` / `STOPPED`) |
+| 8 | `recognized_plate_no` | `VARCHAR(20)` | NULL | - | - | OCR 인식 번호판 텍스트 (FR-OCR01, FR-OCR02) |
+| 9 | `ocr_confidence` | `DOUBLE PRECISION` | NULL | - | - | OCR 신뢰도 (0.0~1.0), 0.85 미만 시 수동 입력 |
+| 10 | `is_manual_input` | `BOOLEAN` | NOT NULL | `FALSE` | - | 수동 입력 여부 (`TRUE`: fallback 수동입력) |
+| 11 | `total_driving_minutes` | `INTEGER` | NULL | - | - | 총 운행 시간(분), 운행 종료 시 기록 |
+| 12 | `night_driving_minutes` | `INTEGER` | NULL | - | - | 야간 운행 시간(분), 22:00~06:00 기준, 종료 시 기록 |
+| 13 | `total_rest_count` | `INTEGER` | NULL | - | - | 유효 휴식 총 횟수, 운행 종료 시 기록 |
+| 14 | `max_fatigue_score` | `INTEGER` | NULL | - | - | 운행 중 최고 피로 점수, 종료 시 기록 |
+| 15 | `max_fatigue_level` | `VARCHAR(20)` | NULL | - | - | 운행 중 최고 피로 등급 (`NORMAL`/`CAUTION`/`DANGER`) |
+| 16 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 레코드 생성 시각 |
 
-**인덱스:** PK(`id`), `idx_drive_log_company_id`, `idx_drive_log_vehicle_id`, `idx_drive_log_driver_id`, `idx_drive_log_started_at`
+**인덱스:** PK(`id`), `idx_drive_log_vehicle_id`, `idx_drive_log_driver_id`, `idx_drive_log_started_at`
 
 ---
 
-### 3.6 gps_data (GPS 데이터)
+### 3.5 gps_data (GPS 데이터)
 
 **설명:** 시뮬레이터가 전송하는 GPS 좌표 및 속도 데이터. 피로도 계산의 원천 데이터
 
@@ -392,11 +315,11 @@ erDiagram
 
 **인덱스:** PK(`id`), `idx_gps_data_drive_log_id`, `idx_gps_data_recorded_at`
 
-**보존 정책:** 30일 후 삭제
+**보존 정책:** 30일 후 삭제 (요구사항 7조)
 
 ---
 
-### 3.7 rest_event (휴식 이벤트)
+### 3.6 rest_event (휴식 이벤트)
 
 **설명:** `speed_kmh ≤ 3` 조건 감지 시 생성. 종료 후 `rest_type` 및 `rest_minutes` 확정
 
@@ -407,7 +330,7 @@ erDiagram
 | 3 | `rest_started_at` | `TIMESTAMP` | NOT NULL | - | - | 휴식 시작 시각 |
 | 4 | `rest_ended_at` | `TIMESTAMP` | NULL | - | - | 휴식 종료 시각 (진행 중이면 NULL) |
 | 5 | `rest_minutes` | `INTEGER` | NULL | - | - | 실제 휴식 시간(분). 종료 후 계산하여 저장 |
-| 6 | `rest_type` | `VARCHAR(20)` | NOT NULL | `'PENDING'` | CHECK | 휴식 유형 (아래 참조) |
+| 6 | `rest_type` | `VARCHAR(20)` | NOT NULL | `'PENDING'` | - | 휴식 유형 (아래 참조) |
 
 **`rest_type` 값 정의:**
 
@@ -422,7 +345,7 @@ erDiagram
 
 ---
 
-### 3.8 fatigue_event (피로도 이벤트)
+### 3.7 fatigue_event (피로도 이벤트)
 
 **설명:** GPS 데이터 수신 시마다 피로도를 재산정하여 기록. 대시보드 실시간 표시 및 운행 이력 조회에 사용
 
@@ -430,14 +353,14 @@ erDiagram
 |---|---|---|---|---|---|---|
 | 1 | `id` | `BIGSERIAL` | NOT NULL | auto | PK | 피로도 이벤트 식별자 |
 | 2 | `drive_log_id` | `BIGINT` | NOT NULL | - | FK → drive_log.id (CASCADE) | 소속 운행 기록 ID |
-| 3 | `fatigue_score` | `INTEGER` | NOT NULL | `0` | CHECK ≥ 0 | 피로도 총점 |
-| 4 | `fatigue_level` | `VARCHAR(20)` | NOT NULL | `'NORMAL'` | CHECK | 피로 등급 (`NORMAL`/`CAUTION`/`DANGER`) |
-| 5 | `continuous_driving_minutes` | `INTEGER` | NOT NULL | `0` | - | 연속 운행 시간(분) |
-| 6 | `daily_total_driving_minutes` | `INTEGER` | NOT NULL | `0` | - | 당일 총 운행 시간(분) |
-| 7 | `night_driving_minutes` | `INTEGER` | NOT NULL | `0` | - | 야간 운행 누적 시간(분) |
-| 8 | `rest_count` | `INTEGER` | NOT NULL | `0` | - | 유효 휴식 횟수 |
-| 9 | `rest_violation_count` | `INTEGER` | NOT NULL | `0` | - | 휴식 누락 횟수 |
-| 10 | `reason` | `TEXT` | NULL | - | - | 점수 산정 근거 텍스트 |
+| 3 | `fatigue_score` | `INTEGER` | NOT NULL | `0` | - | 피로도 총점 |
+| 4 | `fatigue_level` | `VARCHAR(20)` | NOT NULL | `'NORMAL'` | - | 피로 등급 (`NORMAL`/`CAUTION`/`DANGER`) |
+| 5 | `continuous_driving_minutes` | `INTEGER` | NOT NULL | `0` | - | 연속 운행 시간(분), 유효 휴식 전까지 누적 |
+| 6 | `daily_total_driving_minutes` | `INTEGER` | NOT NULL | `0` | - | 당일 총 운행 시간(분), 운전자 기준 누적 |
+| 7 | `night_driving_minutes` | `INTEGER` | NOT NULL | `0` | - | 야간 운행 누적 시간(분), 22:00~06:00 기준 |
+| 8 | `rest_count` | `INTEGER` | NOT NULL | `0` | - | 유효 휴식 횟수 (VALID + SUFFICIENT) |
+| 9 | `rest_violation_count` | `INTEGER` | NOT NULL | `0` | - | 휴식 누락 횟수 (2시간 운행 후 미휴식) |
+| 10 | `reason` | `TEXT` | NULL | - | - | 점수 산정 근거 텍스트 (FR-FAT06) |
 | 11 | `occurred_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 피로도 산정 시각 |
 
 **피로 등급 기준:**
@@ -452,7 +375,7 @@ erDiagram
 
 ---
 
-### 3.9 fatigue_threshold (피로도 임계값)
+### 3.8 fatigue_threshold (피로도 임계값)
 
 **설명:** 피로도 점수 모델의 기준값을 key/value로 관리. 관리자 화면에서 동적 수정 가능
 
@@ -499,16 +422,15 @@ erDiagram
 순환 FK 구조로 인해 아래 순서를 반드시 준수해야 합니다.
 
 ```
-1. company          (의존 없음)
-2. admin            (company FK 포함)
-3. vehicle          (company FK 포함, driver FK는 제외하고 생성)
-4. driver           (company FK + vehicle FK 포함)
-5. ALTER TABLE vehicle ADD CONSTRAINT fk_vehicle_driver  ← 순환 FK 후행 추가
-6. drive_log        (company + vehicle + driver FK 포함)
-7. gps_data         (drive_log FK, CASCADE)
-8. rest_event       (drive_log FK, CASCADE)
-9. fatigue_event    (drive_log FK, CASCADE)
-10. fatigue_threshold (의존 없음)
+1. admin           (의존 없음)
+2. vehicle         (driver FK 제외하고 생성)
+3. driver          (vehicle FK 포함하여 생성)
+4. ALTER TABLE vehicle ADD CONSTRAINT fk_vehicle_driver  ← 순환 FK 후행 추가
+5. drive_log       (vehicle, driver FK 포함)
+6. gps_data        (drive_log FK, CASCADE)
+7. rest_event      (drive_log FK, CASCADE)
+8. fatigue_event   (drive_log FK, CASCADE)
+9. fatigue_threshold (의존 없음)
 ```
 
 ---
@@ -516,11 +438,9 @@ erDiagram
 ## 5. 시드 데이터 실행 순서
 
 ```
-1. company          INSERT 1~2건 (테스트용 업체)
-2. admin            INSERT 1건  (ROLE_SUPER_ADMIN, ACTIVE, company_id=NULL)
-3. admin            INSERT 1건  (ROLE_COMPANY_ADMIN, ACTIVE, company_id=1, 테스트용)
-4. vehicle          INSERT 10건 (company_id=1, driver_id 없이)
-5. driver           INSERT 10건 (company_id=1, vehicle_id 포함)
-6. vehicle          UPDATE 10건 (driver_id 역방향 업데이트)
-7. fatigue_threshold INSERT 21건
+1. admin       INSERT 1건
+2. vehicle     INSERT 10건 (driver_id 없이)
+3. driver      INSERT 10건 (vehicle_id 포함)
+4. vehicle     UPDATE 10건 (driver_id 역방향 업데이트)
+5. fatigue_threshold  INSERT 21건
 ```
