@@ -1,0 +1,95 @@
+version: "3.9"
+
+# ============================================================
+# logmile - Docker Compose 서비스 구성
+# 실행 전 .env.example → .env 복사 후 값 설정 필요
+# ============================================================
+
+services:
+
+  # ── PostgreSQL 16 ──────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: logmile-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Spring Boot BE ─────────────────────────────────────────
+  backend:
+    build:
+      context: ../logmile_be
+      dockerfile: Dockerfile
+    container_name: logmile-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+    ports:
+      - "${BE_PORT:-8080}:8080"
+
+  # ── FastAPI AI ─────────────────────────────────────────────
+  ai:
+    build:
+      context: ../logmile_ai
+      dockerfile: Dockerfile
+    container_name: logmile-ai
+    restart: unless-stopped
+    environment:
+      AI_HOST: 0.0.0.0
+      AI_PORT: ${AI_PORT:-8000}
+      OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.85}
+      YOLO_MODEL_PATH: ${YOLO_MODEL_PATH:-app/model/yolo11n.pt}
+    ports:
+      - "${AI_PORT:-8000}:8000"
+    volumes:
+      - ../logmile_ai/app/model:/app/app/model
+
+  # ── Vue.js FE (Nginx) ──────────────────────────────────────
+  frontend:
+    build:
+      context: ../logmile_fe
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+    container_name: logmile-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FE_PORT:-80}:80"
+
+  # ── GPS Simulator (수동 실행) ───────────────────────────────
+  # 필요 시 docker compose run --rm simulator python -m simulator.main
+  simulator:
+    build:
+      context: ../logmile_sim
+      dockerfile: Dockerfile
+    container_name: logmile-simulator
+    profiles:
+      - simulator
+    environment:
+      BE_API_URL: http://backend:8080
+
+volumes:
+  postgres_data:
