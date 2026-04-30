@@ -34,5 +34,9 @@ dist/
 build/
 *.egg-info/
 
+# ── 평가 결과 JSON (실제 결과는 로컬 보관) ───────────────────
+evaluate/results/*.json
+evaluate/ground_truth.json
+
 # ── 테스트 ───────────────────────────────────────────────────
 .pytest_cache/
