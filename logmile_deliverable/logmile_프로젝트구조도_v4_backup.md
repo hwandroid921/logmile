@@ -1,8 +1,8 @@
 # logmile 프로젝트 전체 구조도
 
 - 프로젝트명: `logmile`
-- 버전: v1.5
-- 작성 기준일: 2026.04.30
+- 버전: v4.0
+- 작성 기준일: 2026.04.29
 
 ---
 
@@ -21,21 +21,19 @@
 │  ┌──────────────┐   HTTP POST    │  │ Fatigue Calculator       │   │  │
 │  │  FastAPI(AI) │ <─────────────>│  │ Rest Event Detector      │   │  │
 │  │    :8000     │                │  │ Drive Log Manager        │   │  │
-│  │              │                │  │ Auth / Signup / Approval │   │  │
+│  │              │                │  │ Auth (JWT)               │   │  │
 │  │ YOLOv8n      │                │  │ Vehicle/Driver CRUD      │   │  │
 │  │ EasyOCR      │                │  │ Dashboard/History/Stats  │   │  │
-│  └──────────────┘                │  │ TenantAccess (업체격리)   │   │  │
-│                                  │  └──────────────────────────┘   │  │
-│  ┌──────────────┐   REST API     │              │                   │  │
-│  │  Vue.js (FE) │ <─────────────>│              │ JPA               │  │
-│  │    :5173     │   (Axios/JWT)  │              ▼                   │  │
-│  │              │                │  ┌──────────────────────────┐   │  │
-│  │ 관제 대시보드  │                │  │     PostgreSQL 16         │   │  │
-│  │ 차량/운전자   │                │  │        :5432             │   │  │
-│  │ 이력/통계     │                │  │                          │   │  │
-│  │ 임계값 설정   │                │  │ company / admin          │   │  │
-│  │ 회원가입/승인 │                │  │ vehicle / driver         │   │  │
-│  │ 최상위관리자  │                │  │ drive_log / gps_data     │   │  │
+│  └──────────────┘                │  └──────────────────────────┘   │  │
+│                                  │              │                   │  │
+│  ┌──────────────┐   REST API     │              │ JPA               │  │
+│  │  Vue.js (FE) │ <─────────────>│              ▼                   │  │
+│  │    :5173     │   (Axios/JWT)  │  ┌──────────────────────────┐   │  │
+│  │              │                │  │     PostgreSQL 16         │   │  │
+│  │ 관제 대시보드  │                │  │        :5432             │   │  │
+│  │ 차량/운전자   │                │  │                          │   │  │
+│  │ 이력/통계     │                │  │ admin / vehicle / driver │   │  │
+│  │ 임계값 설정   │                │  │ drive_log / gps_data     │   │  │
 │  └──────────────┘                │  │ rest_event / fatigue_event│  │  │
 │                                  │  │ fatigue_threshold        │   │  │
 │                                  │  └──────────────────────────┘   │  │
@@ -65,9 +63,7 @@ logmile_be/
         │   │   └── SwaggerConfig.java                       # Springdoc OpenAPI 설정
         │   │
         │   ├── controller/                                  # Controller 계층 (요청/응답)
-        │   │   ├── AuthController.java                      # POST /api/auth/login, /signup, /me
-        │   │   ├── SuperAdminController.java                # /api/super/admins/*, /api/super/companies
-        │   │   ├── CompanyController.java                   # GET /api/company/me
+        │   │   ├── AuthController.java                      # POST /api/auth/login
         │   │   ├── VehicleController.java                   # /api/vehicles CRUD
         │   │   ├── DriverController.java                    # /api/drivers CRUD + 차량 배정
         │   │   ├── SimulationController.java                # POST /api/simulation/start|stop
@@ -79,9 +75,6 @@ logmile_be/
         │   │
         │   ├── service/                                     # Service 계층 (비즈니스 로직)
         │   │   ├── AdminService.java                        # 관리자 조회, 인증 처리
-        │   │   ├── AdminApprovalService.java                # 관리자 승인/거절/정지/해제 로직
-        │   │   ├── CompanyService.java                      # 업체 등록, 조회, 상태 관리
-        │   │   ├── TenantAccessService.java                 # 업체별 데이터 접근 제한 검증
         │   │   ├── VehicleService.java                      # 차량 등록/조회/수정/삭제
         │   │   ├── DriverService.java                       # 운전자 등록/조회/수정/삭제/배정
         │   │   ├── SimulationService.java                   # drive_log 시작/중지 상태 관리
@@ -98,7 +91,6 @@ logmile_be/
         │   │   └── FatigueStatsService.java                 # 일별 운행/야간/휴식 누락/평균 점수 통계
         │   │
         │   ├── repository/                                  # Repository 계층 (DB 접근)
-        │   │   ├── CompanyRepository.java
         │   │   ├── AdminRepository.java
         │   │   ├── VehicleRepository.java
         │   │   ├── DriverRepository.java
@@ -109,7 +101,6 @@ logmile_be/
         │   │   └── FatigueThresholdRepository.java
         │   │
         │   ├── entity/                                      # Entity 계층 (JPA 매핑)
-        │   │   ├── Company.java                             # company 테이블
         │   │   ├── Admin.java                               # admin 테이블
         │   │   ├── Vehicle.java                             # vehicle 테이블
         │   │   ├── Driver.java                              # driver 테이블
@@ -122,33 +113,26 @@ logmile_be/
         │   ├── dto/                                         # DTO 계층 (요청/응답 객체)
         │   │   ├── request/
         │   │   │   ├── LoginRequest.java                    # { email, password }
-        │   │   │   ├── SignupRequest.java                   # { email, password, name, phone, companyName, businessNo }
         │   │   │   ├── VehicleRequest.java                  # { plateNo, type }
         │   │   │   ├── DriverRequest.java                   # { name, phone, licenseType, vehicleId }
-        │   │   │   ├── SimulationStartRequest.java          # { vehicleId, driverId, scenarioType, ... }
+        │   │   │   ├── SimulationStartRequest.java          # { vehicleId, driverId, scenarioType, recognizedPlateNo, ocrConfidence, isManualInput }
         │   │   │   ├── GpsDataRequest.java                  # { driveLogId, latitude, longitude, speedKmh, recordedAt }
         │   │   │   └── ThresholdUpdateRequest.java          # { thresholdValue }
         │   │   └── response/
-        │   │       ├── LoginResponse.java                   # { token, name, role, status, companyId }
-        │   │       ├── SignupResponse.java                  # { adminId, status, message }
-        │   │       ├── AdminApprovalResponse.java           # { adminId, status, approvedAt }
-        │   │       ├── CompanyResponse.java                 # { id, name, businessNo, contactEmail, status }
-        │   │       ├── VehicleResponse.java
-        │   │       ├── DriverResponse.java
-        │   │       ├── SimulationResponse.java
-        │   │       ├── DriveLogResponse.java
-        │   │       ├── DriveLogDetailResponse.java
-        │   │       ├── DashboardSummaryResponse.java
-        │   │       ├── VehicleFatigueResponse.java
-        │   │       ├── FatigueThresholdResponse.java
-        │   │       ├── FatigueStatsResponse.java
+        │   │       ├── LoginResponse.java                   # { token, name, role }
+        │   │       ├── VehicleResponse.java                 # { id, plateNo, type, driverName, isActive }
+        │   │       ├── DriverResponse.java                  # { id, name, phone, licenseType, vehicleId, plateNo }
+        │   │       ├── SimulationResponse.java              # { driveLogId, status, startedAt }
+        │   │       ├── DriveLogResponse.java                # { id, vehicleId, driverId, 운행 요약 }
+        │   │       ├── DriveLogDetailResponse.java          # { 운행 요약 + gpsData + restEvents + fatigueEvents }
+        │   │       ├── DashboardSummaryResponse.java        # { runningCount, cautionCount, dangerCount, completedCount, avgFatigueScore }
+        │   │       ├── VehicleFatigueResponse.java          # { vehicleId, plateNo, driverName, speedKmh, continuousDriving, fatigueScore, fatigueLevel, reason }
+        │   │       ├── FatigueThresholdResponse.java        # { id, thresholdKey, thresholdValue, description }
+        │   │       ├── FatigueStatsResponse.java            # { date, totalDrivingMinutes, nightDrivingMinutes, restViolationCount, avgFatigueScore }
         │   │       └── ApiResponse.java                     # 공통 응답 래퍼 { success, message, data }
         │   │
         │   └── common/                                      # 공통 계층
         │       ├── enums/
-        │       │   ├── AdminRole.java                       # ROLE_SUPER_ADMIN, ROLE_COMPANY_ADMIN
-        │       │   ├── AdminStatus.java                     # PENDING, ACTIVE, REJECTED, SUSPENDED
-        │       │   ├── CompanyStatus.java                   # ACTIVE, INACTIVE
         │       │   ├── ScenarioType.java                    # A, B, C
         │       │   ├── DriveStatus.java                     # RUNNING, COMPLETED, STOPPED
         │       │   ├── RestType.java                        # PENDING, VALID, SUFFICIENT, INVALID
@@ -168,7 +152,7 @@ HTTP 요청
     ↓
 Controller  (요청 파라미터 수신, DTO 변환, 응답 반환)
     ↓
-Service     (비즈니스 로직, 트랜잭션, 계산, TenantAccess 검증)
+Service     (비즈니스 로직, 트랜잭션, 계산)
     ↓
 Repository  (JPA 쿼리, DB 접근)
     ↓
@@ -245,6 +229,17 @@ logmile_sim/
 | B (주의) | 120~180분 | 15분 유효 1~2회 | 30분 내외 | 주의 (40~69) |
 | C (위험) | 240분 이상 | 누락 2회 이상 | 2시간 이상 | 위험 (70+) |
 
+**GPS 데이터 전송 형식:**
+```json
+{
+  "driveLogId": 1,
+  "latitude": 37.5665,
+  "longitude": 126.9780,
+  "speedKmh": 72.5,
+  "recordedAt": "2026-04-29T22:30:00"
+}
+```
+
 ---
 
 ## 5. 프론트엔드 (FE) 상세 구조
@@ -257,19 +252,17 @@ logmile_fe/
 └── src/
     ├── main.js                       # Vue 앱 생성, Pinia, Router 등록
     ├── router/
-    │   └── index.js                  # 라우트 정의 + 인증 가드 (role/status 기반)
+    │   └── index.js                  # 라우트 정의 + 인증 가드
     │
     ├── stores/
-    │   ├── authStore.js              # JWT 토큰, 로그인 상태, role, status, companyId
+    │   ├── authStore.js              # JWT 토큰, 로그인 상태
     │   ├── vehicleStore.js           # 차량 목록, 상태
     │   ├── dashboardStore.js         # 대시보드 요약, polling 관리
     │   └── simulationStore.js        # 시뮬레이션 진행 상태
     │
     ├── api/
-    │   ├── axios.js                  # Axios 인스턴스, JWT 인터셉터, PENDING 상태 응답 처리
-    │   ├── authApi.js                # POST /api/auth/login, /signup | GET /api/auth/me
-    │   ├── superAdminApi.js          # /api/super/admins/*, /api/super/companies
-    │   ├── companyApi.js             # GET /api/company/me
+    │   ├── axios.js                  # Axios 인스턴스, JWT 인터셉터
+    │   ├── authApi.js                # POST /api/auth/login
     │   ├── vehicleApi.js             # /api/vehicles CRUD
     │   ├── driverApi.js              # /api/drivers CRUD
     │   ├── dashboardApi.js           # /api/dashboard/summary
@@ -279,13 +272,7 @@ logmile_fe/
     │   └── thresholdApi.js           # /api/fatigue/thresholds
     │
     ├── views/
-    │   ├── LoginView.vue             # FR-AUTH01 (로그인)
-    │   ├── SignupView.vue            # FR-AUTH02 (일반 관리자 회원가입)
-    │   ├── PendingApprovalView.vue   # FR-AUTH03 (승인 대기 안내)
-    │   ├── SuperAdminDashboardView.vue  # 최상위 관리자 전용 홈
-    │   ├── AdminApprovalView.vue     # FR-SUPER01~04 (가입 승인/거절/정지)
-    │   ├── CompanyManagementView.vue # FR-SUPER05 (업체 목록 및 상태 관리)
-    │   ├── CompanyInfoView.vue       # FR-COMPANY01 (내 업체 정보)
+    │   ├── LoginView.vue             # FR-AUTH01
     │   ├── DashboardView.vue         # FR-A01~A06
     │   ├── SimulationView.vue        # FR-B01, B04
     │   ├── VehicleView.vue           # FR-C01
@@ -310,20 +297,6 @@ logmile_fe/
             └── LoadingSpinner.vue
 ```
 
-### 라우터 가드 (권한/상태 기반)
-
-```
-로그인 여부 확인
-    ↓
-role === ROLE_SUPER_ADMIN ?
-  └── YES → /super/* 화면으로 이동
-role === ROLE_COMPANY_ADMIN ?
-  ├── status === PENDING   → /pending-approval 으로 redirect
-  ├── status === REJECTED  → 로그인 화면 + 거절 안내
-  ├── status === SUSPENDED → 로그인 화면 + 정지 안내
-  └── status === ACTIVE    → /dashboard 등 관제 화면 접근 허용
-```
-
 ---
 
 ## 6. 인프라 (INFRA) 상세 구조
@@ -333,8 +306,8 @@ logmile_infra/
 ├── docker-compose.yml                # 전체 서비스 오케스트레이션
 ├── .env                              # 공통 환경변수
 └── db/
-    ├── init.sql                      # 테이블 DDL (9개 테이블, v1.5)
-    └── seed.sql                      # 초기 데이터 (최상위 관리자, 업체, 차량 10대, 운전자 10명, 임계값)
+    ├── init.sql                      # 테이블 DDL (8개 테이블)
+    └── seed.sql                      # 초기 데이터 (관리자, 차량 10대, 운전자 10명, 임계값)
 ```
 
 **Docker Compose 서비스 구성:**
@@ -351,55 +324,28 @@ services:
 
 ## 7. API 엔드포인트 전체 목록
 
-### 인증 / 회원가입
-
 | 메서드 | 경로 | 기능 | 인증 |
 |---|---|---|---|
-| POST | `/api/auth/login` | 관리자 로그인, JWT 발급 (`ACTIVE`만 허용) | 불필요 |
-| POST | `/api/auth/signup` | 일반 관리자 회원가입 (상태 `PENDING`) | 불필요 |
-| GET | `/api/auth/me` | 현재 로그인 사용자 정보 조회 | JWT |
-
-### 최상위 관리자 (`ROLE_SUPER_ADMIN` 전용)
-
-| 메서드 | 경로 | 기능 | 인증 |
-|---|---|---|---|
-| GET | `/api/super/admins/pending` | 승인 대기 관리자 목록 조회 | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/approve` | 일반 관리자 승인 (`ACTIVE`) | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/reject` | 일반 관리자 거절 (`REJECTED`) | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/suspend` | 일반 관리자 정지 (`SUSPENDED`) | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/activate` | 일반 관리자 정지 해제 (`ACTIVE`) | JWT (SUPER) |
-| GET | `/api/super/companies` | 업체 목록 조회 | JWT (SUPER) |
-| GET | `/api/super/companies/{companyId}` | 업체 상세 조회 | JWT (SUPER) |
-
-### 일반 관리자 (`ROLE_COMPANY_ADMIN`, `ACTIVE` 전용)
-
-| 메서드 | 경로 | 기능 | 인증 |
-|---|---|---|---|
-| GET | `/api/company/me` | 내 업체 정보 조회 | JWT |
-| GET | `/api/vehicles` | 소속 업체 차량 목록 | JWT |
+| POST | `/api/auth/login` | 관리자 로그인, JWT 발급 | 불필요 |
+| GET | `/api/vehicles` | 차량 목록 조회 | JWT |
 | POST | `/api/vehicles` | 차량 등록 | JWT |
 | PUT | `/api/vehicles/{id}` | 차량 수정 | JWT |
 | DELETE | `/api/vehicles/{id}` | 차량 삭제 | JWT |
-| GET | `/api/drivers` | 소속 업체 운전자 목록 | JWT |
+| GET | `/api/drivers` | 운전자 목록 조회 | JWT |
 | POST | `/api/drivers` | 운전자 등록 | JWT |
 | PUT | `/api/drivers/{id}` | 운전자 수정/차량 배정 | JWT |
 | DELETE | `/api/drivers/{id}` | 운전자 삭제 | JWT |
-| POST | `/api/simulation/start` | 시뮬레이션 시작 | JWT |
+| POST | `/api/simulation/start` | 시뮬레이션 시작 (drive_log 생성) | JWT |
 | POST | `/api/simulation/stop` | 시뮬레이션 중지 | JWT |
 | POST | `/api/gps` | GPS 데이터 수신 + 피로도 재계산 | JWT |
-| GET | `/api/dashboard/summary` | 통계 요약 카드 (소속 업체 기준) | JWT |
+| GET | `/api/dashboard/summary` | 통계 요약 카드 데이터 | JWT |
 | GET | `/api/dashboard/vehicles` | 차량별 현재 피로도 상태 | JWT |
-| GET | `/api/drive-logs` | 운행 이력 목록 (소속 업체 기준) | JWT |
+| GET | `/api/drive-logs` | 운행 이력 목록 | JWT |
 | GET | `/api/drive-logs/{id}` | 운행 이력 상세 | JWT |
 | GET | `/api/fatigue/stats` | 일별 피로도 통계 | JWT |
 | GET | `/api/fatigue/thresholds` | 피로도 임계값 전체 조회 | JWT |
 | PUT | `/api/fatigue/thresholds/{key}` | 임계값 수정 | JWT |
-
-### AI 서버
-
-| 메서드 | 경로 | 기능 | 인증 |
-|---|---|---|---|
-| POST | `/api/ocr/recognize` | 번호판 이미지 인식 | 없음(내부) |
+| POST | `/api/ocr/recognize` (AI) | 번호판 이미지 인식 | 없음(내부) |
 
 ---
 
@@ -407,8 +353,6 @@ services:
 
 ```
 GPS 데이터 수신 (POST /api/gps)
-    ↓
-TenantAccessService → 소속 업체 검증
     ↓
 GpsData 저장
     ↓
@@ -430,37 +374,16 @@ FatigueEvent 저장
 
 ---
 
-## 9. 관리자 회원가입/승인 흐름
+## 9. DB 테이블 관계도 (ERD 요약)
 
 ```
-일반 관리자 회원가입 (POST /api/auth/signup)
-    ↓
-admin 레코드 생성 (status = PENDING, company 생성/연결)
-    ↓
-최상위 관리자 로그인 후 승인 대기 목록 조회 (GET /api/super/admins/pending)
-    ↓
-승인 처리 (PATCH /api/super/admins/{adminId}/approve)
-    ↓
-admin.status = ACTIVE, approved_at, approved_by 기록
-    ↓
-일반 관리자 로그인 가능 → 소속 업체 관제 화면 접근
-```
-
----
-
-## 10. DB 테이블 관계도 (ERD 요약)
-
-```
-company
-  └── admin (1:N, 최상위 관리자는 company_id = NULL)
-  └── vehicle (1:N)
-  └── driver  (1:N)
-  └── drive_log (1:N)
+admin
+  (독립 테이블 — 관리자 인증용)
 
 vehicle ──< drive_log >── driver
    │                         │
-   └── driver_id (nullable,UK) └── vehicle_id (nullable,UK)
-   (상호 참조 — 1:1 배정)
+   └── driver_id (nullable)  └── vehicle_id (nullable)
+   (상호 참조 — 배정 관계)
 
 drive_log ──< gps_data       (CASCADE DELETE)
 drive_log ──< rest_event     (CASCADE DELETE)
