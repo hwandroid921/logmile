@@ -1,0 +1,42 @@
+# ─────────────────────────────────────────────
+# logmile YOLO11n 번호판 탐지 모델 학습 설정
+# ─────────────────────────────────────────────
+
+# 모델
+model: yolo11n.pt           # 사전학습 가중치 (ultralytics 자동 다운로드)
+
+# 데이터셋
+data: ../dataset/data.yaml
+
+# 학습 기본 설정
+epochs: 100
+patience: 20                # Early stopping (20 epoch 개선 없으면 중단)
+batch: 16
+imgsz: 640
+workers: 4
+
+# 옵티마이저
+optimizer: AdamW
+lr0: 0.001                  # 초기 학습률
+lrf: 0.01                   # 최종 학습률 (lr0 * lrf)
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+
+# 저장
+project: runs/train
+name: logmile_plate_yolo11n
+save: true
+save_period: 10             # 10 epoch마다 체크포인트 저장
+
+# 증강 (번호판 특성 반영)
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 5.0                # 번호판은 크게 기울지 않으므로 소폭만
+translate: 0.1
+scale: 0.5
+flipud: 0.0                 # 번호판 상하 반전 없음
+fliplr: 0.0                 # 번호판 좌우 반전 없음 (숫자 반전 방지)
+mosaic: 1.0
+mixup: 0.0
