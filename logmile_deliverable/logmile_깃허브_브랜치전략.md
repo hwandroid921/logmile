@@ -38,7 +38,7 @@ feature/{layer}-{기능명}
 | 브랜치명 | 기능 | 요구사항 ID |
 |---|---|---|
 | `feature/ai-fastapi-server` | FastAPI 서버 설정, 라우터, 환경 구성 | - |
-| `feature/ai-ocr-license-plate` | YOLOv8 + EasyOCR 번호판 인식 | FR-OCR01, FR-OCR02 |
+| `feature/ai-ocr-license-plate` | YOLO11 + EasyOCR 번호판 인식 | FR-OCR01, FR-OCR02 |
 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | FR-OCR03 |
 
 ---
@@ -151,7 +151,7 @@ Semantic Versioning 규칙: `vMAJOR.MINOR.PATCH`
 | `v0.1.0` | 기반 구조 완료 | FE 초기 세팅, BE Entity, DB init, SIM 기본 구조, 문서 |
 | `v0.1.1` | 인증/회원가입/승인 완료 | JWT 로그인, 회원가입, 최상위 관리자 승인 흐름 |
 | `v0.2.0` | 백엔드 1차 완료 | 차량/운전자, GPS 수신, 피로도 계산 모델, TenantAccess |
-| `v0.2.1` | AI 모듈 완료 | FastAPI + YOLOv8 + EasyOCR 번호판 인식 |
+| `v0.2.1` | AI 모듈 완료 | FastAPI + YOLO11 + EasyOCR 번호판 인식 |
 | `v0.2.2` | GPS 시뮬레이터 완료 | 시나리오 A/B/C 생성 및 전송 |
 | `v0.3.0` | 프론트엔드 1차 완료 | 회원가입/승인/로그인 화면, 최상위 관리자 화면, 대시보드 |
 | `v0.3.1` | 프론트엔드 2차 완료 | 차량/운전자 관리, 운행 이력/통계 |

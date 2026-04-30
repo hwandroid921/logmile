@@ -25,8 +25,9 @@
 │  │  FastAPI(AI) │ <─────────────>│  │ Rest Event Detector      │   │  │
 │  │    :8000     │                │  │ Drive Log Manager        │   │  │
 │  │              │                │  │ Auth / Signup / Approval │   │  │
-│  │ YOLOv8n      │                │  │ Vehicle/Driver CRUD      │   │  │
-│  │ EasyOCR      │                │  │ Dashboard/History/Stats  │   │  │
+│  │ YOLO11n      │                │  │ Vehicle/Driver CRUD      │   │  │
+│  │ EasyOCR      │                │  │ Plate Event Manager      │   │  │
+│  │ Plate Events │                │  │ Dashboard/History/Stats  │   │  │
 │  └──────────────┘                │  │ TenantAccess (업체격리)   │   │  │
 │                                  │  └──────────────────────────┘   │  │
 │  ┌──────────────┐   REST API     │              │                   │  │
@@ -77,6 +78,7 @@ logmile_be/
         │   │   ├── GpsController.java                       # POST /api/gps
         │   │   ├── DriveLogController.java                  # GET /api/drive-logs (이력 목록/상세)
         │   │   ├── DashboardController.java                 # GET /api/dashboard/summary|vehicles
+        │   │   ├── PlateRecognitionController.java          # /api/plate-events 출발/도착/관측 이벤트
         │   │   ├── FatigueThresholdController.java          # GET|PUT /api/fatigue/thresholds
         │   │   └── FatigueStatsController.java              # GET /api/fatigue/stats
         │   │
@@ -95,6 +97,8 @@ logmile_be/
         │   │   ├── NightDrivingService.java                 # 22:00~06:00 야간 운행 시간 계산
         │   │   ├── FatigueScoreService.java                 # 항목 합산 → 등급 결정 (NORMAL/CAUTION/DANGER)
         │   │   ├── FatigueReasonService.java                # fatigue_event.reason 텍스트 생성
+        │   │   ├── PlateRecognitionEventService.java        # 번호판 관측 이벤트 저장/검증
+        │   │   ├── PlateRestVerificationService.java        # 휴게소 진입/진출 기반 휴식 보정
         │   │   ├── FatigueThresholdService.java             # 임계값 key/value 조회/수정
         │   │   ├── DriveLogService.java                     # 운행 이력 목록/상세 조회
         │   │   ├── DashboardService.java                    # 운행 중/주의/위험 차량 수, 평균 피로 점수
@@ -106,6 +110,7 @@ logmile_be/
         │   │   ├── VehicleRepository.java
         │   │   ├── DriverRepository.java
         │   │   ├── DriveLogRepository.java
+        │   │   ├── PlateRecognitionEventRepository.java
         │   │   ├── GpsDataRepository.java
         │   │   ├── RestEventRepository.java
         │   │   ├── FatigueEventRepository.java
@@ -117,6 +122,7 @@ logmile_be/
         │   │   ├── Vehicle.java                             # vehicle 테이블
         │   │   ├── Driver.java                              # driver 테이블
         │   │   ├── DriveLog.java                            # drive_log 테이블
+        │   │   ├── PlateRecognitionEvent.java               # plate_recognition_event 테이블
         │   │   ├── GpsData.java                             # gps_data 테이블
         │   │   ├── RestEvent.java                           # rest_event 테이블
         │   │   ├── FatigueEvent.java                        # fatigue_event 테이블
@@ -130,6 +136,7 @@ logmile_be/
         │   │   │   ├── DriverRequest.java                   # { name, phone, licenseType, vehicleId }
         │   │   │   ├── SimulationStartRequest.java          # { vehicleId, driverId, scenarioType, ... }
         │   │   │   ├── GpsDataRequest.java                  # { driveLogId, latitude, longitude, speedKmh, recordedAt }
+        │   │   │   ├── PlateRecognitionEventRequest.java    # { driveLogId, sourceType, locationType, image, capturedAt }
         │   │   │   └── ThresholdUpdateRequest.java          # { thresholdValue }
         │   │   └── response/
         │   │       ├── LoginResponse.java                   # { token, name, role, status, companyId }
@@ -141,6 +148,7 @@ logmile_be/
         │   │       ├── SimulationResponse.java
         │   │       ├── DriveLogResponse.java
         │   │       ├── DriveLogDetailResponse.java
+        │   │       ├── PlateRecognitionEventResponse.java
         │   │       ├── DashboardSummaryResponse.java
         │   │       ├── VehicleFatigueResponse.java
         │   │       ├── FatigueThresholdResponse.java
@@ -149,7 +157,7 @@ logmile_be/
         │   │
         │   └── common/                                      # 공통 계층
         │       ├── enums/
-        │       │   ├── AdminRole.java                       # ROLE_SUPER_ADMIN, ROLE_COMPANY_ADMIN
+        │       │   ├── AdminRole.java                       # ROLE_SUPER_ADMIN, ROLE_ADMIN
         │       │   ├── AdminStatus.java                     # PENDING, ACTIVE, REJECTED, SUSPENDED
         │       │   ├── CompanyStatus.java                   # ACTIVE, INACTIVE
         │       │   ├── ScenarioType.java                    # A, B, C
@@ -194,29 +202,31 @@ logmile_ai/
     ├── core/
     │   └── config.py                 # 환경변수, 신뢰도 임계값 설정 (0.85)
     ├── router/
-    │   └── ocr_router.py             # POST /api/ocr/recognize
+    │   └── ocr_router.py             # POST /api/ocr/recognize, /api/ocr/observe
     ├── service/
-    │   ├── yolo_service.py           # YOLOv8n 번호판 영역 탐지
+    │   ├── yolo_service.py           # YOLO11n 번호판 영역 탐지
     │   ├── ocr_service.py            # EasyOCR 문자 추출
-    │   └── plate_service.py          # 탐지 + OCR 통합, 신뢰도 판정
+    │   └── plate_service.py          # 탐지 + OCR 통합, 신뢰도 판정, 관측 유형 반환
     ├── schema/
     │   ├── ocr_request.py            # 이미지 업로드 요청 스키마
-    │   └── ocr_response.py           # { plate_no, confidence, is_manual_required }
+    │   └── ocr_response.py           # { plate_no, confidence, is_manual_required, source_type, location_type }
     └── model/
-        └── yolov8n.pt                # 사전학습 모델 가중치
+        └── yolo11n.pt                # 사전학습 모델 가중치
 ```
 
 **OCR API 흐름:**
 ```
 이미지 업로드
     ↓
-YOLOv8n → 번호판 영역 bbox 탐지
+YOLO11n → 번호판 영역 bbox 탐지
     ↓
 EasyOCR → 번호판 문자 추출 + confidence
     ↓
 confidence ≥ 0.85 ?
   ├── YES → { plate_no, confidence, is_manual_required: false }
   └── NO  → { plate_no: null, confidence, is_manual_required: true }
+    ↓
+출발/도착/고속도로/휴게소 진입·진출 관측 이벤트로 BE 저장
 ```
 
 ---
@@ -277,6 +287,7 @@ logmile_fe/
     │   ├── driverApi.js              # /api/drivers CRUD
     │   ├── dashboardApi.js           # /api/dashboard/summary
     │   ├── simulationApi.js          # /api/simulation/start|stop
+    │   ├── plateEventApi.js          # /api/plate-events
     │   ├── driveHistoryApi.js        # /api/drive-logs
     │   ├── fatigueStatsApi.js        # /api/fatigue/stats
     │   └── thresholdApi.js           # /api/fatigue/thresholds
@@ -296,6 +307,7 @@ logmile_fe/
     │   ├── ThresholdView.vue         # FR-C03
     │   ├── DriveHistoryView.vue      # FR-D01
     │   ├── DriveHistoryDetailView.vue # FR-D02
+    │   ├── PlateEventTimelineView.vue # 번호판 관측 타임라인
     │   └── FatigueStatsView.vue      # FR-E01
     │
     └── components/
@@ -303,6 +315,7 @@ logmile_fe/
         │   ├── SummaryCard.vue       # 운행중/주의/위험/완료/평균 피로
         │   ├── VehicleTable.vue      # 차량 목록 테이블
         │   ├── FatigueBadge.vue      # 정상/주의/위험 배지
+        │   ├── PlateEventTimeline.vue # 출발/고속도로/휴게소/도착 관측 타임라인
         │   └── VehicleDetailPanel.vue # 상세 패널, 타임라인
         ├── charts/
         │   ├── SpeedChart.vue        # 속도 변화 Chart.js
@@ -320,7 +333,7 @@ logmile_fe/
     ↓
 role === ROLE_SUPER_ADMIN ?
   └── YES → /super/* 화면으로 이동
-role === ROLE_COMPANY_ADMIN ?
+role === ROLE_ADMIN ?
   ├── status === PENDING   → /pending-approval 으로 redirect
   ├── status === REJECTED  → 로그인 화면 + 거절 안내
   ├── status === SUSPENDED → 로그인 화면 + 정지 안내
@@ -374,7 +387,7 @@ services:
 | GET | `/api/super/companies` | 업체 목록 조회 | JWT (SUPER) |
 | GET | `/api/super/companies/{companyId}` | 업체 상세 조회 | JWT (SUPER) |
 
-### 일반 관리자 (`ROLE_COMPANY_ADMIN`, `ACTIVE` 전용)
+### 일반 관리자 (`ROLE_ADMIN`, `ACTIVE` 전용)
 
 | 메서드 | 경로 | 기능 | 인증 |
 |---|---|---|---|
@@ -390,6 +403,8 @@ services:
 | POST | `/api/simulation/start` | 시뮬레이션 시작 | JWT |
 | POST | `/api/simulation/stop` | 시뮬레이션 중지 | JWT |
 | POST | `/api/gps` | GPS 데이터 수신 + 피로도 재계산 | JWT |
+| POST | `/api/plate-events` | 출발/도착/고속도로/휴게소 번호판 관측 이벤트 저장 | JWT |
+| GET | `/api/drive-logs/{id}/plate-events` | 운행별 번호판 관측 타임라인 조회 | JWT |
 | GET | `/api/dashboard/summary` | 통계 요약 카드 (소속 업체 기준) | JWT |
 | GET | `/api/dashboard/vehicles` | 차량별 현재 피로도 상태 | JWT |
 | GET | `/api/drive-logs` | 운행 이력 목록 (소속 업체 기준) | JWT |
@@ -403,6 +418,7 @@ services:
 | 메서드 | 경로 | 기능 | 인증 |
 |---|---|---|---|
 | POST | `/api/ocr/recognize` | 번호판 이미지 인식 | 없음(내부) |
+| POST | `/api/ocr/observe` | 관측 유형을 포함한 번호판 이미지 인식 | 없음(내부) |
 
 ---
 
@@ -429,6 +445,26 @@ speed ≤ 3 km/h 판정
 FatigueEvent 저장
     ↓
 대시보드 polling (5초) → 최신 FatigueEvent 반환
+```
+
+**번호판 관측 보정 흐름:**
+
+```
+출발 번호판 인식
+    ↓
+vehicle.plate_no 매칭 및 drive_log 생성
+    ↓
+고속도로 관측 이벤트 저장 → 연속 운행 판단 근거 보강
+    ↓
+휴게소 진입 이벤트 저장
+    ↓
+휴게소 진출 이벤트 저장
+    ↓
+진입/진출 시각 차이로 휴식 여부 보조 검증
+    ↓
+도착 번호판 인식 및 출발 번호판과 일치 여부 검증
+    ↓
+차량 상세 화면에 번호판 관측 타임라인 표시
 ```
 
 ---
