@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>logmile - 통합 UI 프로토타입</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        danger: '#EF4444',
+                        caution: '#F59E0B',
+                        normal: '#22C55E',
+                        dark: '#0F172A',
+                        panel: '#1E293B',
+                        card: '#334155',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        /* 화면 숨김/표시 제어 클래스 */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* 네비게이션 버튼 활성화 스타일 */
+        .nav-btn.active {
+            background-color: #1E293B;
+            /* panel color */
+            color: white;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* 뱃지 스타일 */
+        .badge-danger {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .badge-caution {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .badge-normal {
+            background: #DCFCE7;
+            color: #16A34A;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 flex h-screen overflow-hidden text-gray-800">
+
+    <aside class="w-64 bg-dark text-gray-300 flex flex-col shadow-xl z-10">
+        <div class="h-16 flex items-center justify-center border-b border-gray-800">
+            <h1 class="text-2xl font-bold text-white tracking-wider text-primary">logmile</h1>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="text-xs text-gray-500 uppercase font-bold mb-4 mt-2 px-2">Preview Menu</p>
+            <button onclick="showScreen('login', this)"
+                class="nav-btn active w-full text-left px-4 py-3 rounded hover:bg-gray-800 transition">1. 로그인</button>
+            <button onclick="showScreen('signup', this)"
+                class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 transition">2. 회원가입</button>
+            <button onclick="showScreen('dashboard', this)"
+                class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 transition">3. 관제 대시보드</button>
+            <button onclick="showScreen('vehicle', this)"
+                class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 transition">4. 차량 관리</button>
+            <button onclick="showScreen('driver', this)"
+                class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 transition">5. 운전자 관리</button>
+        </nav>
+        <div class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center">
+            logmile Prototype v1.5
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto relative w-full h-full bg-gray-100">
+
+        <section id="screen-login" class="screen active h-full flex items-center justify-center">
+            <div class="bg-white p-10 rounded-xl shadow-lg w-full max-w-md border border-gray-200">
+                <div class="text-center mb-8">
+                    <h2 class="text-4xl font-bold text-primary mb-2">logmile</h2>
+                    <p class="text-gray-500 text-sm">화물차 운전자 피로도 모니터링 플랫폼</p>
+                </div>
+                <form
+                    onsubmit="event.preventDefault(); showScreen('dashboard', document.querySelectorAll('.nav-btn')[2]);">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">이메일 (아이디)</label>
+                        <input
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="email" placeholder="admin@company.com">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label>
+                        <input
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            type="password" placeholder="••••••••">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-primary hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+                        시스템 로그인
+                    </button>
+                    <div class="text-center mt-6 text-sm">
+                        <span class="text-gray-600">계정이 없으신가요? </span>
+                        <a href="#" onclick="showScreen('signup', document.querySelectorAll('.nav-btn')[1])"
+                            class="text-primary hover:underline font-semibold">관리자 등록 요청</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="screen-signup" class="screen h-full flex items-center justify-center">
+            <div class="bg-white p-10 rounded-xl shadow-lg w-full max-w-lg border border-gray-200">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">일반 관리자 가입 요청</h2>
+                    <p class="text-gray-500 text-sm mt-1">소속 업체 정보를 포함하여 최상위 관리자에게 승인을 요청합니다.</p>
+                </div>
+                <form
+                    onsubmit="event.preventDefault(); alert('승인 요청이 완료되었습니다.'); showScreen('login', document.querySelectorAll('.nav-btn')[0]);">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">소속 업체명</label>
+                        <input class="w-full px-4 py-2 border rounded-lg bg-gray-50" type="text" placeholder="예: 대한물류">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">관리자 이름</label>
+                        <input class="w-full px-4 py-2 border rounded-lg bg-gray-50" type="text" placeholder="홍길동">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">이메일</label>
+                        <input class="w-full px-4 py-2 border rounded-lg bg-gray-50" type="email"
+                            placeholder="email@domain.com">
+                    </div>
+                    <div class="mb-8">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label>
+                        <input class="w-full px-4 py-2 border rounded-lg bg-gray-50" type="password"
+                            placeholder="••••••••">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+                        회원가입 요청 (승인 대기)
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section id="screen-dashboard" class="screen h-full flex flex-col">
+            <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 border-b">
+                <h2 class="text-xl font-bold text-gray-800">실시간 피로도 관제</h2>
+                <div class="flex items-center gap-4">
+                    <div class="text-sm text-gray-600"><span class="font-bold text-primary">대한물류</span> 일반 관리자님</div>
+                    <button onclick="showScreen('login', document.querySelectorAll('.nav-btn')[0])"
+                        class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded text-gray-700">로그아웃</button>
+                </div>
+            </header>
+
+            <div class="p-8 flex-1 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+                        <h3 class="text-gray-500 text-sm font-medium mb-1">총 운행 차량</h3>
+                        <p class="text-3xl font-bold text-gray-800">8 <span
+                                class="text-base font-normal text-gray-500">대</span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+                        <h3 class="text-gray-500 text-sm font-medium mb-1">상태: 정상</h3>
+                        <p class="text-3xl font-bold text-green-600">5 <span
+                                class="text-base font-normal text-gray-500">대</span></p>
+                    </div>
+                    <div
+                        class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-yellow-500">
+                        <h3 class="text-gray-500 text-sm font-medium mb-1">상태: 주의</h3>
+                        <p class="text-3xl font-bold text-yellow-600">2 <span
+                                class="text-base font-normal text-gray-500">대</span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-red-500">
+                        <h3 class="text-gray-500 text-sm font-medium mb-1">상태: 위험</h3>
+                        <p class="text-3xl font-bold text-red-600">1 <span
+                                class="text-base font-normal text-gray-500">대</span></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">시간대별 피로 위험 추이 (오늘)</h3>
+                        <div class="w-full h-64">
+                            <canvas id="fatigueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-0 rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                        <div class="p-4 border-b bg-gray-50">
+                            <h3 class="text-lg font-bold text-gray-800">실시간 모니터링 현황</h3>
+                        </div>
+                        <div class="overflow-y-auto flex-1 p-2">
+                            <div
+                                class="p-3 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50">
+                                <div>
+                                    <p class="font-bold text-gray-800">서울 12가 3456</p>
+                                    <p class="text-xs text-gray-500">김철수 · 운행 3시간 20분</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold badge-danger">위험 (85점)</span>
+                            </div>
+                            <div
+                                class="p-3 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50">
+                                <div>
+                                    <p class="font-bold text-gray-800">경기 34나 5678</p>
+                                    <p class="text-xs text-gray-500">이영희 · 운행 1시간 10분</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold badge-normal">정상 (15점)</span>
+                            </div>
+                            <div
+                                class="p-3 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50">
+                                <div>
+                                    <p class="font-bold text-gray-800">부산 99다 1122</p>
+                                    <p class="text-xs text-gray-500">박지성 · 운행 2시간 40분</p>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold badge-caution">주의 (45점)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-vehicle" class="screen h-full flex flex-col">
+            <header class="h-16 bg-white shadow-sm flex items-center px-8 border-b">
+                <h2 class="text-xl font-bold text-gray-800">차량 데이터 관리</h2>
+            </header>
+            <div class="p-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <p class="text-gray-500 text-sm">번호판 OCR 인식의 기준이 되는 차량 마스터 데이터입니다.</p>
+                        <button
+                            class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm text-sm font-bold">+
+                            신규 차량 등록</button>
+                    </div>
+                    <table class="min-w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-t text-sm text-gray-600">
+                                <th class="py-3 px-4 font-bold">차량 ID</th>
+                                <th class="py-3 px-4 font-bold">차량 번호판</th>
+                                <th class="py-3 px-4 font-bold">차종/모델</th>
+                                <th class="py-3 px-4 font-bold">등록일자</th>
+                                <th class="py-3 px-4 font-bold text-center">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-gray-700">
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4">V-1001</td>
+                                <td class="py-3 px-4 font-bold text-gray-900">서울 12가 3456</td>
+                                <td class="py-3 px-4">현대 엑시언트 25t</td>
+                                <td class="py-3 px-4">2026-04-10</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button class="text-primary hover:underline mr-3">수정</button>
+                                    <button class="text-danger hover:underline">삭제</button>
+                                </td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4">V-1002</td>
+                                <td class="py-3 px-4 font-bold text-gray-900">경기 34나 5678</td>
+                                <td class="py-3 px-4">타타대우 맥센 11t</td>
+                                <td class="py-3 px-4">2026-04-12</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button class="text-primary hover:underline mr-3">수정</button>
+                                    <button class="text-danger hover:underline">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-driver" class="screen h-full flex flex-col">
+            <header class="h-16 bg-white shadow-sm flex items-center px-8 border-b">
+                <h2 class="text-xl font-bold text-gray-800">운전자 데이터 관리</h2>
+            </header>
+            <div class="p-8">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <p class="text-gray-500 text-sm">피로도 점수 산정의 주체가 되는 운전자 명부입니다.</p>
+                        <button
+                            class="bg-normal hover:bg-green-700 text-white px-4 py-2 rounded shadow-sm text-sm font-bold">+
+                            신규 운전자 등록</button>
+                    </div>
+                    <table class="min-w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-t text-sm text-gray-600">
+                                <th class="py-3 px-4 font-bold">운전자명</th>
+                                <th class="py-3 px-4 font-bold">연락처</th>
+                                <th class="py-3 px-4 font-bold">현재 할당 차량</th>
+                                <th class="py-3 px-4 font-bold">상태</th>
+                                <th class="py-3 px-4 font-bold text-center">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-gray-700">
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4 font-bold text-gray-900">김철수</td>
+                                <td class="py-3 px-4">010-1234-5678</td>
+                                <td class="py-3 px-4 text-primary">서울 12가 3456</td>
+                                <td class="py-3 px-4"><span
+                                        class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-bold">운행
+                                        중</span></td>
+                                <td class="py-3 px-4 text-center">
+                                    <button class="text-primary hover:underline mr-3">수정</button>
+                                    <button class="text-danger hover:underline">삭제</button>
+                                </td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="py-3 px-4 font-bold text-gray-900">이영희</td>
+                                <td class="py-3 px-4">010-9876-5432</td>
+                                <td class="py-3 px-4 text-gray-400">미할당</td>
+                                <td class="py-3 px-4"><span
+                                        class="px-2 py-1 bg-gray-200 text-gray-600 rounded text-xs font-bold">대기
+                                        중</span></td>
+                                <td class="py-3 px-4 text-center">
+                                    <button class="text-primary hover:underline mr-3">수정</button>
+                                    <button class="text-danger hover:underline">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 1. 화면 전환 함수 (SPA 흉내내기)
+        function showScreen(screenId, btnElement) {
+            // 모든 화면 숨기기
+            document.querySelectorAll('.screen').forEach(el => {
+                el.classList.remove('active');
+            });
+            // 선택된 화면 보이기
+            document.getElementById('screen-' + screenId).classList.add('active');
+
+            // 네비게이션 버튼 활성화 스타일 변경
+            if (btnElement) {
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                btnElement.classList.add('active');
+            }
+        }
+
+        // 2. Chart.js 데이터 시각화 (대시보드용)
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctx = document.getElementById('fatigueChart').getContext('2d');
+
+            // 그라데이션 효과 생성
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.5)'); // Tailwind danger red
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+                    datasets: [{
+                        label: '위험 단계 도달 횟수',
+                        data: [1, 3, 2, 6, 4, 8],
+                        borderColor: '#EF4444',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#EF4444',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4 // 곡선 부드럽게
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [4, 4], color: '#f3f4f6' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
