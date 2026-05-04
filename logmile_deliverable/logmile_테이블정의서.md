@@ -15,10 +15,11 @@
 3. `vehicle`
 4. `driver`
 5. `drive_log`
-6. `gps_data`
-7. `rest_event`
-8. `fatigue_event`
-9. `fatigue_threshold`
+6. `plate_recognition_event`
+7. `gps_data`
+8. `rest_event`
+9. `fatigue_event`
+10. `fatigue_threshold`
 
 ## 2. company (운수 업체)
 
@@ -110,7 +111,50 @@
 | 16 | `max_fatigue_level` | `VARCHAR(20)` | NULL | - | CHK | 최고 피로 등급 |
 | 17 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 레코드 생성 시각 |
 
-## 7. gps_data (GPS 데이터)
+## 7. plate_recognition_event (번호판 관측 이벤트)
+
+- 설명: 출발/도착 번호판 검증, 고속도로 관측, 휴게소 진입/진출 번호판 인식 결과를 운행 기록과 연결하여 저장
+- 인덱스: `PK(id)`, `idx_plate_event_drive_log_id`, `idx_plate_event_vehicle_id`, `idx_plate_event_captured_at`, `idx_plate_event_location_type`
+- CHECK: `confidence 0.0~1.0` / `source_type` / `location_type`
+- 비고: 실제 CCTV/RTSP 실시간 스트리밍은 제외하고 샘플 이미지/영상 프레임 기반 이벤트 저장을 우선 범위로 한다.
+
+| # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
+|---|---|---|---|---|---|---|
+| 1 | `id` | `BIGSERIAL` | NOT NULL | `auto` | PK | 번호판 관측 이벤트 식별자 |
+| 2 | `drive_log_id` | `BIGINT` | NOT NULL | - | `FK CASCADE → drive_log.id` | 연결된 운행 기록 ID |
+| 3 | `vehicle_id` | `BIGINT` | NULL | - | `FK SET NULL → vehicle.id` | 매칭된 차량 ID |
+| 4 | `recognized_plate_no` | `VARCHAR(20)` | NOT NULL | - | - | OCR 인식 번호판 |
+| 5 | `expected_plate_no` | `VARCHAR(20)` | NULL | - | - | 운행/차량 기준 기대 번호판 |
+| 6 | `confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | 번호판 인식 신뢰도 |
+| 7 | `source_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 입력 소스 (`DEPARTURE`, `ARRIVAL`, `HIGHWAY_CCTV`, `REST_AREA_CCTV`) |
+| 8 | `location_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 관측 위치 유형 (`DEPOT`, `HIGHWAY`, `REST_AREA_ENTRY`, `REST_AREA_EXIT`) |
+| 9 | `location_name` | `VARCHAR(100)` | NULL | - | - | 관측 지점명 |
+| 10 | `latitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 위도 |
+| 11 | `longitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 경도 |
+| 12 | `captured_at` | `TIMESTAMP` | NOT NULL | - | - | 번호판 이미지/프레임 관측 시각 |
+| 13 | `matched` | `BOOLEAN` | NOT NULL | `FALSE` | - | 기대 번호판과 일치 여부 |
+| 14 | `image_path` | `VARCHAR(255)` | NULL | - | - | 샘플 이미지 또는 저장 이미지 경로 |
+| 15 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 이벤트 저장 시각 |
+
+### 7.1 source_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `DEPARTURE` | 운행 시작 시 번호판 인식 |
+| `ARRIVAL` | 운행 종료 시 번호판 인식 |
+| `HIGHWAY_CCTV` | 고속도로 관측 지점 번호판 인식 |
+| `REST_AREA_CCTV` | 휴게소 진입/진출 지점 번호판 인식 |
+
+### 7.2 location_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `DEPOT` | 출발지 또는 도착지 |
+| `HIGHWAY` | 고속도로 관측 지점 |
+| `REST_AREA_ENTRY` | 휴게소 진입 지점 |
+| `REST_AREA_EXIT` | 휴게소 진출 지점 |
+
+## 8. gps_data (GPS 데이터)
 
 - 설명: 시뮬레이터가 전송하는 GPS 좌표 및 속도. 피로도 계산의 원천 데이터
 - 인덱스: `PK(id)`, `idx_gps_data_drive_log_id`, `idx_gps_data_recorded_at`
@@ -125,7 +169,7 @@
 | 5 | `speed_kmh` | `DOUBLE PRECISION` | NOT NULL | `0.0` | - | 차량 속도 |
 | 6 | `recorded_at` | `TIMESTAMP` | NOT NULL | - | - | GPS 기록 시각 |
 
-## 8. rest_event (휴식 이벤트)
+## 9. rest_event (휴식 이벤트)
 
 - 설명: `speed_kmh ≤ 3` 조건 감지 시 생성. 종료 후 `rest_type`, `rest_minutes` 확정
 - 인덱스: `PK(id)`, `idx_rest_event_drive_log_id`
@@ -140,7 +184,7 @@
 | 5 | `rest_minutes` | `INTEGER` | NULL | - | - | 실제 휴식 시간(분) |
 | 6 | `rest_type` | `VARCHAR(20)` | NOT NULL | `PENDING` | CHK | 휴식 유형 |
 
-### 8.1 rest_type 값 정의
+### 9.1 rest_type 값 정의
 
 | 값 | 조건 | 설명 |
 |---|---|---|
@@ -149,7 +193,7 @@
 | `SUFFICIENT` | 30분 이상 | 충분 휴식, 피로도 보정 `-20점` |
 | `INVALID` | 15분 미만 | 휴식 미달 |
 
-## 9. fatigue_event (피로도 이벤트)
+## 10. fatigue_event (피로도 이벤트)
 
 - 설명: GPS 데이터 수신 시마다 피로도를 재산정하여 기록. 대시보드 실시간 표시 및 운행 이력 조회에 사용
 - 인덱스: `PK(id)`, `idx_fatigue_event_drive_log_id`, `idx_fatigue_event_occurred_at`
@@ -169,7 +213,7 @@
 | 10 | `reason` | `TEXT` | NULL | - | - | 점수 산정 근거 텍스트 |
 | 11 | `occurred_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 피로도 산정 시각 |
 
-### 9.1 피로 등급 기준
+### 10.1 피로 등급 기준
 
 | 등급 | 점수 범위 | 조치 |
 |---|---|---|
@@ -177,7 +221,7 @@
 | `CAUTION` | 40 ~ 69 | 주의 배지 표시 |
 | `DANGER` | 70 이상 | 위험 배지 + 전화 권고 |
 
-## 10. fatigue_threshold (피로도 임계값)
+## 11. fatigue_threshold (피로도 임계값)
 
 - 설명: 피로도 점수 모델의 기준값을 `key/value`로 관리. 관리자 화면에서 동적 수정 가능
 - 인덱스: `PK(id)`, `UK(threshold_key)`
@@ -190,7 +234,7 @@
 | 4 | `description` | `VARCHAR(255)` | NULL | - | - | 임계값 설명 |
 | 5 | `updated_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 최종 수정 시각 |
 
-### 10.1 기본 시드 데이터
+### 11.1 기본 시드 데이터
 
 | threshold_key | 값 | 설명 |
 |---|---:|---|

@@ -72,6 +72,8 @@
 | FR-FAT04 | 야간 운행 시간 계산 | 22:00~06:00 구간의 운행 시간을 누적 계산한다. | 환희 |
 | FR-FAT05 | 피로도 점수 산정 | 점수 항목을 합산하고 정상/주의/위험 등급을 결정한다. | 환희 |
 | FR-FAT06 | 판단 근거 저장 | `fatigue_event.reason`에 점수 산정 근거를 저장한다. | 환희 |
+| FR-FAT07 | 번호판 관측 기반 휴식 보정 | 휴게소 진입/진출 번호판 인식 시각을 기반으로 휴식 여부와 휴식 시간을 보조 검증한다. | 환희 |
+| FR-FAT08 | 번호판 관측 기반 연속 운행 검증 | 고속도로 관측 이벤트를 피로도 판단 근거에 포함하여 연속 운행 시간의 신뢰도를 보강한다. | 환희 |
 
 ### 4.4 관리 기능
 
@@ -94,8 +96,11 @@
 | ID | 기능 | 요구사항 | 담당 |
 |---|---|---|---|
 | FR-OCR01 | 출발 번호판 인식 | YOLO11 + EasyOCR로 번호판을 인식하고 운행 시작에 활용한다. | 환희 |
-| FR-OCR02 | 도착 번호판 인식 | 도착 차량 번호판을 재인식하고 운행 종료에 활용한다. | 환희 |
+| FR-OCR02 | 도착 번호판 인식 | 도착 차량 번호판을 재인식하고 출발 번호판과 일치 여부를 검증한다. | 환희 |
 | FR-OCR03 | 미인식 예외 처리 | OCR 신뢰도 0.85 미만 시 수동 입력 fallback을 제공한다. | 환희 |
+| FR-OCR04 | 고속도로 관측 번호판 인식 | 고속도로 CCTV 또는 샘플 이미지에서 번호판을 인식하고 운행 지속 관측 이벤트로 저장한다. | 환희 |
+| FR-OCR05 | 휴게소 진입/진출 번호판 인식 | 휴게소 진입/진출 이미지에서 번호판을 인식하고 체류 시간 산정에 활용한다. | 환희 |
+| FR-OCR06 | 번호판 관측 이벤트 저장 | 출발, 도착, 고속도로 관측, 휴게소 진입/진출 인식 결과를 운행 기록과 연결해 저장한다. | 환희 |
 | FR-AUTH01 | 관리자 로그인 | JWT 기반 인증을 제공한다. `ACTIVE` 상태의 관리자만 로그인할 수 있다. | 환희 |
 | FR-AUTH02 | 일반 관리자 회원가입 | 업체명, 담당자 정보, 계정 정보를 입력해 가입 요청을 생성한다. 상태는 `PENDING`으로 설정된다. | 환희 |
 | FR-AUTH03 | 승인 대기 처리 | `PENDING` 상태 계정은 로그인 후 주요 기능 접근을 제한한다. | 환희 |
@@ -151,6 +156,7 @@
 | `driver` | `id`, `company_id(FK)`, `name`, `phone`, `license_type`, `vehicle_id` |
 | `vehicle` | `id`, `company_id(FK)`, `plate_no`, `type`, `driver_id`, `is_active` |
 | `drive_log` | `id`, `company_id(FK)`, `vehicle_id`, `driver_id`, `started_at`, `ended_at`, `scenario_type`, `status`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level` |
+| `plate_recognition_event` | `id`, `drive_log_id(FK)`, `vehicle_id(FK)`, `recognized_plate_no`, `expected_plate_no`, `confidence`, `source_type`, `location_type`, `location_name`, `captured_at`, `matched`, `image_path`, `created_at` |
 | `gps_data` | `id`, `drive_log_id`, `latitude`, `longitude`, `speed_kmh`, `recorded_at` |
 | `rest_event` | `id`, `drive_log_id`, `rest_started_at`, `rest_ended_at`, `rest_minutes`, `rest_type` |
 | `fatigue_event` | `id`, `drive_log_id`, `fatigue_score`, `fatigue_level`, `continuous_driving_minutes`, `daily_total_driving_minutes`, `night_driving_minutes`, `rest_count`, `rest_violation_count`, `reason`, `occurred_at` |
@@ -181,6 +187,7 @@
 ## 9. 제외 범위
 
 - 실제 GPS 단말기 연동
+- 실제 CCTV/RTSP 실시간 스트리밍 연동
 - 카카오맵 실시간 경로 반영
 - SMS 실연동
 - 운전자 얼굴/눈 감김 인식
@@ -192,12 +199,18 @@
 - Kakao Mobility 기반 경로 생성
 - 최근 7일 누적 피로도 분석
 - DTG/OBD 데이터 연동
+- 미등록 차량 감지
+- 동일 번호판 중복 운행 감지
+- 지정 경로 이탈 감지
+- 번호판 위변조 의심 및 카메라별 OCR 성공률 통계
 
 ## 11. 인수 기준
 
 | 항목 | 기준 |
 |---|---|
-| 번호판 인식 | 출발/도착 번호판 인식 API가 동작하고, 실패 시 수동 입력 fallback이 가능해야 한다. |
+| 번호판 인식 | 출발/도착 번호판 인식 API가 동작하고, 출발/도착 번호판 일치 여부를 검증하며, 실패 시 수동 입력 fallback이 가능해야 한다. |
+| 번호판 관측 | 고속도로 관측 및 휴게소 진입/진출 번호판 인식 이벤트가 운행 기록과 연결되어 저장되어야 한다. |
+| 휴식 보정 | 휴게소 진입/진출 인식 시각 차이를 기반으로 휴식 여부와 휴식 시간이 보조 검증되어야 한다. |
 | GPS 시뮬레이션 | A/B/C 시나리오 데이터가 생성되고 백엔드로 전송되어야 한다. |
 | 피로도 계산 | 운행, 휴식, 야간 운행 기준으로 정상/주의/위험 등급이 산정되어야 한다. |
 | 대시보드 | 차량 목록, 피로도 점수, 등급, 판단 근거가 화면에 표시되어야 한다. |
