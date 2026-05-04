@@ -37,7 +37,7 @@
 
 | 계층 | 기술 | 주요 역할 |
 |---|---|---|
-| AI 서버 | FastAPI, YOLO11n, EasyOCR | 출발/도착, 고속도로 관측, 휴게소 진입/진출 번호판 인식 |
+| AI 서버 | FastAPI, YOLO11n, EasyOCR | 출발/도착, 고속도로 관측, 휴게소 진입/진출 차량 번호판 인식 |
 | GPS 시뮬레이터 | Python 3.11 | 운행, 휴식, 야간 운행 패턴이 포함된 GPS 데이터 생성 |
 | 백엔드 | Java 21, Spring Boot 3.x, Spring Data JPA, Spring Security + JWT | REST API, 인증/인가, 피로도 계산, 데이터 저장 |
 | 프론트엔드 | Vue.js 3, Vite, Pinia, Axios, Chart.js | 관제 대시보드, 관리 화면, 통계 시각화 |

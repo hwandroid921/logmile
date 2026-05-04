@@ -47,7 +47,7 @@
 | 공통/인프라 | ENV-003 | 루트 `.gitignore` 정리 | FE/BE/AI/SIM 생성물, 환경변수, 빌드 결과물 제외 | `.gitignore` | 공통 | 2026-04-29 | 2026-04-29 | 완료 |
 | 공통/인프라 | ENV-004 | Docker Compose 구성 | Backend, Frontend, AI, PostgreSQL, Simulator 실행 환경 구성 | `docker-compose.yml` | 공통 | 2026-04-30 | 2026-05-02 | 예정 |
 | 공통/인프라 | ENV-005 | 환경변수 정리 | DB 접속, JWT, CORS, API URL, AI/SIM URL 설정 | `.env.example`, 설정 문서 | 공통 | 2026-05-01 | 2026-05-03 | 예정 |
-| 공통/인프라 | ENV-006 | DB 초기화 스크립트 정리 | PostgreSQL DDL(9테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 예정 |
+| 공통/인프라 | ENV-006 | DB 초기화 스크립트 정리 | PostgreSQL DDL(10테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 예정 |
 | 백엔드 개발 | BE-001 | Entity/Repository 구현 | DB 설계 기반 JPA Entity, Repository 매핑 (company 포함) | Entity, Repository | 유환희 | 2026-04-29 | 2026-05-02 | 진행 |
 | 백엔드 개발 | BE-002 | 관리자 권한 구조 반영 | ROLE_SUPER_ADMIN/ROLE_COMPANY_ADMIN Enum, AdminStatus Enum, CompanyStatus Enum, Security 설정 | AdminRole, AdminStatus, CompanyStatus, SecurityConfig | 유환희 | 2026-05-02 | 2026-05-04 | 예정 |
 | 백엔드 개발 | BE-003 | 인증/JWT 구현 | 로그인(ACTIVE만), JWT 발급/검증, Security Filter 구성 | Auth API, Security 설정 | 유환희 | 2026-05-04 | 2026-05-06 | 예정 |

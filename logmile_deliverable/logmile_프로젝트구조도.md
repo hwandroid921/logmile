@@ -39,9 +39,9 @@
 │  │ 이력/통계     │                │  │                          │   │  │
 │  │ 임계값 설정   │                │  │ company / admin          │   │  │
 │  │ 회원가입/승인 │                │  │ vehicle / driver         │   │  │
-│  │ 최상위관리자  │                │  │ drive_log / gps_data     │   │  │
-│  └──────────────┘                │  │ rest_event / fatigue_event│  │  │
-│                                  │  │ fatigue_threshold        │   │  │
+│  │ 최상위관리자  │                │  │ drive_log / plate_recognition_event │
+│  └──────────────┘                │  │ gps_data / rest_event    │   │  │
+│                                  │  │ fatigue_event / fatigue_threshold │
 │                                  │  └──────────────────────────┘   │  │
 │                                  └──────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────┘
