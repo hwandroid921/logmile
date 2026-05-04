@@ -7,7 +7,7 @@
 - 적용 대상:
   - Backend: Java 21, Spring Boot 3.5.14, Spring Data JPA, Spring Security + JWT
   - Frontend: Vue.js 3, Vite, Pinia, Axios, Chart.js
-  - AI/Python: Python 3.11, FastAPI, YOLOv8n, EasyOCR
+  - AI/Python: Python 3.11, FastAPI, YOLO11n, EasyOCR
   - Database: PostgreSQL 16
   - Infra: Docker, Docker Compose
 - 기준 산출물:

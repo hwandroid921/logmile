@@ -25,7 +25,7 @@
 | 기획/설계 | 프로젝트 개요, 요구사항, DB, 화면 흐름, WBS 정리, 최상위 관리자 권한 구조 확정 |
 | 공통/인프라 | Git 브랜치 전략, Docker Compose, 환경변수, DB 초기화 |
 | 백엔드 | Entity, 인증/인가, 회원가입/승인, 차량/운전자, GPS 수신, 피로도 계산, 대시보드 API |
-| AI | FastAPI, YOLOv8 + EasyOCR 번호판 인식, 수동 입력 fallback |
+| AI | FastAPI, YOLO11 + EasyOCR 번호판 인식, 관측 이벤트 처리, 수동 입력 fallback |
 | GPS 시뮬레이터 | Python 시나리오 A/B/C, 휴식/야간 패턴, GPS API 전송 |
 | 프론트엔드 | Vue 대시보드, 회원가입/승인대기/최상위관리자 화면, 차량/운전자 관리, 이력/통계 |
 | 테스트/QA | 단위/통합/API 테스트, 발표 시나리오, 최종 산출물 정리 |
@@ -38,7 +38,7 @@
 |---|---|---|---|---|---|---|---|---|
 | 프로젝트 기획 및 설계 | PL-001 | 프로젝트 개요 작성 | 프로젝트 목적, 범위, 시스템 구성, 팀원 역할 정리 | 프로젝트 개요서 | 백경서 | 2026-04-28 | 2026-04-28 | 완료 |
 | 프로젝트 기획 및 설계 | PL-002 | 요구사항 정의 | 기능/비기능 요구사항, 인수 기준 정리 | 요구사항 정의서 | 백경서 | 2026-04-28 | 2026-04-29 | 완료 |
-| 프로젝트 기획 및 설계 | PL-003 | DB 설계 | company, admin, vehicle, driver, drive_log, gps_data, rest_event, fatigue_event, fatigue_threshold 설계 | DB 설계서, ERD, 테이블정의서 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
+| 프로젝트 기획 및 설계 | PL-003 | DB 설계 | company, admin, vehicle, driver, drive_log, plate_recognition_event, gps_data, rest_event, fatigue_event, fatigue_threshold 설계 | DB 설계서, ERD, 테이블정의서 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
 | 프로젝트 기획 및 설계 | PL-004 | 프로젝트 구조도 작성 | BE/FE/AI/SIM/INFRA 구조 및 API 흐름 정리 | 프로젝트 구조도 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
 | 프로젝트 기획 및 설계 | PL-005 | 최상위 관리자 권한 구조 확정 | ROLE_SUPER_ADMIN/ROLE_COMPANY_ADMIN, 승인 상태, company 구조, API 정의까지 확정 | 최상위관리자_수정사항정리.md, 요구사항·DB 반영 | 백경서/유환희 | 2026-04-29 | 2026-04-30 | 완료 |
 | 프로젝트 기획 및 설계 | PL-006 | WBS 작성 | 기능 구현 순서와 일정 계획 수립 | WBS 문서 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
@@ -47,7 +47,7 @@
 | 공통/인프라 | ENV-003 | 루트 `.gitignore` 정리 | FE/BE/AI/SIM 생성물, 환경변수, 빌드 결과물 제외 | `.gitignore` | 공통 | 2026-04-29 | 2026-04-29 | 완료 |
 | 공통/인프라 | ENV-004 | Docker Compose 구성 | Backend, Frontend, AI, PostgreSQL, Simulator 실행 환경 구성 | `docker-compose.yml` | 공통 | 2026-04-30 | 2026-05-02 | 예정 |
 | 공통/인프라 | ENV-005 | 환경변수 정리 | DB 접속, JWT, CORS, API URL, AI/SIM URL 설정 | `.env.example`, 설정 문서 | 공통 | 2026-05-01 | 2026-05-03 | 예정 |
-| 공통/인프라 | ENV-006 | DB 초기화 스크립트 정리 | PostgreSQL DDL(9테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 예정 |
+| 공통/인프라 | ENV-006 | DB 초기화 스크립트 정리 | PostgreSQL DDL(10테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 예정 |
 | 백엔드 개발 | BE-001 | Entity/Repository 구현 | DB 설계 기반 JPA Entity, Repository 매핑 (company 포함) | Entity, Repository | 유환희 | 2026-04-29 | 2026-05-02 | 진행 |
 | 백엔드 개발 | BE-002 | 관리자 권한 구조 반영 | ROLE_SUPER_ADMIN/ROLE_COMPANY_ADMIN Enum, AdminStatus Enum, CompanyStatus Enum, Security 설정 | AdminRole, AdminStatus, CompanyStatus, SecurityConfig | 유환희 | 2026-05-02 | 2026-05-04 | 예정 |
 | 백엔드 개발 | BE-003 | 인증/JWT 구현 | 로그인(ACTIVE만), JWT 발급/검증, Security Filter 구성 | Auth API, Security 설정 | 유환희 | 2026-05-04 | 2026-05-06 | 예정 |
@@ -66,9 +66,10 @@
 | 백엔드 개발 | BE-014 | 대시보드 API | 업체별 요약 카드, 차량별 피로도 상태 조회 | Dashboard API | 유환희 | 2026-05-21 | 2026-05-22 | 예정 |
 | 백엔드 개발 | BE-015 | 운행 이력/통계 API | 업체별 운행 목록/상세, 일별 피로도 통계 조회 | DriveLog/Stats API | 유환희 | 2026-05-22 | 2026-05-24 | 예정 |
 | AI 개발 | AI-001 | FastAPI 서버 구조 작성 | 앱 진입점, 라우터, 설정 파일 구성 | FastAPI 프로젝트 | 유환희 | 2026-05-08 | 2026-05-10 | 예정 |
-| AI 개발 | AI-002 | 번호판 탐지 구현 | YOLOv8n 기반 번호판 영역 탐지 | YOLO Service | 유환희 | 2026-05-10 | 2026-05-13 | 예정 |
+| AI 개발 | AI-002 | 번호판 탐지 구현 | YOLO11n 기반 번호판 영역 탐지, YOLOv8n 비교 학습 | YOLO Service | 유환희 | 2026-05-10 | 2026-05-13 | 예정 |
 | AI 개발 | AI-003 | 번호판 OCR 구현 | EasyOCR 기반 문자 인식 및 결과 정제 | OCR Service | 유환희 | 2026-05-13 | 2026-05-15 | 예정 |
-| AI 개발 | AI-004 | OCR fallback 처리 | 신뢰도 0.85 미만 수동 입력 필요 응답 처리 | OCR API 응답 | 유환희 | 2026-05-15 | 2026-05-16 | 예정 |
+| AI 개발 | AI-004 | 관측 유형별 OCR 처리 | 출발/도착, 고속도로 관측, 휴게소 진입/진출 관측 이벤트 처리 | Plate Observation Service | 유환희 | 2026-05-15 | 2026-05-16 | 예정 |
+| AI 개발 | AI-005 | OCR fallback 처리 | 신뢰도 0.85 미만 수동 입력 필요 응답 처리 | OCR API 응답 | 유환희 | 2026-05-16 | 2026-05-17 | 예정 |
 | GPS 시뮬레이터 | SIM-001 | 시뮬레이터 기본 구조 작성 | `logmile_sim` 패키지, 설정, sender, scenario 구조 작성 | Python SIM 구조 | 백경서 | 2026-04-29 | 2026-04-29 | 완료 |
 | GPS 시뮬레이터 | SIM-002 | 시나리오 A 구현 | 정상 운행, 충분 휴식, 야간 운행 없음 | `scenario_a.py` | 백경서 | 2026-04-29 | 2026-05-01 | 진행 |
 | GPS 시뮬레이터 | SIM-003 | 휴식 패턴 구현 | 15분/30분 휴식 데이터 생성 | `rest_pattern.py` | 백경서 | 2026-05-01 | 2026-05-02 | 예정 |

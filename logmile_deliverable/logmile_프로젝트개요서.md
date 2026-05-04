@@ -21,7 +21,8 @@
 
 ## 2. 핵심 목표
 
-- YOLOv8 + EasyOCR 기반 화물차 번호판 인식 기능 구현
+- YOLO11 + EasyOCR 기반 화물차 번호판 인식 기능 구현
+- 출발/도착 번호판 일치 검증, 고속도로 관측, 휴게소 진입/진출 인식 기반 운행 신뢰도 검증
 - 번호판 인식 신뢰도가 낮을 경우 수동 입력 fallback 제공
 - Python GPS 시뮬레이터를 통한 시나리오 A/B/C 운행 데이터 생성
 - Spring Boot 백엔드에서 피로도 점수 계산 및 피로 이벤트 저장
@@ -36,7 +37,7 @@
 
 | 계층 | 기술 | 주요 역할 |
 |---|---|---|
-| AI 서버 | FastAPI, YOLOv8n, EasyOCR | 출발/도착 차량 번호판 인식 |
+| AI 서버 | FastAPI, YOLO11n, EasyOCR | 출발/도착, 고속도로 관측, 휴게소 진입/진출 차량 번호판 인식 |
 | GPS 시뮬레이터 | Python 3.11 | 운행, 휴식, 야간 운행 패턴이 포함된 GPS 데이터 생성 |
 | 백엔드 | Java 21, Spring Boot 3.x, Spring Data JPA, Spring Security + JWT | REST API, 인증/인가, 피로도 계산, 데이터 저장 |
 | 프론트엔드 | Vue.js 3, Vite, Pinia, Axios, Chart.js | 관제 대시보드, 관리 화면, 통계 시각화 |
@@ -70,7 +71,7 @@
 
 | 팀원 | 담당 분야 | 주요 업무 |
 |---|---|---|
-| 유환희 | 백엔드 + AI | Spring Boot API, JPA Entity/Repository/Service, 피로도 점수 계산, 휴식 판단, JWT/Security, 최상위 관리자 승인/거절/정지 API, 업체별 데이터 접근 제한(TenantAccessService), FastAPI 번호판 인식, YOLOv8 + EasyOCR |
+| 유환희 | 백엔드 + AI | Spring Boot API, JPA Entity/Repository/Service, 피로도 점수 계산, 휴식 판단, JWT/Security, 최상위 관리자 승인/거절/정지 API, 업체별 데이터 접근 제한(TenantAccessService), FastAPI 번호판 인식, YOLO11 + EasyOCR |
 | 백경서 | 프론트엔드 + GPS 시뮬레이터 + 산출물 | Vue.js 대시보드, Pinia/Axios, Chart.js 통계, 회원가입/승인대기/최상위관리자 화면, Python GPS 시나리오 설계, ERD/DB 설계, 요구사항 정의서, 화면 설계서, 발표 문서 |
 
 ## 6. 주요 기능
@@ -78,10 +79,11 @@
 ### 6.1 번호판 인식
 
 - 출발 차량 번호판 이미지 업로드 또는 촬영 데이터 입력
-- YOLOv8로 번호판 영역 탐지
+- YOLO11로 번호판 영역 탐지
 - EasyOCR로 번호판 문자 추출
 - 인식 신뢰도 0.85 미만 시 수동 입력 fallback 처리
 - 도착 시 번호판 재인식을 통한 운행 종료 처리
+- 고속도로 관측 및 휴게소 진입/진출 시 번호판 관측 이벤트 기록
 
 ### 6.2 GPS 시뮬레이션
 

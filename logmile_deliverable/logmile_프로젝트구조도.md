@@ -25,7 +25,7 @@
 │  │  FastAPI(AI) │ <─────────────>│  │ Rest Event Detector      │   │  │
 │  │    :8000     │                │  │ Drive Log Manager        │   │  │
 │  │              │                │  │ Auth / Signup / Approval │   │  │
-│  │ YOLOv8n      │                │  │ Vehicle/Driver CRUD      │   │  │
+│  │ YOLO11n      │                │  │ Vehicle/Driver CRUD      │   │  │
 │  │ EasyOCR      │                │  │ Dashboard/History/Stats  │   │  │
 │  └──────────────┘                │  │ TenantAccess (업체격리)   │   │  │
 │                                  │  └──────────────────────────┘   │  │
@@ -38,9 +38,9 @@
 │  │ 이력/통계     │                │  │                          │   │  │
 │  │ 임계값 설정   │                │  │ company / admin          │   │  │
 │  │ 회원가입/승인 │                │  │ vehicle / driver         │   │  │
-│  │ 최상위관리자  │                │  │ drive_log / gps_data     │   │  │
-│  └──────────────┘                │  │ rest_event / fatigue_event│  │  │
-│                                  │  │ fatigue_threshold        │   │  │
+│  │ 최상위관리자  │                │  │ drive_log / plate_recognition_event │
+│  └──────────────┘                │  │ gps_data / rest_event    │   │  │
+│                                  │  │ fatigue_event / fatigue_threshold │
 │                                  │  └──────────────────────────┘   │  │
 │                                  └──────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -196,21 +196,21 @@ logmile_ai/
     ├── router/
     │   └── ocr_router.py             # POST /api/ocr/recognize
     ├── service/
-    │   ├── yolo_service.py           # YOLOv8n 번호판 영역 탐지
+    │   ├── yolo_service.py           # YOLO11n 번호판 영역 탐지
     │   ├── ocr_service.py            # EasyOCR 문자 추출
     │   └── plate_service.py          # 탐지 + OCR 통합, 신뢰도 판정
     ├── schema/
     │   ├── ocr_request.py            # 이미지 업로드 요청 스키마
     │   └── ocr_response.py           # { plate_no, confidence, is_manual_required }
     └── model/
-        └── yolov8n.pt                # 사전학습 모델 가중치
+        └── yolo11n.pt                # 사전학습 모델 가중치
 ```
 
 **OCR API 흐름:**
 ```
 이미지 업로드
     ↓
-YOLOv8n → 번호판 영역 bbox 탐지
+YOLO11n → 번호판 영역 bbox 탐지
     ↓
 EasyOCR → 번호판 문자 추출 + confidence
     ↓

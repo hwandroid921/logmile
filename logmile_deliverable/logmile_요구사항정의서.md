@@ -93,7 +93,7 @@
 
 | ID | 기능 | 요구사항 | 담당 |
 |---|---|---|---|
-| FR-OCR01 | 출발 번호판 인식 | YOLOv8 + EasyOCR로 번호판을 인식하고 운행 시작에 활용한다. | 환희 |
+| FR-OCR01 | 출발 번호판 인식 | YOLO11 + EasyOCR로 번호판을 인식하고 운행 시작에 활용한다. | 환희 |
 | FR-OCR02 | 도착 번호판 인식 | 도착 차량 번호판을 재인식하고 운행 종료에 활용한다. | 환희 |
 | FR-OCR03 | 미인식 예외 처리 | OCR 신뢰도 0.85 미만 시 수동 입력 fallback을 제공한다. | 환희 |
 | FR-AUTH01 | 관리자 로그인 | JWT 기반 인증을 제공한다. `ACTIVE` 상태의 관리자만 로그인할 수 있다. | 환희 |
@@ -172,7 +172,7 @@
 
 | 구분 | 기술 |
 |---|---|
-| AI/Python | Python 3.11, FastAPI, YOLOv8n, EasyOCR |
+| AI/Python | Python 3.11, FastAPI, YOLO11n, EasyOCR |
 | Backend | Java 21, Spring Boot 3.x, Spring Data JPA, Spring Security + JWT, Springdoc |
 | Frontend | Vue.js 3, Vite, Pinia, Axios, Chart.js |
 | Database | PostgreSQL 16 |
