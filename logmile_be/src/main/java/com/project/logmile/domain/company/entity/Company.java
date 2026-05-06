@@ -37,6 +37,19 @@ public class Company {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
+	public static Company create(String name, String address, String phone) {
+		Company company = new Company();
+		company.name    = name;
+		company.address = address;
+		company.phone   = phone;
+		company.active  = true;
+		return company;
+	}
+
+	public void deactivate() {
+		this.active = false;
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (createdAt == null) {

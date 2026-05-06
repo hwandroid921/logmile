@@ -12,7 +12,7 @@ public record LoginRequest(
 	@Email(message = "이메일 형식이 올바르지 않습니다.")
 	String email,
 
-	@Schema(description = "패스워드", example = "password1234")
+	@Schema(description = "패스워드", example = "admin1234")
 	@NotBlank(message = "패스워드는 필수입니다.")
 	String password
 ) {}
