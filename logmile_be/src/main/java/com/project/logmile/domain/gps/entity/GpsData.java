@@ -42,6 +42,17 @@ public class GpsData {
 	@Column(name = "recorded_at", nullable = false)
 	private LocalDateTime recordedAt;
 
+	public static GpsData create(DriveLog driveLog, Double latitude, Double longitude,
+		Double speedKmh, java.time.LocalDateTime recordedAt) {
+		GpsData g    = new GpsData();
+		g.driveLog   = driveLog;
+		g.latitude   = latitude;
+		g.longitude  = longitude;
+		g.speedKmh   = speedKmh != null ? speedKmh : 0.0;
+		g.recordedAt = recordedAt;
+		return g;
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (speedKmh == null) {
