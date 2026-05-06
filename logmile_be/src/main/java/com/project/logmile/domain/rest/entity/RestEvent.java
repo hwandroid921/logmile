@@ -46,6 +46,26 @@ public class RestEvent {
 	@Column(name = "rest_type", nullable = false, length = 20)
 	private RestType restType = RestType.PENDING;
 
+	public static RestEvent start(DriveLog driveLog, java.time.LocalDateTime startedAt) {
+		RestEvent r      = new RestEvent();
+		r.driveLog       = driveLog;
+		r.restStartedAt  = startedAt;
+		r.restType       = RestType.PENDING;
+		return r;
+	}
+
+	public void end(java.time.LocalDateTime endedAt, int validMinutes, int sufficientMinutes) {
+		this.restEndedAt  = endedAt;
+		this.restMinutes  = (int) java.time.Duration.between(restStartedAt, endedAt).toMinutes();
+		if (this.restMinutes >= sufficientMinutes) {
+			this.restType = RestType.SUFFICIENT;
+		} else if (this.restMinutes >= validMinutes) {
+			this.restType = RestType.VALID;
+		} else {
+			this.restType = RestType.INVALID;
+		}
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (restType == null) {
