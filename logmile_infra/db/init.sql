@@ -261,7 +261,55 @@ CREATE INDEX idx_fatigue_event_drive_log_id ON fatigue_event (drive_log_id);
 CREATE INDEX idx_fatigue_event_occurred_at  ON fatigue_event (occurred_at);
 
 -- ============================================================
--- 9. fatigue_threshold (피로도 임계값 설정)
+-- 9. plate_event (번호판 입출차 관측 이벤트)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS plate_event (
+    id                      BIGSERIAL        PRIMARY KEY,
+    vehicle_id              BIGINT,
+    plate_no                VARCHAR(20)      NOT NULL,
+    event_type              VARCHAR(20)      NOT NULL,
+    location_type           VARCHAR(30)      NOT NULL,
+    source_type             VARCHAR(20)      NOT NULL,
+    observed_at             TIMESTAMP        NOT NULL,
+    latitude                DOUBLE PRECISION,
+    longitude               DOUBLE PRECISION,
+    confidence              DOUBLE PRECISION,
+    detection_confidence    DOUBLE PRECISION,
+    is_manual_required      BOOLEAN          NOT NULL DEFAULT FALSE,
+    image_path              VARCHAR(500),
+    memo                    TEXT,
+    created_at              TIMESTAMP        NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_plate_event_vehicle
+        FOREIGN KEY (vehicle_id) REFERENCES vehicle (id)
+        ON DELETE SET NULL,
+    CONSTRAINT chk_plate_event_type
+        CHECK (event_type IN ('ENTRY', 'EXIT')),
+    CONSTRAINT chk_plate_event_location_type
+        CHECK (location_type IN ('HIGHWAY_GATE', 'REST_AREA', 'CCTV')),
+    CONSTRAINT chk_plate_event_source_type
+        CHECK (source_type IN ('OCR', 'SIMULATOR', 'MANUAL', 'DUMMY')),
+    CONSTRAINT chk_plate_event_confidence
+        CHECK (confidence IS NULL OR (confidence >= 0.0 AND confidence <= 1.0)),
+    CONSTRAINT chk_plate_event_detection_confidence
+        CHECK (detection_confidence IS NULL OR (detection_confidence >= 0.0 AND detection_confidence <= 1.0))
+);
+
+COMMENT ON TABLE  plate_event                         IS '번호판 입차/출차 관측 이벤트';
+COMMENT ON COLUMN plate_event.vehicle_id              IS '매칭된 차량 ID (번호판 미매칭 시 NULL)';
+COMMENT ON COLUMN plate_event.plate_no                IS '관측 또는 입력된 번호판 문자열';
+COMMENT ON COLUMN plate_event.event_type              IS '입출차 이벤트 유형 (ENTRY/EXIT)';
+COMMENT ON COLUMN plate_event.location_type           IS '관측 지점 유형 (HIGHWAY_GATE/REST_AREA/CCTV)';
+COMMENT ON COLUMN plate_event.source_type             IS '번호판 입력 출처 (OCR/SIMULATOR/MANUAL/DUMMY)';
+COMMENT ON COLUMN plate_event.observed_at             IS '번호판 관측 시각';
+COMMENT ON COLUMN plate_event.detection_confidence    IS 'YOLO 번호판 영역 탐지 신뢰도';
+COMMENT ON COLUMN plate_event.is_manual_required      IS '수동 확인 필요 여부';
+
+CREATE INDEX idx_plate_event_vehicle_id  ON plate_event (vehicle_id);
+CREATE INDEX idx_plate_event_plate_no    ON plate_event (plate_no);
+CREATE INDEX idx_plate_event_observed_at ON plate_event (observed_at);
+
+-- ============================================================
+-- 10. fatigue_threshold (피로도 임계값 설정)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS fatigue_threshold (
     id                  BIGSERIAL        PRIMARY KEY,
