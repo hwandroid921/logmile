@@ -87,6 +87,46 @@ public class DriveLog {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
+	public static DriveLog create(Company company, Vehicle vehicle, Driver driver,
+		ScenarioType scenarioType, String recognizedPlateNo,
+		Double ocrConfidence, Boolean manualInput) {
+		DriveLog d           = new DriveLog();
+		d.company            = company;
+		d.vehicle            = vehicle;
+		d.driver             = driver;
+		d.startedAt          = java.time.LocalDateTime.now();
+		d.scenarioType       = scenarioType;
+		d.status             = DriveLogStatus.RUNNING;
+		d.recognizedPlateNo  = recognizedPlateNo;
+		d.ocrConfidence      = ocrConfidence;
+		d.manualInput        = manualInput != null ? manualInput : false;
+		return d;
+	}
+
+	public void complete(Integer totalDrivingMinutes, Integer nightDrivingMinutes,
+		Integer totalRestCount, Integer maxFatigueScore,
+		com.project.logmile.common.enums.FatigueLevel maxFatigueLevel) {
+		this.status               = DriveLogStatus.COMPLETED;
+		this.endedAt              = java.time.LocalDateTime.now();
+		this.totalDrivingMinutes  = totalDrivingMinutes;
+		this.nightDrivingMinutes  = nightDrivingMinutes;
+		this.totalRestCount       = totalRestCount;
+		this.maxFatigueScore      = maxFatigueScore;
+		this.maxFatigueLevel      = maxFatigueLevel;
+	}
+
+	public void stop() {
+		this.status  = DriveLogStatus.STOPPED;
+		this.endedAt = java.time.LocalDateTime.now();
+	}
+
+	public void updateMaxFatigue(Integer score, FatigueLevel level) {
+		if (this.maxFatigueScore == null || score > this.maxFatigueScore) {
+			this.maxFatigueScore = score;
+			this.maxFatigueLevel = level;
+		}
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (status == null) {
