@@ -1,17 +1,18 @@
 package com.project.logmile.domain.company.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
+@Schema(description = "업체 등록 요청")
 public record CompanyRegisterRequest(
 
+	@Schema(description = "업체명", example = "로그마일운송")
 	@NotBlank(message = "업체명은 필수입니다.")
-	@Size(max = 100)
 	String name,
 
-	@Size(max = 255)
+	@Schema(description = "업체 주소", example = "서울특별시 중구 세종대로 110")
 	String address,
 
-	@Size(max = 20)
+	@Schema(description = "업체 연락처", example = "02-1000-0001")
 	String phone
 ) {}
