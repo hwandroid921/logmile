@@ -57,9 +57,27 @@ public class Admin {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
+	public static Admin create(String email, String encodedPassword,
+		String name, String phone, Company company) {
+		Admin admin    = new Admin();
+		admin.email    = email;
+		admin.password = encodedPassword;
+		admin.name     = name;
+		admin.phone    = phone;
+		admin.company  = company;
+		admin.role     = AdminRole.ROLE_ADMIN;
+		admin.status   = AdminStatus.PENDING;
+		return admin;
+	}
+
 	public boolean isSuperAdmin() {
 		return role == AdminRole.ROLE_SUPER_ADMIN;
 	}
+
+	public void approve()   { this.status = AdminStatus.ACTIVE;    }
+	public void reject()    { this.status = AdminStatus.REJECTED;  }
+	public void suspend()   { this.status = AdminStatus.SUSPENDED; }
+	public void unsuspend() { this.status = AdminStatus.ACTIVE;    }
 
 	@PrePersist
 	void prePersist() {
