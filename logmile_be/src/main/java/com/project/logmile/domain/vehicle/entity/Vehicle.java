@@ -48,6 +48,25 @@ public class Vehicle {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
+	public static Vehicle create(Company company, String plateNo, String type) {
+		Vehicle v   = new Vehicle();
+		v.company   = company;
+		v.plateNo   = plateNo;
+		v.type      = type;
+		v.active    = true;
+		return v;
+	}
+
+	public void update(String plateNo, String type) {
+		if (plateNo != null) this.plateNo = plateNo;
+		if (type    != null) this.type    = type;
+	}
+
+	public void deactivate() { this.active = false; }
+
+	public void assignDriver(Driver driver)   { this.driver = driver; }
+	public void unassignDriver()              { this.driver = null;   }
+
 	@PrePersist
 	void prePersist() {
 		if (active == null) {
