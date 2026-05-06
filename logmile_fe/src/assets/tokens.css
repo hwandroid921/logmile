@@ -1,0 +1,67 @@
+/* logmile — Design Tokens (Claude Design 원본 기반) */
+:root {
+  /* Background grays */
+  --bg-0: #1a1d22;
+  --bg-1: #21242b;
+  --bg-2: #252830;
+  --bg-3: #2d3039;
+  --bg-4: #353944;
+  --bg-5: #404552;
+
+  /* Lines */
+  --line-1: #2f323b;
+  --line-2: #3a3e48;
+  --line-3: #4a4f5b;
+
+  /* Text */
+  --text-1: #e6e9ef;
+  --text-2: #b4bac5;
+  --text-3: #868d9a;
+  --text-4: #5d6470;
+
+  /* Accent — Muted Teal */
+  --accent: #7db3c7;
+  --accent-hover: #93c1d2;
+  --accent-soft: rgba(125, 179, 199, 0.14);
+  --accent-line: rgba(125, 179, 199, 0.32);
+  --accent-ink: #0d1418;
+
+  /* Status */
+  --ok: #8aba9a;
+  --ok-soft: rgba(138, 186, 154, 0.14);
+  --warn: #d6b56a;
+  --warn-soft: rgba(214, 181, 106, 0.14);
+  --danger: #d18b7e;
+  --danger-soft: rgba(209, 139, 126, 0.14);
+  --info: #7db3c7;
+  --info-soft: rgba(125, 179, 199, 0.14);
+
+  /* Typography */
+  --font-sans: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+
+  /* Radii */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  /* Shadows */
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 4px 16px rgba(0, 0, 0, 0.35);
+
+  /* Spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* Layout */
+  --sidebar-width: 220px;
+  --topbar-height: 52px;
+}
