@@ -1,5 +1,6 @@
+import re
 from typing import Tuple, Optional
-from PIL import Image
+from PIL import Image, ImageFilter, ImageOps
 import numpy as np
 
 
@@ -36,7 +37,7 @@ class OcrService:
             return None, 0.0
 
         try:
-            image_np = np.array(image)
+            image_np = np.array(self._preprocess(image))
             results = reader.readtext(image_np)
 
             if not results:
@@ -46,12 +47,34 @@ class OcrService:
             best = max(results, key=lambda r: r[2])
             _, text, confidence = best
 
-            plate_no = text.strip().replace(" ", "")
+            plate_no = self._normalize_plate_text(text)
+            if not plate_no:
+                return None, round(float(confidence), 4)
             return plate_no, round(float(confidence), 4)
 
         except Exception as e:
             print(f"[OcrService] OCR 추출 오류: {e}")
             return None, 0.0
+
+    def _preprocess(self, image: Image.Image) -> Image.Image:
+        """
+        번호판 crop이 작을 때 OCR 입력 최소 크기를 확보한다.
+        모자이크 데이터에서는 문자열 판독이 실패할 수 있으며, 이는 fallback으로 처리한다.
+        """
+        target_width = 240
+        scale = max(1, int(target_width / max(1, image.width)))
+        if scale > 1:
+            image = image.resize(
+                (image.width * scale, image.height * scale),
+                Image.Resampling.LANCZOS,
+            )
+
+        gray = ImageOps.grayscale(image)
+        return ImageOps.autocontrast(gray).filter(ImageFilter.SHARPEN).convert("RGB")
+
+    def _normalize_plate_text(self, text: str) -> str:
+        normalized = re.sub(r"[^0-9가-힣A-Za-z]", "", text)
+        return normalized.upper()
 
 
 ocr_service = OcrService()
