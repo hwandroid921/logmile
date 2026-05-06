@@ -38,12 +38,12 @@ public class Company {
 	private LocalDateTime createdAt;
 
 	public static Company create(String name, String address, String phone) {
-		Company c = new Company();
-		c.name    = name;
-		c.address = address;
-		c.phone   = phone;
-		c.active  = true;
-		return c;
+		Company company = new Company();
+		company.name    = name;
+		company.address = address;
+		company.phone   = phone;
+		company.active  = true;
+		return company;
 	}
 
 	public void deactivate() {
