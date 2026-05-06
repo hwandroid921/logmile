@@ -48,6 +48,24 @@ public class Driver {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
+	public static Driver create(Company company, String name, String phone, String licenseType) {
+		Driver d       = new Driver();
+		d.company      = company;
+		d.name         = name;
+		d.phone        = phone;
+		d.licenseType  = licenseType;
+		return d;
+	}
+
+	public void update(String name, String phone, String licenseType) {
+		if (name        != null) this.name        = name;
+		if (phone       != null) this.phone       = phone;
+		if (licenseType != null) this.licenseType = licenseType;
+	}
+
+	public void assignVehicle(Vehicle vehicle)  { this.vehicle = vehicle; }
+	public void unassignVehicle()               { this.vehicle = null;    }
+
 	@PrePersist
 	void prePersist() {
 		if (createdAt == null) {
