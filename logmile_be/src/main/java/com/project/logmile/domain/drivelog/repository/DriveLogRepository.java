@@ -10,4 +10,9 @@ public interface DriveLogRepository extends JpaRepository<DriveLog, Long> {
 	List<DriveLog> findByCompanyIdOrderByStartedAtDesc(Long companyId);
 
 	List<DriveLog> findByStatus(DriveLogStatus status);
+
+	List<DriveLog> findByCompanyIdAndStatus(Long companyId, DriveLogStatus status);
+
+	long countByCompanyIdAndStatusAndStartedAtBetween(Long companyId, DriveLogStatus status,
+		java.time.LocalDateTime start, java.time.LocalDateTime end);
 }
