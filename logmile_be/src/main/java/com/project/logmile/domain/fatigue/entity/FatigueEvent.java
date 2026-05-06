@@ -61,6 +61,23 @@ public class FatigueEvent {
 	@Column(name = "occurred_at", nullable = false)
 	private LocalDateTime occurredAt;
 
+	public static FatigueEvent create(DriveLog driveLog, int score, FatigueLevel level,
+		int continuousMinutes, int dailyMinutes, int nightMinutes,
+		int restCount, int violationCount, String reason, java.time.LocalDateTime occurredAt) {
+		FatigueEvent e             = new FatigueEvent();
+		e.driveLog                 = driveLog;
+		e.fatigueScore             = score;
+		e.fatigueLevel             = level;
+		e.continuousDrivingMinutes = continuousMinutes;
+		e.dailyTotalDrivingMinutes = dailyMinutes;
+		e.nightDrivingMinutes      = nightMinutes;
+		e.restCount                = restCount;
+		e.restViolationCount       = violationCount;
+		e.reason                   = reason;
+		e.occurredAt               = occurredAt;
+		return e;
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (fatigueScore == null) {

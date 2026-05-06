@@ -35,6 +35,15 @@ public class FatigueThreshold {
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 
+	public void updateValue(Double newValue, String newDescription) {
+		if (newValue != null) {
+			this.thresholdValue = newValue;
+		}
+		if (newDescription != null) {
+			this.description = newDescription;
+		}
+	}
+
 	@PrePersist
 	@PreUpdate
 	void updateTimestamp() {
