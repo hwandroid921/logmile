@@ -39,7 +39,7 @@
 
 - 설명: 시스템 관리자 계정 및 권한. JWT 인증에 사용. `ROLE_SUPER_ADMIN` / `ROLE_ADMIN` 구조
 - 인덱스: `PK(id)`, `UK(email)`
-- CHECK: `role IN (ROLE_SUPER_ADMIN, ROLE_ADMIN)` / `status IN (ACTIVE, INACTIVE, SUSPENDED)`
+- CHECK: `role IN (ROLE_SUPER_ADMIN, ROLE_ADMIN)` / `status IN (PENDING, ACTIVE, INACTIVE, REJECTED, SUSPENDED)`
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
