@@ -12,8 +12,25 @@
 Thumbs.db
 desktop.ini
 
-# ── 에디터 ───────────────────────────────────────────────────
+# ── 에디터 / IDE ─────────────────────────────────────────────
 .vscode/
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache
+.apt_generated
+.factorypath
+
+# Vim
 *.swp
 *.swo
 
@@ -60,3 +77,14 @@ uploads/
 *.sqlite
 docker-data/
 postgres-data/
+
+# ── AI 데이터셋 원본 (대용량, 로컬 보관) ─────────────────────
+logmile_ai/dataset/car_plate_data1/
+logmile_ai/dataset/car_plate_data2/
+logmile_ai/dataset/raw/
+logmile_ai/dataset/images/train/
+logmile_ai/dataset/images/val/
+logmile_ai/dataset/images/test/
+logmile_ai/dataset/labels/train/
+logmile_ai/dataset/labels/val/
+logmile_ai/dataset/labels/test/

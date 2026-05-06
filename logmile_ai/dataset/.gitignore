@@ -6,6 +6,11 @@ labels/train/*
 labels/val/*
 labels/test/*
 
+# 원본 데이터셋
+car_plate_data1/
+car_plate_data2/
+raw/
+
 # 예외: 디렉터리 구조 유지용 .gitkeep은 추적
 !images/train/.gitkeep
 !images/val/.gitkeep
@@ -13,8 +18,3 @@ labels/test/*
 !labels/train/.gitkeep
 !labels/val/.gitkeep
 !labels/test/.gitkeep
-
-# 원본 소스 데이터 (대용량 - Git 미포함)
-raw/
-car_plate_data1/
-car_plate_data2/
