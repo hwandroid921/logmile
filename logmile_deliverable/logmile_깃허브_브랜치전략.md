@@ -140,7 +140,7 @@ feature/ai-model-dataset
 | 브랜치명 | 기능 |
 |---|---|
 | `feature/infra-docker-compose` | Docker Compose 전체 구성 (BE + AI + FE + PostgreSQL) |
-| `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (9테이블), 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) |
+| `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (10테이블), 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) |
 | `feature/infra-env-config` | 환경변수 설정 (.env, application.yml, CORS 설정) |
 
 ---

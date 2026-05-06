@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>logmile UI Prototype</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#2563EB',
+          danger: '#EF4444',
+          caution: '#F59E0B',
+          normal: '#22C55E',
+          dark: '#0F172A',
+          panel: '#1E293B',
+          card: '#334155',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; }
+  .screen { display: none; }
+  .screen.active { display: flex; }
+  .nav-btn.active { background: #2563EB; color: white; }
+  .badge-danger  { background:#FEE2E2; color:#DC2626; }
+  .badge-caution { background:#FEF3C7; color:#D97706; }
+  .badge-normal  { background:#DCFCE7; color:#16A34A; }
+  .badge-pending { background:#E0E7FF; color:#4F46E5; }
+</style>
+</head>
+<body class="bg-gray-100">
+
+<!-- ── 상단 화면 네비게이터 ── -->
+<div class="fixed top-0 left-0 right-0 z-50 bg-gray-900 text-white px-4 py-2 flex gap-2 flex-wrap text-sm shadow-lg">
+  <span class="text-gray-400 self-center mr-2 font-bold">logmile</span>
+  <button onclick="showScreen('login')"         class="nav-btn px-3 py-1 rounded active">로그인</button>
+  <button onclick="showScreen('signup')"        class="nav-btn px-3 py-1 rounded">회원가입</button>
+  <button onclick="showScreen('pending')"       class="nav-btn px-3 py-1 rounded">승인 대기</button>
+  <span class="text-gray-600 self-center">|</span>
+  <button onclick="showScreen('super-home')"    class="nav-btn px-3 py-1 rounded">최상위관리자 홈</button>
+  <button onclick="showScreen('super-approval')" class="nav-btn px-3 py-1 rounded">가입 승인/거절</button>
+  <button onclick="showScreen('super-company')" class="nav-btn px-3 py-1 rounded">업체 관리</button>
+  <span class="text-gray-600 self-center">|</span>
+  <button onclick="showScreen('dashboard')"     class="nav-btn px-3 py-1 rounded">대시보드</button>
+  <button onclick="showScreen('vehicle')"       class="nav-btn px-3 py-1 rounded">차량 관리</button>
+  <button onclick="showScreen('driver')"        class="nav-btn px-3 py-1 rounded">운전자 관리</button>
+  <button onclick="showScreen('history')"       class="nav-btn px-3 py-1 rounded">운행 이력</button>
+  <button onclick="showScreen('simulation')"    class="nav-btn px-3 py-1 rounded">시뮬레이션</button>
+</div>
+<div class="pt-12">
+
+<!-- ═══════════════════════════════════════════════════════
+     1. 로그인
+═══════════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 items-center justify-center">
+  <div class="w-full max-w-sm">
+    <!-- 로고 -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-2">
+        <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+          </svg>
+        </div>
+        <span class="text-3xl font-bold text-white tracking-tight">logmile</span>
+      </div>
+      <p class="text-blue-300 text-sm">화물차 운전자 피로도 실시간 모니터링</p>
+    </div>
+    <!-- 카드 -->
+    <div class="bg-slate-800 rounded-2xl p-8 shadow-2xl border border-slate-700">
+      <h2 class="text-white text-xl font-semibold mb-6">관리자 로그인</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="text-slate-400 text-sm mb-1 block">이메일</label>
+          <input class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 text-sm border border-slate-600 focus:border-blue-500 focus:outline-none" placeholder="admin@company.com" value="admin@logmile.com"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-sm mb-1 block">비밀번호</label>
+          <input type="password" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 text-sm border border-slate-600 focus:border-blue-500 focus:outline-none" placeholder="••••••••" value="password"/>
+        </div>
+        <button class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg transition text-sm mt-2">
+          로그인
+        </button>
+      </div>
+      <div class="mt-4 text-center">
+        <span class="text-slate-500 text-sm">계정이 없으신가요?</span>
+        <button onclick="showScreen('signup')" class="text-blue-400 text-sm ml-1 hover:underline">회원가입</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     2. 회원가입
+═══════════════════════════════════════════════════════ -->
+<div id="screen-signup" class="screen min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 items-center justify-center py-8">
+  <div class="w-full max-w-lg">
+    <div class="text-center mb-6">
+      <span class="text-3xl font-bold text-white tracking-tight">logmile</span>
+      <p class="text-blue-300 text-sm mt-1">신규 업체 관리자 회원가입</p>
+    </div>
+    <div class="bg-slate-800 rounded-2xl p-8 shadow-2xl border border-slate-700">
+      <h2 class="text-white text-lg font-semibold mb-6">업체 정보 입력</h2>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="col-span-2">
+          <label class="text-slate-400 text-xs mb-1 block">업체명 <span class="text-red-400">*</span></label>
+          <input class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="(주)한진물류" value="(주)예시물류"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">사업자번호</label>
+          <input class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="000-00-00000" value="123-45-67890"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">연락처</label>
+          <input class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="02-0000-0000" value="02-1234-5678"/>
+        </div>
+      </div>
+      <hr class="border-slate-600 mb-6"/>
+      <h2 class="text-white text-lg font-semibold mb-4">관리자 계정 정보</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="text-slate-400 text-xs mb-1 block">이메일 <span class="text-red-400">*</span></label>
+          <input class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="manager@company.com" value="manager@example.com"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">이름 <span class="text-red-400">*</span></label>
+          <input class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="홍길동" value="김관리"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">연락처</label>
+          <input class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="010-0000-0000" value="010-1234-5678"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">비밀번호 <span class="text-red-400">*</span></label>
+          <input type="password" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="8자 이상" value="password1!"/>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs mb-1 block">비밀번호 확인 <span class="text-red-400">*</span></label>
+          <input type="password" class="w-full bg-slate-700 text-white rounded-lg px-3 py-2.5 text-sm border border-slate-600" placeholder="비밀번호 재입력" value="password1!"/>
+        </div>
+      </div>
+      <button onclick="showScreen('pending')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg transition text-sm mt-6">
+        가입 신청
+      </button>
+      <p class="text-center text-slate-500 text-xs mt-3">가입 신청 후 최상위 관리자 승인을 기다립니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     3. 승인 대기
+═══════════════════════════════════════════════════════ -->
+<div id="screen-pending" class="screen min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 items-center justify-center">
+  <div class="text-center max-w-md">
+    <div class="w-24 h-24 bg-indigo-900 rounded-full flex items-center justify-center mx-auto mb-6">
+      <svg class="w-12 h-12 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </div>
+    <h1 class="text-white text-2xl font-bold mb-3">가입 승인 대기 중</h1>
+    <p class="text-slate-400 text-sm mb-2">회원가입 신청이 접수되었습니다.</p>
+    <p class="text-slate-400 text-sm mb-8">최상위 관리자의 승인 후 로그인하실 수 있습니다.</p>
+    <div class="bg-slate-800 rounded-xl p-5 border border-slate-700 text-left mb-6">
+      <div class="flex justify-between text-sm mb-2">
+        <span class="text-slate-400">업체명</span>
+        <span class="text-white font-medium">(주)예시물류</span>
+      </div>
+      <div class="flex justify-between text-sm mb-2">
+        <span class="text-slate-400">신청 이메일</span>
+        <span class="text-white">manager@example.com</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span class="text-slate-400">신청 상태</span>
+        <span class="inline-flex items-center gap-1 text-indigo-400 font-medium">
+          <span class="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></span>
+          승인 대기 (PENDING)
+        </span>
+      </div>
+    </div>
+    <button onclick="showScreen('login')" class="text-slate-400 text-sm hover:text-white">← 로그인 화면으로</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     4. 최상위관리자 홈
+═══════════════════════════════════════════════════════ -->
+<div id="screen-super-home" class="screen min-h-screen bg-slate-900 flex-col">
+  <!-- 상단 헤더 -->
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      </div>
+      <span class="text-white font-bold text-lg">logmile</span>
+      <span class="text-slate-400 text-sm">/ 최상위 관리자</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="bg-purple-900 text-purple-300 text-xs px-2 py-1 rounded-full">SUPER ADMIN</span>
+      <span class="text-slate-300 text-sm">superadmin@logmile.com</span>
+    </div>
+  </header>
+  <div class="flex flex-1">
+    <!-- 사이드바 -->
+    <aside class="w-56 bg-slate-800 border-r border-slate-700 p-4">
+      <nav class="space-y-1">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2 mt-1">관리</div>
+        <button onclick="showScreen('super-home')"     class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">🏠 대시보드</button>
+        <button onclick="showScreen('super-approval')" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">
+          👤 가입 승인/거절
+          <span class="ml-1 bg-red-500 text-white text-xs px-1.5 rounded-full">3</span>
+        </button>
+        <button onclick="showScreen('super-company')"  class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🏢 업체 관리</button>
+      </nav>
+    </aside>
+    <!-- 메인 콘텐츠 -->
+    <main class="flex-1 p-6">
+      <h1 class="text-white text-xl font-bold mb-6">관리자 현황 요약</h1>
+      <!-- 요약 카드 -->
+      <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <div class="text-slate-400 text-xs mb-2">전체 업체</div>
+          <div class="text-3xl font-bold text-white">3</div>
+          <div class="text-slate-500 text-xs mt-1">등록된 업체 수</div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-5 border border-red-800/50 relative">
+          <div class="absolute top-3 right-3 w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+          <div class="text-slate-400 text-xs mb-2">승인 대기</div>
+          <div class="text-3xl font-bold text-red-400">3</div>
+          <div class="text-slate-500 text-xs mt-1">PENDING 관리자</div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <div class="text-slate-400 text-xs mb-2">활성 관리자</div>
+          <div class="text-3xl font-bold text-green-400">5</div>
+          <div class="text-slate-500 text-xs mt-1">ACTIVE 계정</div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <div class="text-slate-400 text-xs mb-2">정지 계정</div>
+          <div class="text-3xl font-bold text-yellow-400">1</div>
+          <div class="text-slate-500 text-xs mt-1">SUSPENDED</div>
+        </div>
+      </div>
+      <!-- 최근 신청 -->
+      <div class="bg-slate-800 rounded-xl border border-slate-700">
+        <div class="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
+          <h2 class="text-white font-semibold">최근 가입 신청</h2>
+          <button onclick="showScreen('super-approval')" class="text-blue-400 text-sm hover:underline">전체 보기 →</button>
+        </div>
+        <table class="w-full text-sm">
+          <thead><tr class="text-slate-400 text-xs border-b border-slate-700">
+            <th class="px-5 py-3 text-left">이름</th>
+            <th class="px-5 py-3 text-left">이메일</th>
+            <th class="px-5 py-3 text-left">업체명</th>
+            <th class="px-5 py-3 text-left">신청일</th>
+            <th class="px-5 py-3 text-left">상태</th>
+            <th class="px-5 py-3 text-left">처리</th>
+          </tr></thead>
+          <tbody class="divide-y divide-slate-700/50">
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white">김민준</td>
+              <td class="px-5 py-3 text-slate-300">minjun@express.co.kr</td>
+              <td class="px-5 py-3 text-slate-300">(주)빠른배송</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-30</td>
+              <td class="px-5 py-3"><span class="badge-pending text-xs px-2 py-1 rounded-full">PENDING</span></td>
+              <td class="px-5 py-3 flex gap-2">
+                <button class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1 rounded">승인</button>
+                <button class="bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1 rounded">거절</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white">이서연</td>
+              <td class="px-5 py-3 text-slate-300">seo@logis.com</td>
+              <td class="px-5 py-3 text-slate-300">세진물류(주)</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-29</td>
+              <td class="px-5 py-3"><span class="badge-pending text-xs px-2 py-1 rounded-full">PENDING</span></td>
+              <td class="px-5 py-3 flex gap-2">
+                <button class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1 rounded">승인</button>
+                <button class="bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1 rounded">거절</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white">박지훈</td>
+              <td class="px-5 py-3 text-slate-300">jihun@hanjin.co</td>
+              <td class="px-5 py-3 text-slate-300">(주)한진물류</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-28</td>
+              <td class="px-5 py-3"><span class="badge-pending text-xs px-2 py-1 rounded-full">PENDING</span></td>
+              <td class="px-5 py-3 flex gap-2">
+                <button class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1 rounded">승인</button>
+                <button class="bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1 rounded">거절</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     5. 가입 승인/거절 관리
+═══════════════════════════════════════════════════════ -->
+<div id="screen-super-approval" class="screen min-h-screen bg-slate-900 flex-col">
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-white font-bold text-lg">logmile</span>
+      <span class="text-slate-400 text-sm">/ 가입 승인 관리</span>
+    </div>
+    <span class="bg-purple-900 text-purple-300 text-xs px-2 py-1 rounded-full">SUPER ADMIN</span>
+  </header>
+  <div class="flex flex-1">
+    <aside class="w-56 bg-slate-800 border-r border-slate-700 p-4">
+      <nav class="space-y-1">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2 mt-1">관리</div>
+        <button onclick="showScreen('super-home')"      class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🏠 대시보드</button>
+        <button onclick="showScreen('super-approval')"  class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">
+          👤 가입 승인/거절 <span class="ml-1 bg-red-500 text-white text-xs px-1.5 rounded-full">3</span>
+        </button>
+        <button onclick="showScreen('super-company')"   class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🏢 업체 관리</button>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-white text-xl font-bold">관리자 가입 승인 관리</h1>
+        <!-- 탭 -->
+        <div class="flex gap-2 bg-slate-800 p-1 rounded-lg border border-slate-700">
+          <button class="px-4 py-1.5 text-sm rounded-md bg-blue-600 text-white font-medium">전체</button>
+          <button class="px-4 py-1.5 text-sm rounded-md text-slate-300">PENDING <span class="text-red-400 font-bold">3</span></button>
+          <button class="px-4 py-1.5 text-sm rounded-md text-slate-300">ACTIVE</button>
+          <button class="px-4 py-1.5 text-sm rounded-md text-slate-300">정지/거절</button>
+        </div>
+      </div>
+      <div class="bg-slate-800 rounded-xl border border-slate-700">
+        <table class="w-full text-sm">
+          <thead><tr class="text-slate-400 text-xs border-b border-slate-700">
+            <th class="px-5 py-3 text-left">이름</th>
+            <th class="px-5 py-3 text-left">이메일</th>
+            <th class="px-5 py-3 text-left">업체명</th>
+            <th class="px-5 py-3 text-left">연락처</th>
+            <th class="px-5 py-3 text-left">신청일</th>
+            <th class="px-5 py-3 text-left">상태</th>
+            <th class="px-5 py-3 text-left">처리</th>
+          </tr></thead>
+          <tbody class="divide-y divide-slate-700/50">
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white font-medium">김민준</td>
+              <td class="px-5 py-3 text-slate-300">minjun@express.co.kr</td>
+              <td class="px-5 py-3 text-slate-300">(주)빠른배송</td>
+              <td class="px-5 py-3 text-slate-300">010-1111-2222</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-30</td>
+              <td class="px-5 py-3"><span class="badge-pending text-xs px-2.5 py-1 rounded-full font-medium">PENDING</span></td>
+              <td class="px-5 py-3"><div class="flex gap-1.5">
+                <button class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg">✓ 승인</button>
+                <button class="bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg">✗ 거절</button>
+              </div></td>
+            </tr>
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white font-medium">이서연</td>
+              <td class="px-5 py-3 text-slate-300">seo@logis.com</td>
+              <td class="px-5 py-3 text-slate-300">세진물류(주)</td>
+              <td class="px-5 py-3 text-slate-300">010-3333-4444</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-29</td>
+              <td class="px-5 py-3"><span class="badge-pending text-xs px-2.5 py-1 rounded-full font-medium">PENDING</span></td>
+              <td class="px-5 py-3"><div class="flex gap-1.5">
+                <button class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg">✓ 승인</button>
+                <button class="bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg">✗ 거절</button>
+              </div></td>
+            </tr>
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white font-medium">박지훈</td>
+              <td class="px-5 py-3 text-slate-300">jihun@hanjin.co</td>
+              <td class="px-5 py-3 text-slate-300">(주)한진물류</td>
+              <td class="px-5 py-3 text-slate-300">010-5555-6666</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-28</td>
+              <td class="px-5 py-3"><span class="badge-pending text-xs px-2.5 py-1 rounded-full font-medium">PENDING</span></td>
+              <td class="px-5 py-3"><div class="flex gap-1.5">
+                <button class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg">✓ 승인</button>
+                <button class="bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg">✗ 거절</button>
+              </div></td>
+            </tr>
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white font-medium">최수아</td>
+              <td class="px-5 py-3 text-slate-300">suah@good.co.kr</td>
+              <td class="px-5 py-3 text-slate-300">굿로지스틱스</td>
+              <td class="px-5 py-3 text-slate-300">010-7777-8888</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-25</td>
+              <td class="px-5 py-3"><span class="badge-normal text-xs px-2.5 py-1 rounded-full font-medium">ACTIVE</span></td>
+              <td class="px-5 py-3"><div class="flex gap-1.5">
+                <button class="bg-yellow-700 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 rounded-lg">⏸ 정지</button>
+              </div></td>
+            </tr>
+            <tr class="hover:bg-slate-700/30">
+              <td class="px-5 py-3 text-white font-medium">정현우</td>
+              <td class="px-5 py-3 text-slate-300">hyunu@fast.com</td>
+              <td class="px-5 py-3 text-slate-300">패스트딜리버리</td>
+              <td class="px-5 py-3 text-slate-300">010-9999-0000</td>
+              <td class="px-5 py-3 text-slate-400">2026-04-20</td>
+              <td class="px-5 py-3"><span class="badge-caution text-xs px-2.5 py-1 rounded-full font-medium">SUSPENDED</span></td>
+              <td class="px-5 py-3"><div class="flex gap-1.5">
+                <button class="bg-blue-700 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg">▶ 해제</button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     6. 업체 관리
+═══════════════════════════════════════════════════════ -->
+<div id="screen-super-company" class="screen min-h-screen bg-slate-900 flex-col">
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-white font-bold text-lg">logmile</span>
+      <span class="text-slate-400 text-sm">/ 업체 관리</span>
+    </div>
+    <span class="bg-purple-900 text-purple-300 text-xs px-2 py-1 rounded-full">SUPER ADMIN</span>
+  </header>
+  <div class="flex flex-1">
+    <aside class="w-56 bg-slate-800 border-r border-slate-700 p-4">
+      <nav class="space-y-1">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2 mt-1">관리</div>
+        <button onclick="showScreen('super-home')"     class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🏠 대시보드</button>
+        <button onclick="showScreen('super-approval')" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">👤 가입 승인/거절</button>
+        <button onclick="showScreen('super-company')"  class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">🏢 업체 관리</button>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6">
+      <h1 class="text-white text-xl font-bold mb-6">등록 업체 목록</h1>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-white font-semibold">굿로지스틱스</h3>
+            <span class="badge-normal text-xs px-2 py-1 rounded-full">ACTIVE</span>
+          </div>
+          <div class="space-y-1.5 text-sm">
+            <div class="flex justify-between"><span class="text-slate-400">사업자번호</span><span class="text-slate-200">123-45-67890</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">관리자</span><span class="text-slate-200">최수아</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">차량 수</span><span class="text-slate-200">12대</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">등록일</span><span class="text-slate-200">2026-04-25</span></div>
+          </div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-white font-semibold">패스트딜리버리</h3>
+            <span class="badge-caution text-xs px-2 py-1 rounded-full">SUSPENDED</span>
+          </div>
+          <div class="space-y-1.5 text-sm">
+            <div class="flex justify-between"><span class="text-slate-400">사업자번호</span><span class="text-slate-200">234-56-78901</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">관리자</span><span class="text-slate-200">정현우</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">차량 수</span><span class="text-slate-200">8대</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">등록일</span><span class="text-slate-200">2026-04-20</span></div>
+          </div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700 border-dashed opacity-60 flex items-center justify-center cursor-pointer hover:opacity-80">
+          <div class="text-center">
+            <div class="text-3xl text-slate-500 mb-2">+</div>
+            <div class="text-slate-400 text-sm">신규 가입 승인 대기 중</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════
+     7. 관제 대시보드 (일반 관리자) - 번호판 인식 + 시각화
+═══════════════════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen min-h-screen bg-slate-900 flex-col">
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      </div>
+      <span class="text-white font-bold">logmile</span>
+      <span class="text-slate-500 text-sm">/ 굿로지스틱스 관제 대시보드</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-1.5 text-green-400 text-xs font-medium"><span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>실시간 갱신 중 (5초)</span>
+      <span class="text-slate-400 text-sm">최수아 관리자</span>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <aside class="w-52 bg-slate-800 border-r border-slate-700 p-3 flex-shrink-0">
+      <nav class="space-y-0.5">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2 mt-1">메뉴</div>
+        <button onclick="showScreen('dashboard')"  class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">📊 대시보드</button>
+        <button onclick="showScreen('simulation')" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🛰️ 시뮬레이션</button>
+        <button onclick="showScreen('vehicle')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🚛 차량 관리</button>
+        <button onclick="showScreen('driver')"     class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">👨‍✈️ 운전자 관리</button>
+        <button onclick="showScreen('history')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📋 운행 이력</button>
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2 mt-3">설정</div>
+        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">⚙️ 피로도 임계값</button>
+      </nav>
+    </aside>
+
+    <main class="flex-1 p-4 overflow-auto space-y-4">
+
+      <!-- 요약 카드 5개 -->
+      <div class="grid grid-cols-5 gap-3">
+        <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 flex flex-col gap-1">
+          <div class="text-slate-400 text-xs">총 차량</div>
+          <div class="text-2xl font-bold text-blue-400">12<span class="text-sm text-slate-400 ml-1">대</span></div>
+          <div class="text-slate-500 text-xs">운행 중 8대</div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-4 border border-red-700/60 flex flex-col gap-1 relative overflow-hidden">
+          <div class="absolute top-2 right-2 w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+          <div class="text-slate-400 text-xs">위험 🚨</div>
+          <div class="text-2xl font-bold text-red-400">2<span class="text-sm text-slate-400 ml-1">대</span></div>
+          <div class="text-red-500 text-xs">즉시 연락 필요</div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-4 border border-yellow-700/50 flex flex-col gap-1">
+          <div class="text-slate-400 text-xs">주의</div>
+          <div class="text-2xl font-bold text-yellow-400">3<span class="text-sm text-slate-400 ml-1">대</span></div>
+          <div class="text-slate-500 text-xs">모니터링 중</div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-4 border border-green-800/50 flex flex-col gap-1">
+          <div class="text-slate-400 text-xs">정상</div>
+          <div class="text-2xl font-bold text-green-400">3<span class="text-sm text-slate-400 ml-1">대</span></div>
+          <div class="text-slate-500 text-xs">이상 없음</div>
+        </div>
+        <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 flex flex-col gap-1">
+          <div class="text-slate-400 text-xs">평균 피로도</div>
+          <div class="text-2xl font-bold text-white">52<span class="text-sm text-slate-400 ml-1">점</span></div>
+          <div class="text-yellow-400 text-xs">▲ 주의 구간</div>
+        </div>
+      </div>
+
+      <!-- 메인 2열 -->
+      <div class="grid grid-cols-5 gap-4">
+
+        <!-- 왼쪽: 번호판 OCR 패널 -->
+        <div class="col-span-2 space-y-3">
+
+          <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span class="text-white text-sm font-semibold">번호판 OCR 인식</span>
+              </div>
+              <span class="text-slate-400 text-xs">YOLOv8 + EasyOCR</span>
+            </div>
+            <!-- 트럭 + OCR SVG -->
+            <div class="bg-slate-900 p-3">
+              <svg viewBox="0 0 340 185" class="w-full rounded-lg" style="background:linear-gradient(180deg,#0f1729 0%,#1a2a42 100%)">
+                <!-- 도로 -->
+                <rect x="0" y="148" width="340" height="37" fill="#1e293b"/>
+                <rect x="0" y="155" width="340" height="2" fill="#334155" opacity="0.6"/>
+                <rect x="30"  y="163" width="30" height="3" rx="1" fill="#475569" opacity="0.4"/>
+                <rect x="100" y="163" width="30" height="3" rx="1" fill="#475569" opacity="0.4"/>
+                <rect x="170" y="163" width="30" height="3" rx="1" fill="#475569" opacity="0.4"/>
+                <rect x="240" y="163" width="30" height="3" rx="1" fill="#475569" opacity="0.4"/>
+                <rect x="310" y="163" width="30" height="3" rx="1" fill="#475569" opacity="0.4"/>
+                <!-- 컨테이너 -->
+                <rect x="75" y="58" width="225" height="90" rx="4" fill="#374151"/>
+                <rect x="77" y="60" width="221" height="86" rx="3" fill="#4b5563"/>
+                <line x1="77" y1="80"  x2="298" y2="80"  stroke="#6b7280" stroke-width="0.5" opacity="0.4"/>
+                <line x1="77" y1="100" x2="298" y2="100" stroke="#6b7280" stroke-width="0.5" opacity="0.4"/>
+                <line x1="77" y1="120" x2="298" y2="120" stroke="#6b7280" stroke-width="0.5" opacity="0.4"/>
+                <line x1="140" y1="60" x2="140" y2="148" stroke="#6b7280" stroke-width="0.5" opacity="0.3"/>
+                <line x1="220" y1="60" x2="220" y2="148" stroke="#6b7280" stroke-width="0.5" opacity="0.3"/>
+                <!-- 캡 -->
+                <rect x="18" y="72" width="68" height="76" rx="5" fill="#374151"/>
+                <rect x="20" y="74" width="64" height="72" rx="4" fill="#4b5563"/>
+                <rect x="22" y="74" width="60" height="25" rx="4" fill="#334155"/>
+                <rect x="24" y="78" width="56" height="20" rx="3" fill="#1d4ed8" opacity="0.2"/>
+                <line x1="52" y1="78" x2="52" y2="98" stroke="#6b7280" stroke-width="0.8" opacity="0.4"/>
+                <rect x="24" y="104" width="28" height="36" rx="2" fill="#374151" stroke="#6b7280" stroke-width="0.5"/>
+                <rect x="56" y="104" width="24" height="36" rx="2" fill="#374151" stroke="#6b7280" stroke-width="0.5"/>
+                <rect x="34" y="122" width="10" height="3" rx="1" fill="#6b7280"/>
+                <rect x="8"  y="82"  width="12" height="8" rx="2" fill="#374151"/>
+                <rect x="14" y="136" width="68" height="10" rx="3" fill="#374151"/>
+                <rect x="16" y="137" width="64" height="8"  rx="2" fill="#3f4d5e"/>
+                <rect x="16" y="126" width="18" height="10" rx="2" fill="#fbbf24" opacity="0.25"/>
+                <rect x="48" y="126" width="18" height="10" rx="2" fill="#fbbf24" opacity="0.25"/>
+                <!-- 앞 번호판 -->
+                <rect x="26" y="138" width="54" height="17" rx="2" fill="#e8e8e8"/>
+                <text x="53" y="150" text-anchor="middle" fill="#1a1a2e" font-size="9.5" font-weight="800" font-family="monospace" letter-spacing="1">12가 3456</text>
+                <!-- OCR 박스 + 애니메이션 -->
+                <rect x="22" y="134" width="62" height="25" rx="2" fill="none" stroke="#22c55e" stroke-width="2">
+                  <animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite"/>
+                </rect>
+                <line x1="22" y1="134" x2="32" y2="134" stroke="#22c55e" stroke-width="2.5"/>
+                <line x1="22" y1="134" x2="22" y2="144" stroke="#22c55e" stroke-width="2.5"/>
+                <line x1="84" y1="134" x2="74" y2="134" stroke="#22c55e" stroke-width="2.5"/>
+                <line x1="84" y1="134" x2="84" y2="144" stroke="#22c55e" stroke-width="2.5"/>
+                <line x1="22" y1="159" x2="32" y2="159" stroke="#22c55e" stroke-width="2.5"/>
+                <line x1="22" y1="159" x2="22" y2="149" stroke="#22c55e" stroke-width="2.5"/>
+                <line x1="84" y1="159" x2="74" y2="159" stroke="#22c55e" stroke-width="2.5"/>
+                <line x1="84" y1="159" x2="84" y2="149" stroke="#22c55e" stroke-width="2.5"/>
+                <!-- 스캔 라인 -->
+                <rect x="23" y="135" width="60" height="1.5" fill="#22c55e" opacity="0.7">
+                  <animate attributeName="y" values="135;157;135" dur="1.4s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.4s" repeatCount="indefinite"/>
+                </rect>
+                <!-- OCR 라벨 -->
+                <rect x="24" y="122" width="56" height="13" rx="3" fill="#16a34a"/>
+                <text x="52" y="132" text-anchor="middle" fill="white" font-size="8" font-weight="bold">● OCR 인식 중</text>
+                <!-- 바퀴 -->
+                <circle cx="100" cy="148" r="20" fill="#1e293b"/><circle cx="100" cy="148" r="13" fill="#334155"/><circle cx="100" cy="148" r="5" fill="#4b5563"/>
+                <circle cx="115" cy="148" r="20" fill="#1e293b"/><circle cx="115" cy="148" r="13" fill="#334155"/><circle cx="115" cy="148" r="5" fill="#4b5563"/>
+                <circle cx="230" cy="148" r="20" fill="#1e293b"/><circle cx="230" cy="148" r="13" fill="#334155"/><circle cx="230" cy="148" r="5" fill="#4b5563"/>
+                <circle cx="245" cy="148" r="20" fill="#1e293b"/><circle cx="245" cy="148" r="13" fill="#334155"/><circle cx="245" cy="148" r="5" fill="#4b5563"/>
+                <circle cx="52"  cy="150" r="18" fill="#1e293b"/><circle cx="52"  cy="150" r="11" fill="#334155"/><circle cx="52"  cy="150" r="4" fill="#4b5563"/>
+                <!-- HUD 신뢰도 -->
+                <rect x="198" y="8" width="134" height="44" rx="6" fill="#0f172a" opacity="0.88"/>
+                <text x="208" y="23" fill="#94a3b8" font-size="8">인식 신뢰도</text>
+                <text x="208" y="40" fill="#22c55e" font-size="17" font-weight="bold" font-family="monospace">96.8%</text>
+                <rect x="282" y="27" width="42" height="17" rx="3" fill="#16a34a" opacity="0.9"/>
+                <text x="303" y="39" text-anchor="middle" fill="white" font-size="8" font-weight="bold">PASS</text>
+                <!-- 모델 태그 -->
+                <rect x="8" y="8" width="112" height="18" rx="4" fill="#1e3a5f" opacity="0.9"/>
+                <text x="14" y="20" fill="#60a5fa" font-size="8">YOLOv8n  |  EasyOCR</text>
+              </svg>
+            </div>
+            <!-- 인식 결과 -->
+            <div class="px-4 py-3 bg-slate-900/50">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-slate-400 text-xs">인식 결과</span>
+                <span class="text-green-400 text-xs font-medium">● 성공 (자동 인식)</span>
+              </div>
+              <div class="flex items-center gap-3 mb-3">
+                <div class="bg-slate-700 rounded-lg px-4 py-2 border-2 border-green-600">
+                  <span class="text-white font-mono text-xl font-bold tracking-widest">12가 3456</span>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="text-slate-400">신뢰도</span>
+                    <span class="text-green-400 font-bold">96.8%</span>
+                  </div>
+                  <div class="w-full bg-slate-700 rounded-full h-2">
+                    <div class="bg-green-500 h-2 rounded-full" style="width:96.8%"></div>
+                  </div>
+                  <div class="flex justify-between text-xs mt-1">
+                    <span class="text-slate-500">임계값 85% 이상</span>
+                    <span class="text-green-500">자동 인식</span>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-2 text-xs">
+                <div class="bg-slate-700/50 rounded-lg p-2">
+                  <div class="text-slate-400 mb-0.5">차종</div>
+                  <div class="text-white font-medium">5톤 카고</div>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-2">
+                  <div class="text-slate-400 mb-0.5">운전자</div>
+                  <div class="text-white font-medium">김철수</div>
+                </div>
+                <div class="bg-red-900/40 rounded-lg p-2 border border-red-700/50">
+                  <div class="text-slate-400 mb-0.5">피로도</div>
+                  <div class="text-red-400 font-bold">85점 위험</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OCR 이력 -->
+          <div class="bg-slate-800 rounded-xl border border-slate-700">
+            <div class="px-4 py-3 border-b border-slate-700">
+              <span class="text-white text-sm font-semibold">최근 번호판 인식 이력</span>
+            </div>
+            <div class="divide-y divide-slate-700/50">
+              <div class="px-4 py-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+                  <span class="text-white font-mono text-sm font-bold">12가 3456</span>
+                  <span class="text-slate-400 text-xs">김철수</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-green-400 text-xs">96.8%</span>
+                  <span class="badge-danger text-xs px-2 py-0.5 rounded-full">위험</span>
+                  <span class="text-slate-500 text-xs">18:24</span>
+                </div>
+              </div>
+              <div class="px-4 py-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+                  <span class="text-white font-mono text-sm font-bold">34나 7890</span>
+                  <span class="text-slate-400 text-xs">이영희</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-green-400 text-xs">91.2%</span>
+                  <span class="badge-danger text-xs px-2 py-0.5 rounded-full">위험</span>
+                  <span class="text-slate-500 text-xs">17:58</span>
+                </div>
+              </div>
+              <div class="px-4 py-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  <span class="text-white font-mono text-sm font-bold">56다 1234</span>
+                  <span class="text-slate-400 text-xs">박민수</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-green-400 text-xs">88.5%</span>
+                  <span class="badge-caution text-xs px-2 py-0.5 rounded-full">주의</span>
+                  <span class="text-slate-500 text-xs">17:41</span>
+                </div>
+              </div>
+              <div class="px-4 py-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-orange-400 rounded-full"></span>
+                  <span class="text-white font-mono text-sm font-bold">99바 0011</span>
+                  <span class="text-slate-400 text-xs">오재원</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-yellow-400 text-xs">72.3%</span>
+                  <span class="bg-orange-900 text-orange-300 text-xs px-2 py-0.5 rounded-full">수동입력</span>
+                  <span class="text-slate-500 text-xs">17:12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 시각화 차트 -->
+        <div class="col-span-3 space-y-3">
+
+          <!-- 피로도 시간대별 추이 라인 차트 -->
+          <div class="bg-slate-800 rounded-xl border border-slate-700">
+            <div class="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+              <span class="text-white text-sm font-semibold">📈 시간대별 피로도 추이</span>
+              <div class="flex gap-3 text-xs">
+                <span class="flex items-center gap-1"><span class="inline-block w-6 h-0.5 bg-red-400"></span>12가 3456</span>
+                <span class="flex items-center gap-1"><span class="inline-block w-6 h-0.5 bg-yellow-400"></span>34나 7890</span>
+                <span class="flex items-center gap-1"><span class="inline-block w-6 h-0.5 bg-orange-400"></span>56다 1234</span>
+                <span class="flex items-center gap-1"><span class="inline-block w-6 h-0.5 bg-green-400"></span>90마 9012</span>
+              </div>
+            </div>
+            <div class="p-3">
+              <svg viewBox="0 0 420 170" class="w-full">
+                <defs>
+                  <linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ef4444" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+                  </linearGradient>
+                  <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#22c55e" stop-opacity="0.2"/>
+                    <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <!-- 격자 -->
+                <line x1="48" y1="10"  x2="48"  y2="140" stroke="#334155" stroke-width="1"/>
+                <line x1="48" y1="10"  x2="410" y2="10"  stroke="#334155" stroke-width="0.5" stroke-dasharray="3,3"/>
+                <line x1="48" y1="40"  x2="410" y2="40"  stroke="#334155" stroke-width="0.5" stroke-dasharray="3,3"/>
+                <line x1="48" y1="70"  x2="410" y2="70"  stroke="#334155" stroke-width="0.5" stroke-dasharray="3,3"/>
+                <line x1="48" y1="100" x2="410" y2="100" stroke="#334155" stroke-width="0.5" stroke-dasharray="3,3"/>
+                <line x1="48" y1="130" x2="410" y2="130" stroke="#334155" stroke-width="0.5" stroke-dasharray="3,3"/>
+                <line x1="48" y1="140" x2="410" y2="140" stroke="#475569" stroke-width="1"/>
+                <!-- 위험 기준선 -->
+                <line x1="48" y1="43" x2="410" y2="43" stroke="#ef4444" stroke-width="0.8" stroke-dasharray="5,3" opacity="0.5"/>
+                <text x="52" y="40" fill="#ef4444" font-size="7" opacity="0.8">위험 70</text>
+                <!-- 주의 기준선 -->
+                <line x1="48" y1="91" x2="410" y2="91" stroke="#f59e0b" stroke-width="0.8" stroke-dasharray="5,3" opacity="0.5"/>
+                <text x="52" y="88" fill="#f59e0b" font-size="7" opacity="0.8">주의 40</text>
+                <!-- Y축 -->
+                <text x="40" y="13"  text-anchor="end" fill="#64748b" font-size="8">100</text>
+                <text x="40" y="43"  text-anchor="end" fill="#64748b" font-size="8">75</text>
+                <text x="40" y="73"  text-anchor="end" fill="#64748b" font-size="8">50</text>
+                <text x="40" y="103" text-anchor="end" fill="#64748b" font-size="8">25</text>
+                <text x="40" y="133" text-anchor="end" fill="#64748b" font-size="8">0</text>
+                <!-- X축 -->
+                <text x="48"  y="153" text-anchor="middle" fill="#64748b" font-size="8">08시</text>
+                <text x="110" y="153" text-anchor="middle" fill="#64748b" font-size="8">10시</text>
+                <text x="172" y="153" text-anchor="middle" fill="#64748b" font-size="8">12시</text>
+                <text x="234" y="153" text-anchor="middle" fill="#64748b" font-size="8">14시</text>
+                <text x="296" y="153" text-anchor="middle" fill="#64748b" font-size="8">16시</text>
+                <text x="358" y="153" text-anchor="middle" fill="#64748b" font-size="8">18시</text>
+                <!-- 빨간 (위험) 영역 -->
+                <polygon points="48,134 79,121 110,107 141,90 172,75 203,59 234,52 265,43 296,36 327,32 358,29 358,140 48,140" fill="url(#gRed)" opacity="0.6"/>
+                <polyline points="48,134 79,121 110,107 141,90 172,75 203,59 234,52 265,43 296,36 327,32 358,29" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linejoin="round"/>
+                <circle cx="358" cy="29" r="4" fill="#ef4444"/>
+                <!-- 노란 (주의) -->
+                <polyline points="48,135 79,127 110,114 141,98 172,84 203,75 234,67 265,62 296,58 327,54 358,49" fill="none" stroke="#facc15" stroke-width="2" stroke-linejoin="round"/>
+                <circle cx="358" cy="49" r="3.5" fill="#facc15"/>
+                <!-- 주황 (주의2) -->
+                <polyline points="48,136 79,130 110,119 141,106 172,93 203,85 234,79 265,75 296,71 327,68 358,66" fill="none" stroke="#fb923c" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="358" cy="66" r="3" fill="#fb923c"/>
+                <!-- 초록 (정상) 영역 -->
+                <polygon points="48,137 79,135 110,130 141,123 172,117 203,114 234,111 265,112 296,111 327,110 358,110 358,140 48,140" fill="url(#gGreen)" opacity="0.5"/>
+                <polyline points="48,137 79,135 110,130 141,123 172,117 203,114 234,111 265,112 296,111 327,110 358,110" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linejoin="round"/>
+                <circle cx="358" cy="110" r="3" fill="#22c55e"/>
+                <!-- 현재 시각 -->
+                <line x1="358" y1="10" x2="358" y2="140" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.6"/>
+                <text x="358" y="9" text-anchor="middle" fill="#60a5fa" font-size="7">현재</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 하단: 도넛 차트 + 항목별 바 -->
+          <div class="grid grid-cols-2 gap-3">
+
+            <div class="bg-slate-800 rounded-xl border border-slate-700">
+              <div class="px-4 py-3 border-b border-slate-700">
+                <span class="text-white text-sm font-semibold">🚛 차량 상태 분포</span>
+              </div>
+              <div class="p-4 flex items-center gap-4">
+                <svg viewBox="0 0 120 120" class="w-28 h-28 flex-shrink-0">
+                  <circle cx="60" cy="60" r="45" fill="none" stroke="#1e293b" stroke-width="18"/>
+                  <!-- 미운행 gray -->
+                  <circle cx="60" cy="60" r="45" fill="none" stroke="#374151" stroke-width="18" stroke-dasharray="94 188" stroke-dashoffset="-70" transform="rotate(-90 60 60)"/>
+                  <!-- 정상 green -->
+                  <circle cx="60" cy="60" r="45" fill="none" stroke="#22c55e" stroke-width="18" stroke-dasharray="71 212" stroke-dashoffset="-164" transform="rotate(-90 60 60)"/>
+                  <!-- 주의 yellow -->
+                  <circle cx="60" cy="60" r="45" fill="none" stroke="#f59e0b" stroke-width="18" stroke-dasharray="71 212" stroke-dashoffset="-235" transform="rotate(-90 60 60)"/>
+                  <!-- 위험 red -->
+                  <circle cx="60" cy="60" r="45" fill="none" stroke="#ef4444" stroke-width="18" stroke-dasharray="47 236" stroke-dashoffset="-306" transform="rotate(-90 60 60)"/>
+                  <text x="60" y="56" text-anchor="middle" fill="white" font-size="16" font-weight="bold">12</text>
+                  <text x="60" y="68" text-anchor="middle" fill="#94a3b8" font-size="8">총 차량</text>
+                </svg>
+                <div class="space-y-2 flex-1 text-xs">
+                  <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-red-500"></span><span class="text-slate-300">위험</span></span><span class="text-white font-bold">2대</span></div>
+                  <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-yellow-500"></span><span class="text-slate-300">주의</span></span><span class="text-white font-bold">3대</span></div>
+                  <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-green-500"></span><span class="text-slate-300">정상</span></span><span class="text-white font-bold">3대</span></div>
+                  <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-slate-500"></span><span class="text-slate-300">미운행</span></span><span class="text-white font-bold">4대</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-xl border border-slate-700">
+              <div class="px-4 py-3 border-b border-slate-700">
+                <span class="text-white text-sm font-semibold">📊 피로도 항목별 평균</span>
+              </div>
+              <div class="p-4 space-y-3">
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">연속 운행</span><span class="text-red-400 font-bold">35점</span></div>
+                  <div class="w-full bg-slate-700 rounded-full h-2.5"><div class="bg-red-500 h-2.5 rounded-full" style="width:70%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">일일 총 운행</span><span class="text-yellow-400 font-bold">20점</span></div>
+                  <div class="w-full bg-slate-700 rounded-full h-2.5"><div class="bg-yellow-400 h-2.5 rounded-full" style="width:40%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">야간 운행</span><span class="text-orange-400 font-bold">18점</span></div>
+                  <div class="w-full bg-slate-700 rounded-full h-2.5"><div class="bg-orange-400 h-2.5 rounded-full" style="width:36%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">휴식 부족</span><span class="text-red-300 font-bold">12점</span></div>
+                  <div class="w-full bg-slate-700 rounded-full h-2.5"><div class="bg-red-400 h-2.5 rounded-full" style="width:24%"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">휴식 보정 (차감)</span><span class="text-green-400 font-bold">-10점</span></div>
+                  <div class="w-full bg-slate-700 rounded-full h-2.5"><div class="bg-green-500 h-2.5 rounded-full" style="width:20%"></div></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 차량 테이블 -->
+      <div class="bg-slate-800 rounded-xl border border-slate-700">
+        <div class="px-5 py-3 border-b border-slate-700 flex items-center justify-between">
+          <h2 class="text-white font-semibold text-sm">차량별 피로도 실시간 현황</h2>
+          <span class="text-slate-400 text-xs">마지막 업데이트: 18:24:07</span>
+        </div>
+        <table class="w-full text-sm">
+          <thead><tr class="text-slate-400 text-xs border-b border-slate-700">
+            <th class="px-4 py-2.5 text-left">번호판</th>
+            <th class="px-4 py-2.5 text-left">운전자</th>
+            <th class="px-4 py-2.5 text-left">속도</th>
+            <th class="px-4 py-2.5 text-left">운행</th>
+            <th class="px-4 py-2.5 text-left">연속운행</th>
+            <th class="px-4 py-2.5 text-left">야간</th>
+            <th class="px-4 py-2.5 text-left">피로 점수</th>
+            <th class="px-4 py-2.5 text-left">등급</th>
+            <th class="px-4 py-2.5 text-left">연락</th>
+          </tr></thead>
+          <tbody class="divide-y divide-slate-700/50">
+            <tr class="bg-red-950/30">
+              <td class="px-4 py-2.5 text-white font-mono font-bold">12가 3456</td>
+              <td class="px-4 py-2.5 text-slate-200">김철수</td>
+              <td class="px-4 py-2.5 text-slate-200">87km/h</td>
+              <td class="px-4 py-2.5 text-slate-200">8h 30m</td>
+              <td class="px-4 py-2.5 text-red-400 font-medium">4h 15m</td>
+              <td class="px-4 py-2.5 text-orange-400">2h 10m</td>
+              <td class="px-4 py-2.5"><div class="flex items-center gap-2"><div class="w-20 bg-slate-700 rounded-full h-2"><div class="bg-red-500 h-2 rounded-full" style="width:85%"></div></div><span class="text-red-400 font-bold">85</span></div></td>
+              <td class="px-4 py-2.5"><span class="badge-danger text-xs px-2.5 py-1 rounded-full font-bold">위험</span></td>
+              <td class="px-4 py-2.5"><button class="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg">📞 전화</button></td>
+            </tr>
+            <tr class="bg-red-950/20">
+              <td class="px-4 py-2.5 text-white font-mono font-bold">34나 7890</td>
+              <td class="px-4 py-2.5 text-slate-200">이영희</td>
+              <td class="px-4 py-2.5 text-slate-200">72km/h</td>
+              <td class="px-4 py-2.5 text-slate-200">7h 45m</td>
+              <td class="px-4 py-2.5 text-red-400 font-medium">3h 50m</td>
+              <td class="px-4 py-2.5 text-orange-400">1h 45m</td>
+              <td class="px-4 py-2.5"><div class="flex items-center gap-2"><div class="w-20 bg-slate-700 rounded-full h-2"><div class="bg-red-500 h-2 rounded-full" style="width:75%"></div></div><span class="text-red-400 font-bold">75</span></div></td>
+              <td class="px-4 py-2.5"><span class="badge-danger text-xs px-2.5 py-1 rounded-full font-bold">위험</span></td>
+              <td class="px-4 py-2.5"><button class="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg">📞 전화</button></td>
+            </tr>
+            <tr class="bg-yellow-950/20">
+              <td class="px-4 py-2.5 text-white font-mono">56다 1234</td>
+              <td class="px-4 py-2.5 text-slate-200">박민수</td>
+              <td class="px-4 py-2.5 text-slate-200">65km/h</td>
+              <td class="px-4 py-2.5 text-slate-200">5h 20m</td>
+              <td class="px-4 py-2.5 text-yellow-400">2h 10m</td>
+              <td class="px-4 py-2.5 text-slate-300">45m</td>
+              <td class="px-4 py-2.5"><div class="flex items-center gap-2"><div class="w-20 bg-slate-700 rounded-full h-2"><div class="bg-yellow-400 h-2 rounded-full" style="width:62%"></div></div><span class="text-yellow-400 font-bold">62</span></div></td>
+              <td class="px-4 py-2.5"><span class="badge-caution text-xs px-2.5 py-1 rounded-full font-bold">주의</span></td>
+              <td class="px-4 py-2.5"><span class="text-slate-600 text-xs">-</span></td>
+            </tr>
+            <tr class="hover:bg-slate-700/20">
+              <td class="px-4 py-2.5 text-white font-mono">78라 5678</td>
+              <td class="px-4 py-2.5 text-slate-200">정현지</td>
+              <td class="px-4 py-2.5 text-slate-200">78km/h</td>
+              <td class="px-4 py-2.5 text-slate-200">4h 10m</td>
+              <td class="px-4 py-2.5 text-slate-300">1h 55m</td>
+              <td class="px-4 py-2.5 text-slate-300">20m</td>
+              <td class="px-4 py-2.5"><div class="flex items-center gap-2"><div class="w-20 bg-slate-700 rounded-full h-2"><div class="bg-yellow-400 h-2 rounded-full" style="width:48%"></div></div><span class="text-yellow-400 font-bold">48</span></div></td>
+              <td class="px-4 py-2.5"><span class="badge-caution text-xs px-2.5 py-1 rounded-full font-bold">주의</span></td>
+              <td class="px-4 py-2.5"><span class="text-slate-600 text-xs">-</span></td>
+            </tr>
+            <tr class="hover:bg-slate-700/20">
+              <td class="px-4 py-2.5 text-white font-mono">90마 9012</td>
+              <td class="px-4 py-2.5 text-slate-200">홍길동</td>
+              <td class="px-4 py-2.5 text-slate-200">55km/h</td>
+              <td class="px-4 py-2.5 text-slate-200">2h 30m</td>
+              <td class="px-4 py-2.5 text-slate-300">1h 20m</td>
+              <td class="px-4 py-2.5 text-slate-300">0m</td>
+              <td class="px-4 py-2.5"><div class="flex items-center gap-2"><div class="w-20 bg-slate-700 rounded-full h-2"><div class="bg-green-500 h-2 rounded-full" style="width:25%"></div></div><span class="text-green-400 font-bold">25</span></div></td>
+              <td class="px-4 py-2.5"><span class="badge-normal text-xs px-2.5 py-1 rounded-full font-bold">정상</span></td>
+              <td class="px-4 py-2.5"><span class="text-slate-600 text-xs">-</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+</div>
+     8. 차량 관리
+═══════════════════════════════════════════════════════ -->
+<div id="screen-vehicle" class="screen min-h-screen bg-slate-900 flex-col">
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3"><span class="text-white font-bold text-lg">logmile</span><span class="text-slate-400 text-sm">/ 차량 관리</span></div>
+  </header>
+  <div class="flex flex-1">
+    <aside class="w-56 bg-slate-800 border-r border-slate-700 p-4">
+      <nav class="space-y-1">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2">메뉴</div>
+        <button onclick="showScreen('dashboard')"  class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📊 대시보드</button>
+        <button onclick="showScreen('simulation')" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🛰️ 시뮬레이션</button>
+        <button onclick="showScreen('vehicle')"    class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">🚛 차량 관리</button>
+        <button onclick="showScreen('driver')"     class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">👨‍✈️ 운전자 관리</button>
+        <button onclick="showScreen('history')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📋 운행 이력</button>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-white text-xl font-bold">차량 관리</h1>
+        <button class="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg">+ 차량 등록</button>
+      </div>
+      <div class="bg-slate-800 rounded-xl border border-slate-700">
+        <table class="w-full text-sm">
+          <thead><tr class="text-slate-400 text-xs border-b border-slate-700">
+            <th class="px-5 py-3 text-left">번호판</th>
+            <th class="px-5 py-3 text-left">차종</th>
+            <th class="px-5 py-3 text-left">배정 운전자</th>
+            <th class="px-5 py-3 text-left">활성 여부</th>
+            <th class="px-5 py-3 text-left">등록일</th>
+            <th class="px-5 py-3 text-left">관리</th>
+          </tr></thead>
+          <tbody class="divide-y divide-slate-700/50">
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-mono">12가 3456</td><td class="px-5 py-3 text-slate-300">5톤 카고</td><td class="px-5 py-3 text-slate-300">김철수</td><td class="px-5 py-3"><span class="badge-normal text-xs px-2 py-1 rounded-full">활성</span></td><td class="px-5 py-3 text-slate-400">2026-04-10</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-mono">34나 7890</td><td class="px-5 py-3 text-slate-300">11톤 윙바디</td><td class="px-5 py-3 text-slate-300">이영희</td><td class="px-5 py-3"><span class="badge-normal text-xs px-2 py-1 rounded-full">활성</span></td><td class="px-5 py-3 text-slate-400">2026-04-10</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-mono">56다 1234</td><td class="px-5 py-3 text-slate-300">3.5톤 냉동</td><td class="px-5 py-3 text-slate-300">박민수</td><td class="px-5 py-3"><span class="badge-normal text-xs px-2 py-1 rounded-full">활성</span></td><td class="px-5 py-3 text-slate-400">2026-04-11</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-mono">78라 5678</td><td class="px-5 py-3 text-slate-300">5톤 카고</td><td class="px-5 py-3 text-slate-300">정현지</td><td class="px-5 py-3"><span class="badge-normal text-xs px-2 py-1 rounded-full">활성</span></td><td class="px-5 py-3 text-slate-400">2026-04-12</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-mono">90마 9012</td><td class="px-5 py-3 text-slate-300">11톤 윙바디</td><td class="px-5 py-3 text-slate-300">홍길동</td><td class="px-5 py-3"><span class="badge-normal text-xs px-2 py-1 rounded-full">활성</span></td><td class="px-5 py-3 text-slate-400">2026-04-12</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-slate-400 font-mono">11바 1357</td><td class="px-5 py-3 text-slate-400">3.5톤 냉동</td><td class="px-5 py-3 text-slate-500">미배정</td><td class="px-5 py-3"><span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded-full">비활성</span></td><td class="px-5 py-3 text-slate-400">2026-04-15</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     9. 운전자 관리
+═══════════════════════════════════════════════════════ -->
+<div id="screen-driver" class="screen min-h-screen bg-slate-900 flex-col">
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3"><span class="text-white font-bold text-lg">logmile</span><span class="text-slate-400 text-sm">/ 운전자 관리</span></div>
+  </header>
+  <div class="flex flex-1">
+    <aside class="w-56 bg-slate-800 border-r border-slate-700 p-4">
+      <nav class="space-y-1">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2">메뉴</div>
+        <button onclick="showScreen('dashboard')"  class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📊 대시보드</button>
+        <button onclick="showScreen('simulation')" class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🛰️ 시뮬레이션</button>
+        <button onclick="showScreen('vehicle')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🚛 차량 관리</button>
+        <button onclick="showScreen('driver')"     class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">👨‍✈️ 운전자 관리</button>
+        <button onclick="showScreen('history')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📋 운행 이력</button>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-white text-xl font-bold">운전자 관리</h1>
+        <button class="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg">+ 운전자 등록</button>
+      </div>
+      <div class="bg-slate-800 rounded-xl border border-slate-700">
+        <table class="w-full text-sm">
+          <thead><tr class="text-slate-400 text-xs border-b border-slate-700">
+            <th class="px-5 py-3 text-left">이름</th>
+            <th class="px-5 py-3 text-left">연락처</th>
+            <th class="px-5 py-3 text-left">면허 종류</th>
+            <th class="px-5 py-3 text-left">배정 차량</th>
+            <th class="px-5 py-3 text-left">등록일</th>
+            <th class="px-5 py-3 text-left">관리</th>
+          </tr></thead>
+          <tbody class="divide-y divide-slate-700/50">
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-medium">김철수</td><td class="px-5 py-3 text-slate-300">010-1111-1111</td><td class="px-5 py-3 text-slate-300">1종 대형</td><td class="px-5 py-3 text-slate-300 font-mono">12가 3456</td><td class="px-5 py-3 text-slate-400">2026-04-10</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-yellow-400 text-xs hover:underline">차량배정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-medium">이영희</td><td class="px-5 py-3 text-slate-300">010-2222-2222</td><td class="px-5 py-3 text-slate-300">1종 대형</td><td class="px-5 py-3 text-slate-300 font-mono">34나 7890</td><td class="px-5 py-3 text-slate-400">2026-04-10</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-yellow-400 text-xs hover:underline">차량배정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-medium">박민수</td><td class="px-5 py-3 text-slate-300">010-3333-3333</td><td class="px-5 py-3 text-slate-300">1종 보통</td><td class="px-5 py-3 text-slate-300 font-mono">56다 1234</td><td class="px-5 py-3 text-slate-400">2026-04-11</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-yellow-400 text-xs hover:underline">차량배정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-medium">정현지</td><td class="px-5 py-3 text-slate-300">010-4444-4444</td><td class="px-5 py-3 text-slate-300">1종 대형</td><td class="px-5 py-3 text-slate-300 font-mono">78라 5678</td><td class="px-5 py-3 text-slate-400">2026-04-12</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-yellow-400 text-xs hover:underline">차량배정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-white font-medium">홍길동</td><td class="px-5 py-3 text-slate-300">010-5555-5555</td><td class="px-5 py-3 text-slate-300">1종 대형</td><td class="px-5 py-3 text-slate-300 font-mono">90마 9012</td><td class="px-5 py-3 text-slate-400">2026-04-12</td><td class="px-5 py-3 flex gap-2"><button class="text-blue-400 text-xs hover:underline">수정</button><button class="text-yellow-400 text-xs hover:underline">차량배정</button><button class="text-red-400 text-xs hover:underline">삭제</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     10. 운행 이력
+═══════════════════════════════════════════════════════ -->
+<div id="screen-history" class="screen min-h-screen bg-slate-900 flex-col">
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3"><span class="text-white font-bold text-lg">logmile</span><span class="text-slate-400 text-sm">/ 운행 이력</span></div>
+  </header>
+  <div class="flex flex-1">
+    <aside class="w-56 bg-slate-800 border-r border-slate-700 p-4">
+      <nav class="space-y-1">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2">메뉴</div>
+        <button onclick="showScreen('dashboard')"  class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📊 대시보드</button>
+        <button onclick="showScreen('vehicle')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🚛 차량 관리</button>
+        <button onclick="showScreen('driver')"     class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">👨‍✈️ 운전자 관리</button>
+        <button onclick="showScreen('history')"    class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">📋 운행 이력</button>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6">
+      <h1 class="text-white text-xl font-bold mb-6">운행 이력</h1>
+      <div class="bg-slate-800 rounded-xl border border-slate-700">
+        <table class="w-full text-sm">
+          <thead><tr class="text-slate-400 text-xs border-b border-slate-700">
+            <th class="px-5 py-3 text-left">운행 ID</th>
+            <th class="px-5 py-3 text-left">번호판</th>
+            <th class="px-5 py-3 text-left">운전자</th>
+            <th class="px-5 py-3 text-left">시작</th>
+            <th class="px-5 py-3 text-left">종료</th>
+            <th class="px-5 py-3 text-left">총 운행</th>
+            <th class="px-5 py-3 text-left">야간</th>
+            <th class="px-5 py-3 text-left">최고 피로</th>
+            <th class="px-5 py-3 text-left">시나리오</th>
+            <th class="px-5 py-3 text-left">상태</th>
+          </tr></thead>
+          <tbody class="divide-y divide-slate-700/50">
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-slate-400 text-xs">#1042</td><td class="px-5 py-3 text-white font-mono">12가 3456</td><td class="px-5 py-3 text-slate-300">김철수</td><td class="px-5 py-3 text-slate-400 text-xs">04-30 08:00</td><td class="px-5 py-3 text-slate-400 text-xs">04-30 18:30</td><td class="px-5 py-3 text-slate-300">8h 30m</td><td class="px-5 py-3 text-orange-400">2h 10m</td><td class="px-5 py-3"><span class="badge-danger text-xs px-2 py-1 rounded-full">85점</span></td><td class="px-5 py-3 text-slate-300">C</td><td class="px-5 py-3"><span class="bg-green-900 text-green-300 text-xs px-2 py-1 rounded-full">완료</span></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-slate-400 text-xs">#1041</td><td class="px-5 py-3 text-white font-mono">34나 7890</td><td class="px-5 py-3 text-slate-300">이영희</td><td class="px-5 py-3 text-slate-400 text-xs">04-30 07:30</td><td class="px-5 py-3 text-slate-400 text-xs">04-30 16:00</td><td class="px-5 py-3 text-slate-300">7h 45m</td><td class="px-5 py-3 text-orange-400">1h 45m</td><td class="px-5 py-3"><span class="badge-danger text-xs px-2 py-1 rounded-full">75점</span></td><td class="px-5 py-3 text-slate-300">B</td><td class="px-5 py-3"><span class="bg-green-900 text-green-300 text-xs px-2 py-1 rounded-full">완료</span></td></tr>
+            <tr class="hover:bg-slate-700/30"><td class="px-5 py-3 text-slate-400 text-xs">#1040</td><td class="px-5 py-3 text-white font-mono">90마 9012</td><td class="px-5 py-3 text-slate-300">홍길동</td><td class="px-5 py-3 text-slate-400 text-xs">04-29 09:00</td><td class="px-5 py-3 text-slate-400 text-xs">04-29 13:30</td><td class="px-5 py-3 text-slate-300">4h 30m</td><td class="px-5 py-3 text-slate-400">0m</td><td class="px-5 py-3"><span class="badge-normal text-xs px-2 py-1 rounded-full">22점</span></td><td class="px-5 py-3 text-slate-300">A</td><td class="px-5 py-3"><span class="bg-green-900 text-green-300 text-xs px-2 py-1 rounded-full">완료</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     11. 시뮬레이션
+═══════════════════════════════════════════════════════ -->
+<div id="screen-simulation" class="screen min-h-screen bg-slate-900 flex-col">
+  <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3"><span class="text-white font-bold text-lg">logmile</span><span class="text-slate-400 text-sm">/ GPS 시뮬레이션</span></div>
+  </header>
+  <div class="flex flex-1">
+    <aside class="w-56 bg-slate-800 border-r border-slate-700 p-4">
+      <nav class="space-y-1">
+        <div class="text-slate-500 text-xs uppercase px-3 mb-2">메뉴</div>
+        <button onclick="showScreen('dashboard')"  class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📊 대시보드</button>
+        <button onclick="showScreen('simulation')" class="w-full text-left px-3 py-2 rounded-lg text-blue-400 bg-blue-950 text-sm font-medium">🛰️ 시뮬레이션</button>
+        <button onclick="showScreen('vehicle')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">🚛 차량 관리</button>
+        <button onclick="showScreen('history')"    class="w-full text-left px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-700 text-sm">📋 운행 이력</button>
+      </nav>
+    </aside>
+    <main class="flex-1 p-6">
+      <h1 class="text-white text-xl font-bold mb-6">GPS 시뮬레이션</h1>
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <!-- 시나리오 A -->
+        <div class="bg-slate-800 rounded-xl p-5 border-2 border-green-600 cursor-pointer">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 bg-green-900 rounded-lg flex items-center justify-center text-green-400 font-bold">A</div>
+            <div>
+              <div class="text-white text-sm font-semibold">정상 운행</div>
+              <div class="text-green-400 text-xs">NORMAL</div>
+            </div>
+          </div>
+          <ul class="text-slate-400 text-xs space-y-1">
+            <li>• 충분한 휴식 (30분+)</li>
+            <li>• 야간 운행 없음</li>
+            <li>• 총 운행 4~6시간</li>
+            <li>• 예상 피로도: 0~39점</li>
+          </ul>
+        </div>
+        <!-- 시나리오 B -->
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700 cursor-pointer hover:border-yellow-600">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 bg-yellow-900 rounded-lg flex items-center justify-center text-yellow-400 font-bold">B</div>
+            <div>
+              <div class="text-white text-sm font-semibold">주의 운행</div>
+              <div class="text-yellow-400 text-xs">CAUTION</div>
+            </div>
+          </div>
+          <ul class="text-slate-400 text-xs space-y-1">
+            <li>• 유효 휴식만 (15~29분)</li>
+            <li>• 야간 운행 1시간</li>
+            <li>• 총 운행 7~8시간</li>
+            <li>• 예상 피로도: 40~69점</li>
+          </ul>
+        </div>
+        <!-- 시나리오 C -->
+        <div class="bg-slate-800 rounded-xl p-5 border border-slate-700 cursor-pointer hover:border-red-600">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 bg-red-900 rounded-lg flex items-center justify-center text-red-400 font-bold">C</div>
+            <div>
+              <div class="text-white text-sm font-semibold">위험 운행</div>
+              <div class="text-red-400 text-xs">DANGER</div>
+            </div>
+          </div>
+          <ul class="text-slate-400 text-xs space-y-1">
+            <li>• 휴식 없음 (연속 4시간+)</li>
+            <li>• 야간 운행 2시간+</li>
+            <li>• 총 운행 9시간+</li>
+            <li>• 예상 피로도: 70점+</li>
+          </ul>
+        </div>
+      </div>
+      <!-- 실행 패널 -->
+      <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <h2 class="text-white font-semibold mb-4">시뮬레이션 설정</h2>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="text-slate-400 text-xs mb-1 block">선택된 시나리오</label>
+            <div class="bg-green-900/50 text-green-400 px-3 py-2 rounded-lg text-sm font-medium border border-green-700">시나리오 A - 정상 운행</div>
+          </div>
+          <div>
+            <label class="text-slate-400 text-xs mb-1 block">대상 차량</label>
+            <select class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600">
+              <option>12가 3456 (김철수)</option>
+              <option>34나 7890 (이영희)</option>
+              <option>56다 1234 (박민수)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 text-xs mb-1 block">전송 간격</label>
+            <select class="w-full bg-slate-700 text-white rounded-lg px-3 py-2 text-sm border border-slate-600">
+              <option>1초 (빠른 시연)</option>
+              <option>5초 (기본)</option>
+              <option>10초</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button class="bg-green-600 hover:bg-green-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm">▶ 시뮬레이션 시작</button>
+          <button class="bg-slate-600 hover:bg-slate-500 text-white px-6 py-2.5 rounded-lg font-medium text-sm">⏹ 중지</button>
+        </div>
+        <!-- 진행 상태 -->
+        <div class="mt-4 bg-slate-900 rounded-lg p-4 border border-slate-700">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-slate-400 text-xs">진행 상태</span>
+            <span class="text-green-400 text-xs flex items-center gap-1"><span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>실행 중</span>
+          </div>
+          <div class="w-full bg-slate-700 rounded-full h-2 mb-2">
+            <div class="bg-green-500 h-2 rounded-full" style="width:35%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-slate-500">
+            <span>GPS 데이터 전송: 1,240건</span>
+            <span>경과: 2h 05m</span>
+            <span>예상 종료: 3h 55m 후</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+</div><!-- /pt-12 -->
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  event.currentTarget && event.currentTarget.classList && event.currentTarget.classList.add('active');
+}
+// 버튼 active 동기화
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

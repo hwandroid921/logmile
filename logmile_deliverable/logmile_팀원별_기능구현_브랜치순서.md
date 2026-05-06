@@ -100,8 +100,12 @@ test: 피로도 계산 단위 테스트 추가
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
 | 23 | `feature/ai-fastapi-server` | FastAPI 서버 구조, 라우터, 환경 설정 | AI 프로젝트 구조 |
-| 24 | `feature/ai-ocr-license-plate` | YOLO11 + EasyOCR 번호판 인식 API | FastAPI 서버 |
-| 25 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | OCR API |
+| 24 | `feature/ai-model-dataset` | 번호판 학습 데이터 수집, 라벨링 기준 정리, 데이터셋 버전 관리 | FastAPI 서버 |
+| 25 | `feature/ai-model-training` | YOLO11n 번호판 탐지 모델 학습, YOLOv8n 비교 학습, 학습 로그 정리 | 데이터셋 |
+| 26 | `feature/ai-model-evaluation` | mAP50, Precision, Recall, OCR 성공률, 추론 속도 비교 및 모델 선정 | 학습 결과 |
+| 27 | `feature/ai-ocr-license-plate` | YOLO11 + EasyOCR 번호판 인식 API | FastAPI 서버, 선정 모델 |
+| 28 | `feature/ai-ocr-observation` | 출발/도착, 고속도로 관측, 휴게소 진입/진출 OCR 처리 | 번호판 인식 API |
+| 29 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | OCR API |
 
 ---
 
@@ -185,7 +189,7 @@ test: 피로도 계산 단위 테스트 추가
 |---:|---|---|---|
 | 1 | `feature/infra-docker-compose` | Backend, Frontend, AI, PostgreSQL Docker Compose 구성 | 공통 |
 | 2 | `feature/infra-env-config` | `.env`, CORS, DB 접속, API URL 환경변수 정리 | 공통 |
-| 3 | `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (9테이블) 및 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) | 공통 |
+| 3 | `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (10테이블) 및 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) | 공통 |
 
 ---
 

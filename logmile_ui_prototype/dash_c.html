@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LogMile 시안 C — 라이트 카드형</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1e293b;min-height:100vh}
+
+/* ── 상단 헤더 ── */
+.header{
+  background:#fff;border-bottom:1px solid #e2e8f0;
+  padding:0 28px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.h-left{display:flex;align-items:center;gap:14px}
+.logo-wrap{display:flex;align-items:center;gap:9px}
+.logo-sq{width:32px;height:32px;border-radius:8px;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff}
+.logo-name{font-size:15px;font-weight:800;color:#0f172a}
+.logo-tag{font-size:11px;color:#94a3b8;padding:2px 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px}
+/* 탭 내비 */
+.tabs{display:flex;gap:2px;margin-left:20px}
+.tab{padding:6px 14px;border-radius:6px;font-size:13px;color:#64748b;cursor:pointer;font-weight:500;transition:.15s}
+.tab:hover{background:#f8fafc;color:#334155}
+.tab.active{background:#eff6ff;color:#2563eb;font-weight:600}
+.h-right{display:flex;align-items:center;gap:12px}
+.live-badge{display:flex;align-items:center;gap:6px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;padding:4px 12px;font-size:12px;color:#059669;font-weight:600}
+.live-dot2{width:6px;height:6px;border-radius:50%;background:#10b981;animation:blink2 1.5s infinite}
+@keyframes blink2{0%,100%{opacity:1}50%{opacity:0.3}}
+.notif{width:32px;height:32px;border-radius:8px;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;position:relative}
+.notif-badge{position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:#ef4444;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.user-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 10px;border-radius:8px}
+.user-wrap:hover{background:#f8fafc}
+.ua{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.uname{font-size:13px;font-weight:600;color:#374151}
+
+/* ── 페이지 컨테이너 ── */
+.page{padding:20px 28px;max-width:1400px;margin:0 auto}
+
+/* 요약 스트립 */
+.summary-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.ss-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:.2s;cursor:pointer}
+.ss-card:hover{border-color:#bfdbfe;box-shadow:0 4px 12px rgba(37,99,235,0.08)}
+.ss-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.ic-blue{background:#eff6ff}
+.ic-red{background:#fef2f2}
+.ic-yellow{background:#fffbeb}
+.ic-green{background:#f0fdf4}
+.ic-indigo{background:#eef2ff}
+.ss-info{flex:1}
+.ss-label{font-size:10px;color:#94a3b8;font-weight:600;letter-spacing:0.5px;margin-bottom:2px}
+.ss-val{font-size:22px;font-weight:800;color:#0f172a;line-height:1}
+.ss-sub{font-size:10px;color:#94a3b8;margin-top:2px}
+
+/* ── 메인 3칼럼 그리드 ── */
+.main-grid{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:14px;margin-bottom:14px}
+
+/* 공통 카드 */
+.panel{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:18px}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-title{font-size:13px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:7px}
+.pt-bar{width:3px;height:14px;border-radius:2px;background:#2563eb}
+.panel-tag{font-size:10px;color:#94a3b8;font-weight:500}
+
+/* OCR 카드 (왼쪽) */
+.ocr-view{
+  background:#0f172a;border-radius:10px;position:relative;
+  overflow:hidden;margin-bottom:12px;height:165px;
+}
+.ocr-view-corner{position:absolute;width:12px;height:12px;z-index:4}
+.ocr-view-corner.tl{top:7px;left:7px;border-top:2px solid #3b82f6;border-left:2px solid #3b82f6}
+.ocr-view-corner.tr{top:7px;right:7px;border-top:2px solid #3b82f6;border-right:2px solid #3b82f6}
+.ocr-view-corner.bl{bottom:7px;left:7px;border-bottom:2px solid #3b82f6;border-left:2px solid #3b82f6}
+.ocr-view-corner.br{bottom:7px;right:7px;border-bottom:2px solid #3b82f6;border-right:2px solid #3b82f6}
+.ocr-view-badge{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);border-radius:20px;padding:2px 10px;font-size:9px;color:#93c5fd;font-weight:700;letter-spacing:0.5px;z-index:5}
+
+.result-chip{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 13px;margin-bottom:10px;
+}
+.plate-num-light{font-size:24px;font-weight:900;letter-spacing:3px;color:#0f172a;font-family:'Courier New',monospace}
+.plate-detail-light{font-size:10px;color:#94a3b8;margin-top:2px}
+.fatigue-chip{text-align:right}
+.fc-num{font-size:18px;font-weight:800;color:#ef4444}
+.fc-label{font-size:9px;color:#94a3b8}
+.fc-bar{height:4px;background:#fee2e2;border-radius:3px;overflow:hidden;margin-top:4px;width:70px}
+.fc-fill{height:100%;background:linear-gradient(to right,#dc2626,#ef4444);border-radius:3px}
+
+.conf-row-light{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.conf-pct{font-size:20px;font-weight:800;color:#0f172a}
+.conf-bar-light{flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden}
+.conf-fill-light{height:100%;background:linear-gradient(to right,#2563eb,#7c3aed);border-radius:3px;width:96.8%}
+.conf-ok{font-size:10px;font-weight:700;color:#059669}
+
+.hist-list-light{display:flex;flex-direction:column;gap:5px}
+.hl-row{display:flex;align-items:center;gap:8px;padding:6px 9px;background:#f8fafc;border-radius:7px;font-size:11px}
+.hl-plate{font-family:'Courier New',monospace;font-weight:700;color:#1e293b;letter-spacing:1px}
+.hl-time{color:#94a3b8;font-size:10px}
+.hl-tag{margin-left:auto;padding:1px 7px;border-radius:5px;font-size:10px;font-weight:600}
+.lt-d{background:#fef2f2;color:#ef4444}
+.lt-c{background:#fffbeb;color:#d97706}
+.lt-n{background:#f0fdf4;color:#16a34a}
+
+/* 라인 차트 (중앙) */
+.chart-mid{overflow:hidden}
+
+/* 오른쪽 드라이버 칸반 */
+.driver-kanban{display:flex;flex-direction:column;gap:8px}
+.dk-card{
+  border-radius:10px;padding:11px 13px;
+  border:1px solid transparent;
+  transition:.2s;cursor:pointer;
+}
+.dk-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.dk-danger{background:#fef2f2;border-color:#fecaca}
+.dk-caution{background:#fffbeb;border-color:#fde68a}
+.dk-normal{background:#f0fdf4;border-color:#bbf7d0}
+.dk-idle{background:#f8fafc;border-color:#e2e8f0}
+.dk-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.dk-name{font-size:13px;font-weight:700;color:#1e293b}
+.dk-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.dks-d{background:#ef4444;color:#fff}
+.dks-c{background:#d97706;color:#fff}
+.dks-n{background:#16a34a;color:#fff}
+.dks-i{background:#94a3b8;color:#fff}
+.dk-bar{height:6px;border-radius:3px;overflow:hidden;margin-bottom:6px}
+.dkb-track{height:100%;border-radius:3px}
+.dk-meta{display:flex;justify-content:space-between;font-size:10px;color:#64748b}
+
+/* 하단 2열 */
+.bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* 도넛 + 바 나란히 */
+.two-chart{display:flex;gap:16px;align-items:center}
+
+/* 가로 바 차트 */
+.hbar-list{flex:1;display:flex;flex-direction:column;gap:8px}
+.hbar-item{display:flex;align-items:center;gap:8px;font-size:11px}
+.hbar-label{width:64px;color:#64748b;font-size:10px;text-align:right}
+.hbar-track{flex:1;height:10px;background:#f1f5f9;border-radius:5px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:5px}
+.hf-d{background:linear-gradient(to right,#dc2626,#f87171)}
+.hf-c{background:linear-gradient(to right,#d97706,#fbbf24)}
+.hf-n{background:linear-gradient(to right,#2563eb,#60a5fa)}
+.hbar-val{font-size:10px;font-weight:700;width:28px;text-align:right}
+
+/* 도넛 (라이트) */
+.donut-light svg{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.08))}
+.dl-legend{display:flex;flex-direction:column;gap:6px;font-size:11px}
+.dll-row{display:flex;align-items:center;gap:7px;color:#64748b}
+.dll-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dll-cnt{margin-left:auto;font-weight:700;color:#1e293b}
+
+/* vtable 라이트 */
+.ltable{width:100%;border-collapse:collapse;font-size:12px}
+.ltable th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.5px;border-bottom:2px solid #f1f5f9;text-transform:uppercase}
+.ltable td{padding:9px 10px;border-bottom:1px solid #f1f5f9;color:#374151}
+.ltable tr:last-child td{border-bottom:none}
+.ltable tr:hover td{background:#f8fafc}
+.lpill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.lp-r{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.lp-w{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.lp-s{background:#f8fafc;color:#94a3b8;border:1px solid #e2e8f0}
+</style>
+</head>
+<body>
+
+<!-- ── 헤더 ── -->
+<header class="header">
+  <div class="h-left">
+    <div class="logo-wrap">
+      <div class="logo-sq">LM</div>
+      <span class="logo-name">logmile</span>
+      <span class="logo-tag">관제 대시보드</span>
+    </div>
+    <nav class="tabs">
+      <div class="tab active">대시보드</div>
+      <div class="tab">시뮬레이션</div>
+      <div class="tab">차량 관리</div>
+      <div class="tab">운전자 관리</div>
+      <div class="tab">운행 이력</div>
+      <div class="tab">설정</div>
+    </nav>
+  </div>
+  <div class="h-right">
+    <div class="live-badge"><div class="live-dot2"></div>LIVE · 차량 38대</div>
+    <div class="notif">🔔<div class="notif-badge">2</div></div>
+    <div class="user-wrap"><div class="ua">최</div><span class="uname">최수아</span></div>
+  </div>
+</header>
+
+<!-- ── 페이지 컨텐츠 ── -->
+<div class="page">
+
+  <!-- 요약 스트립 5개 -->
+  <div class="summary-strip">
+    <div class="ss-card">
+      <div class="ss-icon ic-blue">🚛</div>
+      <div class="ss-info">
+        <div class="ss-label">운행 차량</div>
+        <div class="ss-val">12</div>
+        <div class="ss-sub">총 18대 중</div>
+      </div>
+    </div>
+    <div class="ss-card" style="border-color:#fecaca">
+      <div class="ss-icon ic-red">⚠️</div>
+      <div class="ss-info">
+        <div class="ss-label">위험 운전자</div>
+        <div class="ss-val" style="color:#ef4444">2</div>
+        <div class="ss-sub" style="color:#ef4444">즉시 조치 필요</div>
+      </div>
+    </div>
+    <div class="ss-card" style="border-color:#fde68a">
+      <div class="ss-icon ic-yellow">🟡</div>
+      <div class="ss-info">
+        <div class="ss-label">주의 운전자</div>
+        <div class="ss-val" style="color:#d97706">3</div>
+        <div class="ss-sub" style="color:#d97706">모니터링 중</div>
+      </div>
+    </div>
+    <div class="ss-card">
+      <div class="ss-icon ic-green">✅</div>
+      <div class="ss-info">
+        <div class="ss-label">정상 운전자</div>
+        <div class="ss-val" style="color:#16a34a">3</div>
+        <div class="ss-sub" style="color:#16a34a">양호</div>
+      </div>
+    </div>
+    <div class="ss-card">
+      <div class="ss-icon ic-indigo">📷</div>
+      <div class="ss-info">
+        <div class="ss-label">오늘 인식</div>
+        <div class="ss-val">52<span style="font-size:14px;color:#94a3b8">건</span></div>
+        <div class="ss-sub" style="color:#16a34a">▲ 5.3% 어제 대비</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 3칼럼 -->
+  <div class="main-grid">
+
+    <!-- 왼쪽: OCR 패널 -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><div class="pt-bar"></div>번호판 OCR</div>
+        <div class="panel-tag">YOLOv8 · EasyOCR</div>
+      </div>
+
+      <!-- 카메라 뷰 -->
+      <div class="ocr-view">
+        <div class="ocr-view-corner tl"></div><div class="ocr-view-corner tr"></div>
+        <div class="ocr-view-corner bl"></div><div class="ocr-view-corner br"></div>
+        <div class="ocr-view-badge">● REC · LIVE</div>
+        <svg viewBox="0 0 300 165" style="width:100%;height:165px;display:block">
+          <defs>
+            <linearGradient id="skyC" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0c1a2e"/>
+              <stop offset="100%" stop-color="#061020"/>
+            </linearGradient>
+            <linearGradient id="scanBlue" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0"/>
+              <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="105" fill="url(#skyC)"/>
+          <rect y="105" width="300" height="60" fill="#060f1c"/>
+          <!-- 도로 -->
+          <line x1="150" y1="80" x2="50" y2="165" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="7,5"/>
+          <line x1="150" y1="80" x2="250" y2="165" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="7,5"/>
+          <line x1="150" y1="84" x2="150" y2="165" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="9,7"/>
+          <!-- 트럭 -->
+          <rect x="75" y="58" width="90" height="55" rx="2" fill="#112240"/>
+          <rect x="76" y="59" width="88" height="53" rx="1" fill="#0c1a31"/>
+          <rect x="165" y="64" width="50" height="49" rx="4" fill="#163052"/>
+          <rect x="166" y="65" width="48" height="47" rx="3" fill="#112644"/>
+          <rect x="174" y="70" width="22" height="17" rx="2" fill="#060f1c"/>
+          <rect x="175" y="71" width="20" height="15" rx="1" fill="rgba(59,130,246,0.08)"/>
+          <rect x="213" y="70" width="8" height="6" rx="1" fill="#1e3c5e"/>
+          <!-- 바퀴 -->
+          <circle cx="95" cy="117" r="10" fill="#07111e"/><circle cx="95" cy="117" r="5.5" fill="#040c16"/>
+          <circle cx="125" cy="117" r="10" fill="#07111e"/><circle cx="125" cy="117" r="5.5" fill="#040c16"/>
+          <circle cx="183" cy="117" r="10" fill="#07111e"/><circle cx="183" cy="117" r="5.5" fill="#040c16"/>
+          <!-- 헤드라이트 -->
+          <rect x="213" y="88" width="5" height="10" rx="2" fill="rgba(253,224,71,0.35)"/>
+          <ellipse cx="218" cy="93" rx="10" ry="6" fill="rgba(253,224,71,0.05)"/>
+          <!-- 번호판 -->
+          <rect x="82" y="91" width="58" height="20" rx="2" fill="#f0f6fc"/>
+          <text x="111" y="104" text-anchor="middle" font-family="'Courier New',monospace" font-size="10" font-weight="900" fill="#1e1b4b">12가 3456</text>
+          <!-- 인식 박스 -->
+          <rect x="79" y="88" width="64" height="26" rx="3" fill="none" stroke="#3b82f6" stroke-width="1.5">
+            <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          <!-- 코너 마커 -->
+          <line x1="79" y1="88" x2="87" y2="88" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="79" y1="88" x2="79" y2="96" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="143" y1="88" x2="135" y2="88" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="143" y1="88" x2="143" y2="96" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="79" y1="114" x2="87" y2="114" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="79" y1="114" x2="79" y2="106" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="143" y1="114" x2="135" y2="114" stroke="#3b82f6" stroke-width="2"/>
+          <line x1="143" y1="114" x2="143" y2="106" stroke="#3b82f6" stroke-width="2"/>
+          <!-- 스캔라인 -->
+          <rect x="80" y="89" width="62" height="1.5" fill="url(#scanBlue)">
+            <animate attributeName="y" values="89;112;89" dur="1.3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.9;0.15;0.9" dur="1.3s" repeatCount="indefinite"/>
+          </rect>
+          <!-- 레이블 -->
+          <rect x="79" y="73" width="64" height="13" rx="3" fill="#3b82f6">
+            <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          <text x="111" y="83" text-anchor="middle" font-size="7.5" font-weight="700" fill="#fff">PLATE DETECTED</text>
+        </svg>
+      </div>
+
+      <!-- 신뢰도 -->
+      <div class="conf-row-light">
+        <div>
+          <div style="font-size:9px;color:#94a3b8;margin-bottom:1px">신뢰도</div>
+          <div class="conf-pct">96.8%</div>
+        </div>
+        <div class="conf-bar-light" style="margin-top:12px">
+          <div class="conf-fill-light"></div>
+        </div>
+        <div class="conf-ok" style="margin-top:12px">✓ PASS</div>
+      </div>
+
+      <!-- 결과 칩 -->
+      <div class="result-chip">
+        <div>
+          <div style="font-size:9px;color:#94a3b8;margin-bottom:3px">인식 번호판</div>
+          <div class="plate-num-light">12가 3456</div>
+          <div class="plate-detail-light">트럭 6톤 · 김영수 운전자</div>
+        </div>
+        <div class="fatigue-chip">
+          <div class="fc-label">피로도 점수</div>
+          <div class="fc-num">85pt</div>
+          <div style="font-size:9px;color:#ef4444;font-weight:600">위험 ▲</div>
+          <div class="fc-bar"><div class="fc-fill" style="width:85%"></div></div>
+        </div>
+      </div>
+
+      <!-- 히스토리 -->
+      <div style="font-size:10px;color:#94a3b8;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px">최근 인식 이력</div>
+      <div class="hist-list-light">
+        <div class="hl-row">
+          <span class="hl-plate">12가 3456</span>
+          <span class="hl-time">방금</span>
+          <span class="hl-tag lt-d">85pt 위험</span>
+        </div>
+        <div class="hl-row">
+          <span class="hl-plate">34나 7890</span>
+          <span class="hl-time">3분 전</span>
+          <span class="hl-tag lt-c">51pt 주의</span>
+        </div>
+        <div class="hl-row">
+          <span class="hl-plate">56다 1234</span>
+          <span class="hl-time">17분 전</span>
+          <span class="hl-tag lt-n">20pt 정상</span>
+        </div>
+        <div class="hl-row">
+          <span class="hl-plate">78라 5678</span>
+          <span class="hl-time">31분 전</span>
+          <span class="hl-tag lt-n">5pt 정상</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 가운데: 시계열 차트 + 테이블 -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="panel chart-mid">
+        <div class="panel-hd">
+          <div class="panel-title"><div class="pt-bar"></div>시간대별 피로도 추이</div>
+          <div style="display:flex;gap:10px;font-size:10px;color:#94a3b8">
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:3px;border-radius:2px;background:#ef4444;display:inline-block"></span>위험A</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:3px;border-radius:2px;background:#d97706;display:inline-block"></span>위험B</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:3px;border-radius:2px;background:#2563eb;display:inline-block"></span>평균</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:3px;border-radius:2px;background:#16a34a;display:inline-block"></span>정상기준</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 440 150" style="width:100%" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="areaR" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ef4444" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="areaY" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#d97706" stop-opacity="0.1"/>
+              <stop offset="100%" stop-color="#d97706" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- 그리드 -->
+          <line x1="30" y1="15" x2="430" y2="15" stroke="#f1f5f9" stroke-width="1"/>
+          <line x1="30" y1="45" x2="430" y2="45" stroke="#f1f5f9" stroke-width="1"/>
+          <line x1="30" y1="75" x2="430" y2="75" stroke="#f1f5f9" stroke-width="1"/>
+          <line x1="30" y1="105" x2="430" y2="105" stroke="#f1f5f9" stroke-width="1"/>
+          <line x1="30" y1="135" x2="430" y2="135" stroke="#f1f5f9" stroke-width="1"/>
+          <!-- 위험 영역 -->
+          <rect x="30" y="15" width="400" height="30" fill="rgba(239,68,68,0.03)"/>
+          <line x1="30" y1="45" x2="430" y2="45" stroke="rgba(239,68,68,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="30" y1="75" x2="430" y2="75" stroke="rgba(217,119,6,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+          <!-- y 레이블 -->
+          <text x="26" y="18" font-size="8" fill="#94a3b8" text-anchor="end">100</text>
+          <text x="26" y="48" font-size="8" fill="#94a3b8" text-anchor="end">70</text>
+          <text x="26" y="78" font-size="8" fill="#94a3b8" text-anchor="end">40</text>
+          <text x="26" y="108" font-size="8" fill="#94a3b8" text-anchor="end">20</text>
+          <!-- 영역 -->
+          <polygon points="50,120 130,105 210,90 290,74 370,57 430,42 430,135 50,135" fill="url(#areaR)"/>
+          <polygon points="50,126 130,115 210,105 290,90 370,75 430,62 430,135 50,135" fill="url(#areaY)"/>
+          <!-- 정상 기준선 -->
+          <line x1="50" y1="105" x2="430" y2="105" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.7"/>
+          <!-- 라인 B -->
+          <polyline points="50,126 130,115 210,105 290,90 370,75 430,62" fill="none" stroke="#d97706" stroke-width="2" stroke-linejoin="round" opacity="0.9"/>
+          <!-- 라인 A -->
+          <polyline points="50,120 130,105 210,90 290,74 370,57 430,42" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- 평균 -->
+          <polyline points="50,130 130,122 210,116 290,106 370,95 430,86" fill="none" stroke="#2563eb" stroke-width="2" stroke-linejoin="round" opacity="0.8"/>
+          <!-- 포인트 -->
+          <circle cx="430" cy="42" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="2"/>
+          <circle cx="430" cy="62" r="4.5" fill="#d97706" stroke="#fff" stroke-width="2"/>
+          <circle cx="430" cy="86" r="4" fill="#2563eb" stroke="#fff" stroke-width="2"/>
+          <!-- 현재값 레이블 -->
+          <rect x="435" y="34" width="22" height="13" rx="3" fill="#ef4444"/>
+          <text x="446" y="44" font-size="8" fill="#fff" text-anchor="middle" font-weight="700">85pt</text>
+          <!-- x 레이블 -->
+          <text x="50" y="150" font-size="8" fill="#94a3b8" text-anchor="middle">08:00</text>
+          <text x="130" y="150" font-size="8" fill="#94a3b8" text-anchor="middle">10:00</text>
+          <text x="210" y="150" font-size="8" fill="#94a3b8" text-anchor="middle">12:00</text>
+          <text x="290" y="150" font-size="8" fill="#94a3b8" text-anchor="middle">14:00</text>
+          <text x="370" y="150" font-size="8" fill="#94a3b8" text-anchor="middle">16:00</text>
+          <text x="430" y="150" font-size="8" fill="#94a3b8" text-anchor="middle">18:00</text>
+        </svg>
+      </div>
+
+      <!-- 차량 테이블 -->
+      <div class="panel">
+        <div class="panel-hd">
+          <div class="panel-title"><div class="pt-bar"></div>실시간 차량 현황</div>
+          <div class="panel-tag">30초 갱신</div>
+        </div>
+        <table class="ltable">
+          <thead>
+            <tr><th>번호판</th><th>운전자</th><th>상태</th><th>피로도</th><th>운행시간</th><th>위치</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-family:'Courier New',monospace;font-weight:700;color:#0f172a">12가 3456</td>
+              <td>김영수</td>
+              <td><span class="lpill lp-r">운행 중</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:50px;height:5px;background:#fef2f2;border-radius:3px;overflow:hidden"><div style="width:85%;height:100%;background:#ef4444;border-radius:3px"></div></div>
+                  <span style="color:#ef4444;font-weight:700;font-size:11px">85pt</span>
+                </div>
+              </td>
+              <td>5h 51m</td>
+              <td style="color:#94a3b8">경부고속도로</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier New',monospace;font-weight:700;color:#0f172a">34나 7890</td>
+              <td>이철수</td>
+              <td><span class="lpill lp-r">운행 중</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:50px;height:5px;background:#fffbeb;border-radius:3px;overflow:hidden"><div style="width:51%;height:100%;background:#d97706;border-radius:3px"></div></div>
+                  <span style="color:#d97706;font-weight:700;font-size:11px">51pt</span>
+                </div>
+              </td>
+              <td>3h 20m</td>
+              <td style="color:#94a3b8">중부고속도로</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier New',monospace;font-weight:700;color:#0f172a">56다 1234</td>
+              <td>박민준</td>
+              <td><span class="lpill lp-w">휴식 중</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:50px;height:5px;background:#f0fdf4;border-radius:3px;overflow:hidden"><div style="width:20%;height:100%;background:#16a34a;border-radius:3px"></div></div>
+                  <span style="color:#16a34a;font-weight:700;font-size:11px">20pt</span>
+                </div>
+              </td>
+              <td>2h 05m</td>
+              <td style="color:#94a3b8">서해안 휴게소</td>
+            </tr>
+            <tr>
+              <td style="font-family:'Courier New',monospace;font-weight:700;color:#0f172a">78라 5678</td>
+              <td>최동욱</td>
+              <td><span class="lpill lp-s">대기</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:50px;height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden"><div style="width:5%;height:100%;background:#94a3b8;border-radius:3px"></div></div>
+                  <span style="color:#94a3b8;font-weight:700;font-size:11px">5pt</span>
+                </div>
+              </td>
+              <td>–</td>
+              <td style="color:#94a3b8">서울 물류센터</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 운전자 칸반 -->
+    <div class="panel" style="overflow-y:auto">
+      <div class="panel-hd">
+        <div class="panel-title"><div class="pt-bar"></div>운전자 상태</div>
+        <div class="panel-tag">실시간</div>
+      </div>
+      <div class="driver-kanban">
+        <div class="dk-card dk-danger">
+          <div class="dk-top">
+            <span class="dk-name">김영수</span>
+            <span class="dk-status dks-d">위험</span>
+          </div>
+          <div class="dk-bar"><div class="dkb-track" style="width:85%;background:linear-gradient(to right,#dc2626,#ef4444)"></div></div>
+          <div class="dk-meta">
+            <span style="color:#ef4444;font-weight:700">85pt</span>
+            <span>5h 51m</span>
+            <span style="font-family:'Courier New',monospace">12가 3456</span>
+          </div>
+        </div>
+        <div class="dk-card dk-danger">
+          <div class="dk-top">
+            <span class="dk-name">정수현</span>
+            <span class="dk-status dks-d">위험</span>
+          </div>
+          <div class="dk-bar"><div class="dkb-track" style="width:78%;background:linear-gradient(to right,#dc2626,#ef4444)"></div></div>
+          <div class="dk-meta">
+            <span style="color:#ef4444;font-weight:700">78pt</span>
+            <span>6h 12m</span>
+            <span style="font-family:'Courier New',monospace">90마 1111</span>
+          </div>
+        </div>
+        <div class="dk-card dk-caution">
+          <div class="dk-top">
+            <span class="dk-name">이철수</span>
+            <span class="dk-status dks-c">주의</span>
+          </div>
+          <div class="dk-bar"><div class="dkb-track" style="width:51%;background:linear-gradient(to right,#b45309,#d97706)"></div></div>
+          <div class="dk-meta">
+            <span style="color:#d97706;font-weight:700">51pt</span>
+            <span>3h 20m</span>
+            <span style="font-family:'Courier New',monospace">34나 7890</span>
+          </div>
+        </div>
+        <div class="dk-card dk-caution">
+          <div class="dk-top">
+            <span class="dk-name">한지수</span>
+            <span class="dk-status dks-c">주의</span>
+          </div>
+          <div class="dk-bar"><div class="dkb-track" style="width:44%;background:linear-gradient(to right,#b45309,#d97706)"></div></div>
+          <div class="dk-meta">
+            <span style="color:#d97706;font-weight:700">44pt</span>
+            <span>2h 45m</span>
+            <span style="font-family:'Courier New',monospace">22바 3344</span>
+          </div>
+        </div>
+        <div class="dk-card dk-normal">
+          <div class="dk-top">
+            <span class="dk-name">박민준</span>
+            <span class="dk-status dks-n">정상</span>
+          </div>
+          <div class="dk-bar"><div class="dkb-track" style="width:20%;background:linear-gradient(to right,#15803d,#16a34a)"></div></div>
+          <div class="dk-meta">
+            <span style="color:#16a34a;font-weight:700">20pt</span>
+            <span>휴식 중</span>
+            <span style="font-family:'Courier New',monospace">56다 1234</span>
+          </div>
+        </div>
+        <div class="dk-card dk-idle">
+          <div class="dk-top">
+            <span class="dk-name">최동욱</span>
+            <span class="dk-status dks-i">대기</span>
+          </div>
+          <div class="dk-bar"><div class="dkb-track" style="width:5%;background:#94a3b8"></div></div>
+          <div class="dk-meta">
+            <span style="color:#94a3b8;font-weight:700">5pt</span>
+            <span>대기</span>
+            <span style="font-family:'Courier New',monospace">78라 5678</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 2열 -->
+  <div class="bottom-row">
+    <!-- 도넛 + 바 차트 -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><div class="pt-bar"></div>차량 상태 분포 · 피로도 항목별</div>
+      </div>
+      <div class="two-chart">
+        <svg viewBox="0 0 100 100" width="100" height="100" style="flex-shrink:0">
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" stroke-width="13"/>
+          <!-- 운행(8) -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#2563eb" stroke-width="13"
+            stroke-dasharray="160 239" stroke-dashoffset="60" transform="rotate(-90 50 50)"/>
+          <!-- 위험(2) -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#ef4444" stroke-width="13"
+            stroke-dasharray="40 239" stroke-dashoffset="-100" transform="rotate(-90 50 50)"/>
+          <!-- 주의(3) -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#d97706" stroke-width="13"
+            stroke-dasharray="60 239" stroke-dashoffset="-140" transform="rotate(-90 50 50)"/>
+          <!-- 대기(2) -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#cbd5e1" stroke-width="13"
+            stroke-dasharray="40 239" stroke-dashoffset="-200" transform="rotate(-90 50 50)"/>
+          <text x="50" y="45" text-anchor="middle" font-size="16" font-weight="800" fill="#0f172a">12</text>
+          <text x="50" y="57" text-anchor="middle" font-size="8" fill="#94a3b8">차량</text>
+        </svg>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:10px;margin-right:20px">
+          <div style="display:flex;align-items:center;gap:6px;color:#64748b"><span style="width:9px;height:9px;border-radius:50%;background:#2563eb;flex-shrink:0"></span>운행 중<span style="margin-left:auto;font-weight:700;color:#1e293b">8</span></div>
+          <div style="display:flex;align-items:center;gap:6px;color:#64748b"><span style="width:9px;height:9px;border-radius:50%;background:#ef4444;flex-shrink:0"></span>위험<span style="margin-left:auto;font-weight:700;color:#1e293b">2</span></div>
+          <div style="display:flex;align-items:center;gap:6px;color:#64748b"><span style="width:9px;height:9px;border-radius:50%;background:#d97706;flex-shrink:0"></span>주의<span style="margin-left:auto;font-weight:700;color:#1e293b">3</span></div>
+          <div style="display:flex;align-items:center;gap:6px;color:#64748b"><span style="width:9px;height:9px;border-radius:50%;background:#cbd5e1;flex-shrink:0"></span>대기<span style="margin-left:auto;font-weight:700;color:#1e293b">2</span></div>
+        </div>
+        <div class="hbar-list">
+          <div class="hbar-item">
+            <div class="hbar-label">속도 편차</div>
+            <div class="hbar-track"><div class="hbar-fill hf-d" style="width:87%"></div></div>
+            <div class="hbar-val" style="color:#ef4444">35pt</div>
+          </div>
+          <div class="hbar-item">
+            <div class="hbar-label">장시간 운행</div>
+            <div class="hbar-track"><div class="hbar-fill hf-c" style="width:60%"></div></div>
+            <div class="hbar-val" style="color:#d97706">20pt</div>
+          </div>
+          <div class="hbar-item">
+            <div class="hbar-label">RSD 운행</div>
+            <div class="hbar-track"><div class="hbar-fill hf-n" style="width:37%"></div></div>
+            <div class="hbar-val" style="color:#2563eb">10pt</div>
+          </div>
+          <div class="hbar-item">
+            <div class="hbar-label">주행 부족</div>
+            <div class="hbar-track"><div class="hbar-fill hf-n" style="width:15%;background:linear-gradient(to right,#2563eb,#93c5fd)"></div></div>
+            <div class="hbar-val" style="color:#2563eb">5pt</div>
+          </div>
+          <div class="hbar-item">
+            <div class="hbar-label">급조향</div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:10%;background:#cbd5e1"></div></div>
+            <div class="hbar-val" style="color:#94a3b8">-10</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 시스템 상태 / 알림 -->
+    <div class="panel">
+      <div class="panel-hd">
+        <div class="panel-title"><div class="pt-bar"></div>실시간 알림 · 시스템 상태</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px;background:#fef2f2;border-radius:8px;border-left:3px solid #ef4444">
+          <span style="font-size:14px">🚨</span>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:#1e293b">피로도 위험 — 김영수 운전자</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">피로도 85pt 초과 · 즉시 휴식 조치 필요</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">방금 전 · 12가 3456</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px;background:#fef2f2;border-radius:8px;border-left:3px solid #ef4444">
+          <span style="font-size:14px">🚨</span>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:#1e293b">피로도 위험 — 정수현 운전자</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">피로도 78pt 초과 · 즉시 휴식 조치 필요</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">5분 전 · 90마 1111</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px;background:#fffbeb;border-radius:8px;border-left:3px solid #d97706">
+          <span style="font-size:14px">⚠️</span>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:#1e293b">피로도 주의 — 이철수 운전자</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">피로도 51pt · 지속 모니터링 중</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">3분 전 · 34나 7890</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px;background:#f0fdf4;border-radius:8px;border-left:3px solid #16a34a">
+          <span style="font-size:14px">✅</span>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:#1e293b">시스템 정상 운행 중</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">OCR 인식률 96.8% · API 정상</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">업데이트 방금 전</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
