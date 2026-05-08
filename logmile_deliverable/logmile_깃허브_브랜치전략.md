@@ -40,6 +40,7 @@ feature/{layer}-{기능명}
 | `feature/ai-fastapi-server` | FastAPI 서버 설정, 라우터, 환경 구성 | - |
 | `feature/ai-model-dataset` | 번호판 학습 데이터 수집, Roboflow 라벨링/오토 라벨링, 데이터셋 버전 관리 | FR-OCR01 |
 | `feature/ai-model-training` | YOLO11n 번호판 탐지 모델 학습, YOLOv8n 비교 학습, 학습 로그/가중치 산출 | FR-OCR01 |
+| `feature/ai-model-retraining-artifacts` | GPU 재학습 전략, 학습 결과물 제외 기준, 성능 비교 산출물 관리 | FR-OCR01 |
 | `feature/ai-model-evaluation` | mAP50, Precision, Recall, OCR 최종 성공률, 추론 속도 비교 및 모델 선정 | FR-OCR01 |
 | `feature/ai-ocr-license-plate` | YOLO11 + EasyOCR 번호판 인식 API 적용 | FR-OCR01, FR-OCR02 |
 | `feature/ai-ocr-observation` | 출발/도착, 고속도로 관측, 휴게소 진입/진출 관측 유형별 OCR 처리 | FR-OCR04, FR-OCR05, FR-OCR06 |
@@ -50,6 +51,7 @@ feature/{layer}-{기능명}
 ```
 feature/ai-model-dataset
   → feature/ai-model-training
+  → feature/ai-model-retraining-artifacts
   → feature/ai-model-evaluation
   → feature/ai-ocr-license-plate
   → feature/ai-ocr-observation
@@ -58,7 +60,9 @@ feature/ai-model-dataset
 **모델 산출물 관리 기준:**
 
 - 학습 데이터 원본, 라벨링 데이터, 모델 가중치(`*.pt`, `*.pth`)는 Git에 직접 커밋하지 않는다.
-- 데이터셋 버전, 라벨링 기준, 학습 설정, 성능 지표는 문서 또는 실험 로그로 남긴다.
+- 데이터셋 버전, 라벨링 기준, 학습 설정, 성능 지표 요약은 문서 또는 설정 파일로 남긴다.
+- `runs/`, `wandb/`, `mlruns/`, `evaluate/results/*.json`, GPU 재학습 결과물, 모델 가중치는 로컬 또는 외부 저장소에 보관하고 Git에는 제외한다.
+- Git에는 재현 가능한 학습 설정(`train_config.yaml`), 평가 스크립트, 결과 요약 문서만 포함한다.
 - 기본 후보 모델은 `YOLO11n`으로 두고, `YOLOv8n`은 비교 기준 모델로 학습한다.
 - 최종 모델은 검출 성능뿐 아니라 OCR 최종 성공률과 추론 속도를 함께 비교해 선정한다.
 
@@ -216,7 +220,7 @@ chore: Docker Compose 포트 설정 수정
 ## 6. 팀원별 담당 브랜치 요약
 
 ### 유환희 (Backend + AI)
-`feature/ai-*` 7개 + `feature/be-*` 22개 = **총 29개**
+`feature/ai-*` 8개 + `feature/be-*` 22개 = **총 30개**
 
 ### 백경서 (Frontend + GPS Simulator)
 `feature/fe-*` 21개 + `feature/sim-*` 7개 = **총 28개**

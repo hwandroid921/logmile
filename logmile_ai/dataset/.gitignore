@@ -10,6 +10,12 @@ labels/test/*
 car_plate_data1/
 car_plate_data2/
 raw/
+exports/
+roboflow/
+*.zip
+*.tar
+*.tar.gz
+*.7z
 
 # 예외: 디렉터리 구조 유지용 .gitkeep은 추적
 !images/train/.gitkeep

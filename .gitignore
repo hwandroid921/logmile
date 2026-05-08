@@ -69,8 +69,30 @@ env/
 runs/
 outputs/
 uploads/
+wandb/
+mlruns/
 *.onnx
 *.engine
+
+# ── AI 학습 결과물 / 모델 가중치 (로컬 또는 외부 저장소 보관) ─
+logmile_ai/.venv/
+logmile_ai/venv/
+logmile_ai/env/
+logmile_ai/runs/
+logmile_ai/outputs/
+logmile_ai/wandb/
+logmile_ai/mlruns/
+logmile_ai/.EasyOCR/
+logmile_ai/uploads/
+logmile_ai/tmp/
+logmile_ai/**/*.pt
+logmile_ai/**/*.pth
+logmile_ai/**/*.onnx
+logmile_ai/**/*.engine
+logmile_ai/**/*.ckpt
+logmile_ai/evaluate/results/*
+!logmile_ai/evaluate/results/.gitkeep
+logmile_ai/evaluate/ground_truth.json
 
 # ── Local data ──────────────────────────────────────────────
 *.db
