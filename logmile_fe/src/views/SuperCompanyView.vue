@@ -63,6 +63,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 32px 32px 40px;
 }
 .view-header { display: flex; align-items: flex-start; justify-content: space-between; }
 .view-title { font-size: 18px; font-weight: 700; color: var(--text-1); margin: 0 0 4px; }

@@ -8,12 +8,13 @@ defineProps({
 
 <template>
   <div class="logo-wrap">
-    <svg :width="size" :height="size" viewBox="0 0 28 28" fill="none">
-      <rect x="1" y="1" width="26" height="26" rx="6" fill="var(--bg-3)" stroke="var(--line-3)" />
-      <!-- Stylized 'L' road tracing into M -->
-      <path d="M7 7v14h6" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" />
-      <path d="M13 21V11l4 5 4-5v10" stroke="var(--text-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-      <circle cx="7" cy="7" r="1.6" fill="var(--accent)" />
+    <!-- 5개 슬레이트 바: 왼쪽(높음) → 오른쪽(낮음) -->
+    <svg :width="size + 10" :height="size" viewBox="0 0 40 28" fill="none">
+      <rect x="0"  y="2"  width="6" height="24" rx="1.5" fill="#515F7A"/>
+      <rect x="7"  y="6"  width="6" height="20" rx="1.5" fill="#747F95"/>
+      <rect x="14" y="10" width="6" height="16" rx="1.5" fill="#979EAE"/>
+      <rect x="21" y="14" width="6" height="12" rx="1.5" fill="#B8BFC9"/>
+      <rect x="28" y="18" width="6" height="8"  rx="1.5" fill="#DCDFE4"/>
     </svg>
     <span v-if="showText" class="logo-text">logmile</span>
   </div>
@@ -27,9 +28,9 @@ defineProps({
   user-select: none;
 }
 .logo-text {
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.015em;
   color: var(--text-1);
 }
 </style>

@@ -67,7 +67,7 @@ function logout() {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: rgba(33, 36, 43, 0.9);
+  background: rgba(241, 243, 246, 0.9);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line-1);
   flex-shrink: 0;

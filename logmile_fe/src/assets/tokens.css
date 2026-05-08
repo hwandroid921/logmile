@@ -1,67 +1,72 @@
-/* logmile — Design Tokens (Claude Design 원본 기반) */
+/* logmile — Design Tokens · 라이트 슬레이트 테마
+   팔레트 베이스: #515F7A · #747F95 · #979EAE · #B8BFC9 · #DCDFE4 */
 :root {
-  /* Background grays */
-  --bg-0: #1a1d22;
-  --bg-1: #21242b;
-  --bg-2: #252830;
-  --bg-3: #2d3039;
-  --bg-4: #353944;
-  --bg-5: #404552;
+  /* === Brand 5-tone slate palette === */
+  --slate-900: #515F7A;
+  --slate-700: #747F95;
+  --slate-500: #979EAE;
+  --slate-300: #B8BFC9;
+  --slate-100: #DCDFE4;
+  --slate-50:  #E6E9EE;
+  --slate-25:  #DEE2E8;
+  --slate-0:   #EBEEF2;
+  --ink:       #1F2630;
+  --ink-2:     #3B4453;
+  --ink-3:     #5A6371;
 
-  /* Lines */
-  --line-1: #2f323b;
-  --line-2: #3a3e48;
-  --line-3: #4a4f5b;
+  /* surfaces */
+  --bg-0: #DEE2E8;
+  --bg-1: #F1F3F6;
+  --bg-2: #E6E9EE;
+  --bg-3: #D4D9E0;
+  --bg-4: #C9CFD8;
+  --bg-5: #BCC3CD;
 
-  /* Text */
-  --text-1: #e6e9ef;
-  --text-2: #b4bac5;
-  --text-3: #868d9a;
-  --text-4: #5d6470;
+  /* lines */
+  --line-1: #C9CFD8;
+  --line-2: #BCC3CD;
+  --line-3: var(--slate-300);
 
-  /* Accent — Muted Teal */
-  --accent: #7db3c7;
-  --accent-hover: #93c1d2;
-  --accent-soft: rgba(125, 179, 199, 0.14);
-  --accent-line: rgba(125, 179, 199, 0.32);
-  --accent-ink: #0d1418;
+  /* text */
+  --text-1: var(--ink);
+  --text-2: var(--ink-2);
+  --text-3: var(--ink-3);
+  --text-4: #8A93A1;
 
-  /* Status */
-  --ok: #8aba9a;
-  --ok-soft: rgba(138, 186, 154, 0.14);
-  --warn: #d6b56a;
-  --warn-soft: rgba(214, 181, 106, 0.14);
-  --danger: #d18b7e;
-  --danger-soft: rgba(209, 139, 126, 0.14);
-  --info: #7db3c7;
-  --info-soft: rgba(125, 179, 199, 0.14);
+  /* primary accent */
+  --accent: var(--slate-900);
+  --accent-hover: var(--ink);
+  --accent-soft: rgba(81, 95, 122, 0.10);
+  --accent-line: rgba(81, 95, 122, 0.28);
+  --accent-ink: #FFFFFF;
+  --accent-2: var(--slate-700);
 
-  /* Typography */
-  --font-sans: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+  /* status */
+  --ok:          #5E8A6F;
+  --ok-soft:     rgba(94, 138, 111, 0.12);
+  --warn:        #C58A3A;
+  --warn-soft:   rgba(197, 138, 58, 0.12);
+  --danger:      #B5544A;
+  --danger-soft: rgba(181, 84, 74, 0.12);
+  --info:        var(--slate-700);
+  --info-soft:   rgba(116, 127, 149, 0.14);
 
-  /* Radii */
+  /* fonts */
+  --font-sans: "Pretendard Variable", "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+
+  /* radii */
   --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 10px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --r-xl: 20px;
 
-  /* Shadows */
-  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-2: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 4px 16px rgba(0, 0, 0, 0.35);
+  /* shadows */
+  --shadow-1: 0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(31,38,48,0.06);
+  --shadow-2: 0 1px 0 rgba(255,255,255,0.7) inset, 0 8px 30px rgba(81,95,122,0.10);
+  --shadow-3: 0 24px 60px rgba(81,95,122,0.18);
 
-  /* Spacing */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 20px;
-  --s-6: 24px;
-  --s-8: 32px;
-  --s-10: 40px;
-  --s-12: 48px;
-  --s-16: 64px;
-
-  /* Layout */
+  /* layout */
   --sidebar-width: 220px;
   --topbar-height: 52px;
 }
