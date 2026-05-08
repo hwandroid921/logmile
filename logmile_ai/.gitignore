@@ -16,7 +16,11 @@ env/
 # ── YOLO 모델 가중치 / 학습 결과 (대용량 바이너리) ───────────
 *.pt
 *.pth
+*.onnx
+*.engine
+*.ckpt
 runs/
+outputs/
 
 # ── 학습 로그 ─────────────────────────────────────────────────
 wandb/
@@ -37,6 +41,11 @@ build/
 # ── 평가 결과 JSON (실제 결과는 로컬 보관) ───────────────────
 evaluate/results/*.json
 evaluate/ground_truth.json
+
+# ── 재학습 산출물 (GPU 환경별 비교 결과는 문서/요약만 커밋) ───
+train/results/
+train/weights/
+checkpoints/
 
 # ── 테스트 ───────────────────────────────────────────────────
 .pytest_cache/
