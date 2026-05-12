@@ -4,10 +4,7 @@ import AppTopbar from './AppTopbar.vue'
 
 <template>
   <div class="app-shell">
-    <!-- 상단 네비 바 -->
     <AppTopbar />
-
-    <!-- 메인 콘텐츠 (풀 와이드) -->
     <main class="app-main">
       <slot />
     </main>

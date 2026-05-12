@@ -8,6 +8,15 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const isSuperAdmin = computed(() => authStore.role === 'ROLE_SUPER_ADMIN')
+const isLoggedIn   = computed(() => authStore.isLoggedIn)
+
+// 공개 메뉴 (비로그인)
+const publicMenus = [
+  { section: 'PUBLIC' },
+  { name: 'publicHome',  label: '메인',          icon: 'grid' },
+  { name: 'publicIntro', label: '프로젝트 소개', icon: 'info' },
+  { name: 'publicBoard', label: '게시판',         icon: 'list' },
+]
 
 // ROLE_SUPER_ADMIN 메뉴
 const superMenus = [
@@ -32,7 +41,10 @@ const adminMenus = [
   { name: 'stats',          label: '피로도 통계', icon: 'bolt' },
 ]
 
-const menus = computed(() => isSuperAdmin.value ? superMenus : adminMenus)
+const menus = computed(() => {
+  if (!isLoggedIn.value) return publicMenus
+  return isSuperAdmin.value ? superMenus : adminMenus
+})
 
 function isActive(name) {
   return route.name === name

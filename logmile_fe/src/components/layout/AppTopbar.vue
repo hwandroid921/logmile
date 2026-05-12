@@ -11,7 +11,17 @@ const authStore = useAuthStore()
 
 const adminName    = computed(() => authStore.name ?? '관리자')
 const isSuperAdmin = computed(() => authStore.role === 'ROLE_SUPER_ADMIN')
+const isLoggedIn   = computed(() => authStore.isLoggedIn)
 
+// 비로그인 공개 메뉴
+const publicNavItems = [
+  { name: 'publicIntro',    label: '소개' },
+  { name: 'publicFeatures', label: '기능' },
+  { name: 'publicBoard',    label: '게시판' },
+  { name: 'publicContact',  label: '팀 소개' },
+]
+
+// 관리자 메뉴
 const adminNavItems = [
   { name: 'dashboard',    label: '대시보드' },
   { name: 'simulation',   label: '시뮬레이션' },
@@ -22,13 +32,17 @@ const adminNavItems = [
   { name: 'stats',        label: '피로도 통계' },
 ]
 
+// 최상위 관리자 메뉴
 const superNavItems = [
   { name: 'superHome',     label: '대시보드' },
   { name: 'superApproval', label: '가입 승인' },
   { name: 'superCompany',  label: '업체 관리' },
 ]
 
-const navItems = computed(() => isSuperAdmin.value ? superNavItems : adminNavItems)
+const navItems = computed(() => {
+  if (!isLoggedIn.value) return publicNavItems
+  return isSuperAdmin.value ? superNavItems : adminNavItems
+})
 
 function isActive(name) {
   return route.name === name
@@ -45,8 +59,13 @@ function logout() {
     <div class="topbar-inner">
       <!-- 로고 -->
       <div class="topbar-left">
-        <AppLogo />
-        <span class="topbar-env mono">
+        <router-link
+          :to="isLoggedIn ? { name: isSuperAdmin ? 'superHome' : 'dashboard' } : { name: 'publicHome' }"
+          class="logo-link"
+        >
+          <AppLogo />
+        </router-link>
+        <span v-if="isLoggedIn" class="topbar-env mono">
           {{ isSuperAdmin ? 'SUPER_ADMIN' : 'ADMIN · 한라물류센터' }}
         </span>
       </div>
@@ -64,28 +83,39 @@ function logout() {
         </router-link>
       </nav>
 
-      <!-- 우측 상태 + 유저 -->
+      <!-- 우측 -->
       <div class="topbar-right">
-        <div class="live-badge">
-          <span class="dot dot-ok blink" />
-          <span class="mono">SYSTEM ONLINE</span>
-        </div>
+        <!-- 비로그인: 로그인 버튼만 -->
+        <template v-if="!isLoggedIn">
+          <router-link :to="{ name: 'login' }" class="btn-login">
+            <AppIcon name="user" :size="13" />
+            관리자 로그인
+          </router-link>
+        </template>
 
-        <div class="divider" />
+        <!-- 로그인: 상태 + 유저칩 + 로그아웃 -->
+        <template v-else>
+          <div class="live-badge">
+            <span class="dot dot-ok blink" />
+            <span class="mono">SYSTEM ONLINE</span>
+          </div>
 
-        <button class="icon-btn" title="알림">
-          <AppIcon name="bell" :size="16" />
-        </button>
+          <div class="divider" />
 
-        <div class="user-chip">
-          <div class="user-avatar">{{ adminName.charAt(0) }}</div>
-          <span class="user-name">{{ adminName }}</span>
-          <AppIcon name="chevronD" :size="13" style="color: var(--text-4)" />
-        </div>
+          <button class="icon-btn" title="알림">
+            <AppIcon name="bell" :size="16" />
+          </button>
 
-        <button class="icon-btn logout-btn" title="로그아웃" @click="logout">
-          <AppIcon name="x" :size="16" />
-        </button>
+          <div class="user-chip">
+            <div class="user-avatar">{{ adminName.charAt(0) }}</div>
+            <span class="user-name">{{ adminName }}</span>
+            <AppIcon name="chevronD" :size="13" style="color: var(--text-4)" />
+          </div>
+
+          <button class="icon-btn logout-btn" title="로그아웃" @click="logout">
+            <AppIcon name="x" :size="16" />
+          </button>
+        </template>
       </div>
     </div>
   </header>
@@ -122,6 +152,12 @@ function logout() {
   flex-shrink: 0;
 }
 
+.logo-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
 .topbar-env {
   font-size: 10px;
   letter-spacing: 0.08em;
@@ -136,7 +172,7 @@ function logout() {
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 10px;
   flex: 1;
   justify-content: center;
 }
@@ -218,6 +254,22 @@ function logout() {
 }
 
 .user-name { font-size: 13px; font-weight: 500; color: var(--text-2); }
+
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.btn-login:hover { background: var(--accent); color: var(--accent-ink); }
 
 /* 점 & 애니메이션 */
 .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
