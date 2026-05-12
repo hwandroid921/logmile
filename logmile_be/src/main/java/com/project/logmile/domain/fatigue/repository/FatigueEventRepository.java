@@ -1,6 +1,7 @@
 package com.project.logmile.domain.fatigue.repository;
 
 import com.project.logmile.domain.fatigue.entity.FatigueEvent;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,4 +27,7 @@ public interface FatigueEventRepository extends JpaRepository<FatigueEvent, Long
 		@Param("companyId") Long companyId,
 		@Param("start") java.time.LocalDateTime start,
 		@Param("end") java.time.LocalDateTime end);
+
+	List<FatigueEvent> findByDriveLogCompanyIdAndOccurredAtBetweenOrderByOccurredAtAsc(
+		Long companyId, LocalDateTime start, LocalDateTime end);
 }
