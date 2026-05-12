@@ -16,8 +16,8 @@ const loading   = ref(false)
 const errorMsg  = ref('')
 
 const SEED = {
-  ADMIN:       { email: 'lee.smin@halla.kr',   pw: 'logmile-demo-2026' },
-  SUPER_ADMIN: { email: 'super@logmile.io',     pw: 'logmile-demo-2026' },
+  ADMIN:       { email: 'c1_admin1@logmile.com', pw: 'admin1234' },
+  SUPER_ADMIN: { email: 'admin@logmile.com',     pw: 'admin1234' },
 }
 
 function fillSeed() {

@@ -14,7 +14,7 @@ const list    = ref(thresholds.map(t => ({ ...t })))
 const editing = ref(null)
 const draft   = ref(0)
 const savedAt = ref('2026.04.21 14:08')
-const savedBy = '시스템 관리자 (super@logmile.io)'
+const savedBy = '시스템 관리자 (admin@logmile.com)'
 
 const grouped = computed(() => {
   const map = {}
