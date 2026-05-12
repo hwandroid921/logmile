@@ -1,11 +1,9 @@
-# 프로젝트 구조도
-
-## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
+# logmile 프로젝트 전체 구조도
 
 - 프로젝트명: `logmile`
-- 버전: v1.5
-- 기준 산출물: `logmile_프로젝트개요서.md`, `logmile_요구사항정의서.md`, `logmile_DB설계서.md`
-- 작성 기준일: 2026.04.30
+- 버전: v5.0
+- 작성 기준일: 2026.05.12
+- 변경 내용: BE 도메인 패키지 구조 반영, API 엔드포인트 실제 구현 기준으로 수정, FE 뷰/스토어/API 파일 최신화, 잘못된 서비스명 및 열거형명 수정, Company 멀티테넌시 및 SlateEvent 구조 추가
 
 ---
 
@@ -24,24 +22,23 @@
 │  ┌──────────────┐   HTTP POST    │  │ Fatigue Calculator       │   │  │
 │  │  FastAPI(AI) │ <─────────────>│  │ Rest Event Detector      │   │  │
 │  │    :8000     │                │  │ Drive Log Manager        │   │  │
-│  │              │                │  │ Auth / Signup / Approval │   │  │
+│  │              │                │  │ Auth (JWT + Signup)       │   │  │
 │  │ YOLO11n      │                │  │ Vehicle/Driver CRUD      │   │  │
-│  │ EasyOCR      │                │  │ Plate Event Manager      │   │  │
-│  │ Plate Events │                │  │ Dashboard/History/Stats  │   │  │
-│  └──────────────┘                │  │ TenantAccess (업체격리)   │   │  │
-│                                  │  └──────────────────────────┘   │  │
-│  ┌──────────────┐   REST API     │              │                   │  │
-│  │  Vue.js (FE) │ <─────────────>│              │ JPA               │  │
-│  │    :5173     │   (Axios/JWT)  │              ▼                   │  │
-│  │              │                │  ┌──────────────────────────┐   │  │
-│  │ 관제 대시보드  │                │  │     PostgreSQL 16         │   │  │
-│  │ 차량/운전자   │                │  │        :5432             │   │  │
-│  │ 이력/통계     │                │  │                          │   │  │
-│  │ 임계값 설정   │                │  │ company / admin          │   │  │
-│  │ 회원가입/승인 │                │  │ vehicle / driver         │   │  │
-│  │ 최상위관리자  │                │  │ drive_log / plate_recognition_event │
-│  └──────────────┘                │  │ gps_data / rest_event    │   │  │
-│                                  │  │ fatigue_event / fatigue_threshold │
+│  │ EasyOCR      │                │  │ Dashboard/History/Stats  │   │  │
+│  └──────────────┘                │  └──────────────────────────┘   │  │
+│                                  │              │                   │  │
+│  ┌──────────────┐   REST API     │              │ JPA               │  │
+│  │  Vue.js (FE) │ <─────────────>│              ▼                   │  │
+│  │    :5173     │   (Axios/JWT)  │  ┌──────────────────────────┐   │  │
+│  │              │                │  │     PostgreSQL 16         │   │  │
+│  │ 관제 대시보드  │                │  │        :5432             │   │  │
+│  │ 차량/운전자   │                │  │                          │   │  │
+│  │ 이력/통계     │                │  │ admin / company          │   │  │
+│  │ 임계값 설정   │                │  │ vehicle / driver         │   │  │
+│  └──────────────┘                │  │ drive_log / gps_data     │   │  │
+│                                  │  │ rest_event / fatigue_event│  │  │
+│                                  │  │ fatigue_threshold        │   │  │
+│                                  │  │ plate_event              │   │  │
 │                                  │  └──────────────────────────┘   │  │
 │                                  └──────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -51,7 +48,7 @@
 
 ## 2. 백엔드 (BE) 상세 구조
 
-### 계층 구조 (MVC Layered Architecture)
+### 패키지 구조 (Domain-based Architecture)
 
 ```
 logmile_be/
@@ -62,124 +59,135 @@ logmile_be/
         ├── java/com/project/logmile/
         │   ├── LogmileApplication.java
         │   │
-        │   ├── config/                                      # 설정 계층
-        │   │   ├── SecurityConfig.java                      # Spring Security + JWT 필터 체인
-        │   │   ├── JwtTokenProvider.java                    # JWT 생성/검증/파싱
-        │   │   ├── JwtAuthenticationFilter.java             # 요청별 JWT 인증 필터
-        │   │   └── SwaggerConfig.java                       # Springdoc OpenAPI 설정
+        │   ├── common/                                      # 공통 계층
+        │   │   ├── config/
+        │   │   │   └── SwaggerConfig.java                   # Springdoc OpenAPI 설정
+        │   │   ├── enums/
+        │   │   │   ├── ScenarioType.java                    # A, B, C
+        │   │   │   ├── DriveLogStatus.java                  # RUNNING, COMPLETED, STOPPED
+        │   │   │   ├── RestType.java                        # PENDING, VALID, SUFFICIENT, INVALID
+        │   │   │   ├── FatigueLevel.java                    # NORMAL, CAUTION, DANGER
+        │   │   │   ├── AdminRole.java                       # ROLE_ADMIN, ROLE_SUPER_ADMIN
+        │   │   │   ├── AdminStatus.java                     # PENDING, APPROVED, REJECTED
+        │   │   │   ├── PlateEventType.java                  # DEPARTURE, ARRIVAL
+        │   │   │   ├── PlateLocationType.java               # ENTRY, EXIT
+        │   │   │   └── PlateSourceType.java                 # OCR, MANUAL
+        │   │   ├── exception/
+        │   │   │   ├── BusinessException.java               # 비즈니스 예외 (ErrorCode 기반)
+        │   │   │   ├── ErrorCode.java                       # 에러 코드 열거형
+        │   │   │   ├── ErrorResponse.java                   # 에러 응답 DTO
+        │   │   │   └── GlobalExceptionHandler.java          # @RestControllerAdvice
+        │   │   └── security/
+        │   │       ├── SecurityConfig.java                  # Spring Security + JWT 필터 체인
+        │   │       ├── TenantAccessService.java             # 회사 기반 데이터 격리
+        │   │       └── jwt/
+        │   │           ├── JwtTokenProvider.java            # JWT 생성/검증/파싱
+        │   │           ├── JwtAuthenticationFilter.java     # 요청별 JWT 인증 필터
+        │   │           └── CustomUserDetailsService.java    # Admin 기반 UserDetails 로드
         │   │
-        │   ├── controller/                                  # Controller 계층 (요청/응답)
-        │   │   ├── AuthController.java                      # POST /api/auth/login, /signup, /me
-        │   │   ├── SuperAdminController.java                # /api/super/admins/*, /api/super/companies
-        │   │   ├── CompanyController.java                   # GET /api/company/me
-        │   │   ├── VehicleController.java                   # /api/vehicles CRUD
-        │   │   ├── DriverController.java                    # /api/drivers CRUD + 차량 배정
-        │   │   ├── SimulationController.java                # POST /api/simulation/start|stop
-        │   │   ├── GpsController.java                       # POST /api/gps
-        │   │   ├── DriveLogController.java                  # GET /api/drive-logs (이력 목록/상세)
-        │   │   ├── DashboardController.java                 # GET /api/dashboard/summary|vehicles
-        │   │   ├── PlateRecognitionController.java          # /api/plate-events 출발/도착/관측 이벤트
-        │   │   ├── FatigueThresholdController.java          # GET|PUT /api/fatigue/thresholds
-        │   │   └── FatigueStatsController.java              # GET /api/fatigue/stats
-        │   │
-        │   ├── service/                                     # Service 계층 (비즈니스 로직)
-        │   │   ├── AdminService.java                        # 관리자 조회, 인증 처리
-        │   │   ├── AdminApprovalService.java                # 관리자 승인/거절/정지/해제 로직
-        │   │   ├── CompanyService.java                      # 업체 등록, 조회, 상태 관리
-        │   │   ├── TenantAccessService.java                 # 업체별 데이터 접근 제한 검증
-        │   │   ├── VehicleService.java                      # 차량 등록/조회/수정/삭제
-        │   │   ├── DriverService.java                       # 운전자 등록/조회/수정/삭제/배정
-        │   │   ├── SimulationService.java                   # drive_log 시작/중지 상태 관리
-        │   │   ├── GpsReceiverService.java                  # GPS 저장 후 피로도 계산 트리거
-        │   │   ├── RestEventService.java                    # speed≤3 판정, 휴식 시작/종료/분류
-        │   │   ├── ContinuousDrivingService.java            # 마지막 유효 휴식 이후 운행 시간 계산
-        │   │   ├── DailyDrivingService.java                 # 당일 drive_log 합산 운행 시간 계산
-        │   │   ├── NightDrivingService.java                 # 22:00~06:00 야간 운행 시간 계산
-        │   │   ├── FatigueScoreService.java                 # 항목 합산 → 등급 결정 (NORMAL/CAUTION/DANGER)
-        │   │   ├── FatigueReasonService.java                # fatigue_event.reason 텍스트 생성
-        │   │   ├── PlateRecognitionEventService.java        # 번호판 관측 이벤트 저장/검증
-        │   │   ├── PlateRestVerificationService.java        # 휴게소 진입/진출 기반 휴식 보정
-        │   │   ├── FatigueThresholdService.java             # 임계값 key/value 조회/수정
-        │   │   ├── DriveLogService.java                     # 운행 이력 목록/상세 조회
-        │   │   ├── DashboardService.java                    # 운행 중/주의/위험 차량 수, 평균 피로 점수
-        │   │   └── FatigueStatsService.java                 # 일별 운행/야간/휴식 누락/평균 점수 통계
-        │   │
-        │   ├── repository/                                  # Repository 계층 (DB 접근)
-        │   │   ├── CompanyRepository.java
-        │   │   ├── AdminRepository.java
-        │   │   ├── VehicleRepository.java
-        │   │   ├── DriverRepository.java
-        │   │   ├── DriveLogRepository.java
-        │   │   ├── PlateRecognitionEventRepository.java
-        │   │   ├── GpsDataRepository.java
-        │   │   ├── RestEventRepository.java
-        │   │   ├── FatigueEventRepository.java
-        │   │   └── FatigueThresholdRepository.java
-        │   │
-        │   ├── entity/                                      # Entity 계층 (JPA 매핑)
-        │   │   ├── Company.java                             # company 테이블
-        │   │   ├── Admin.java                               # admin 테이블
-        │   │   ├── Vehicle.java                             # vehicle 테이블
-        │   │   ├── Driver.java                              # driver 테이블
-        │   │   ├── DriveLog.java                            # drive_log 테이블
-        │   │   ├── PlateRecognitionEvent.java               # plate_recognition_event 테이블
-        │   │   ├── GpsData.java                             # gps_data 테이블
-        │   │   ├── RestEvent.java                           # rest_event 테이블
-        │   │   ├── FatigueEvent.java                        # fatigue_event 테이블
-        │   │   └── FatigueThreshold.java                    # fatigue_threshold 테이블
-        │   │
-        │   ├── dto/                                         # DTO 계층 (요청/응답 객체)
-        │   │   ├── request/
-        │   │   │   ├── LoginRequest.java                    # { email, password }
-        │   │   │   ├── SignupRequest.java                   # { email, password, name, phone, companyName, businessNo }
-        │   │   │   ├── VehicleRequest.java                  # { plateNo, type }
-        │   │   │   ├── DriverRequest.java                   # { name, phone, licenseType, vehicleId }
-        │   │   │   ├── SimulationStartRequest.java          # { vehicleId, driverId, scenarioType, ... }
-        │   │   │   ├── GpsDataRequest.java                  # { driveLogId, latitude, longitude, speedKmh, recordedAt }
-        │   │   │   ├── PlateRecognitionEventRequest.java    # { driveLogId, sourceType, locationType, image, capturedAt }
-        │   │   │   └── ThresholdUpdateRequest.java          # { thresholdValue }
-        │   │   └── response/
-        │   │       ├── LoginResponse.java                   # { token, name, role, status, companyId }
-        │   │       ├── SignupResponse.java                  # { adminId, status, message }
-        │   │       ├── AdminApprovalResponse.java           # { adminId, status, approvedAt }
-        │   │       ├── CompanyResponse.java                 # { id, name, businessNo, contactEmail, status }
-        │   │       ├── VehicleResponse.java
-        │   │       ├── DriverResponse.java
-        │   │       ├── SimulationResponse.java
-        │   │       ├── DriveLogResponse.java
-        │   │       ├── DriveLogDetailResponse.java
-        │   │       ├── PlateRecognitionEventResponse.java
-        │   │       ├── DashboardSummaryResponse.java
-        │   │       ├── VehicleFatigueResponse.java
-        │   │       ├── FatigueThresholdResponse.java
-        │   │       ├── FatigueStatsResponse.java
-        │   │       └── ApiResponse.java                     # 공통 응답 래퍼 { success, message, data }
-        │   │
-        │   └── common/                                      # 공통 계층
-        │       ├── enums/
-        │       │   ├── AdminRole.java                       # ROLE_SUPER_ADMIN, ROLE_ADMIN
-        │       │   ├── AdminStatus.java                     # PENDING, ACTIVE, REJECTED, SUSPENDED
-        │       │   ├── CompanyStatus.java                   # ACTIVE, INACTIVE
-        │       │   ├── ScenarioType.java                    # A, B, C
-        │       │   ├── DriveStatus.java                     # RUNNING, COMPLETED, STOPPED
-        │       │   ├── RestType.java                        # PENDING, VALID, SUFFICIENT, INVALID
-        │       │   └── FatigueLevel.java                    # NORMAL, CAUTION, DANGER
-        │       └── exception/
-        │           ├── GlobalExceptionHandler.java          # @RestControllerAdvice
-        │           └── CustomException.java
+        │   └── domain/                                      # 도메인 계층
+        │       │
+        │       ├── admin/                                   # 관리자 승인
+        │       │   ├── controller/AdminApprovalController.java
+        │       │   ├── dto/AdminSummaryResponse.java
+        │       │   ├── entity/Admin.java
+        │       │   ├── repository/AdminRepository.java
+        │       │   └── service/AdminApprovalService.java
+        │       │
+        │       ├── auth/                                    # 인증 (로그인/회원가입)
+        │       │   ├── controller/AuthController.java       # POST /api/auth/login, /signup
+        │       │   ├── dto/LoginRequest.java
+        │       │   ├── dto/LoginResponse.java
+        │       │   ├── dto/SignupRequest.java
+        │       │   ├── dto/SignupResponse.java
+        │       │   └── service/AuthService.java
+        │       │
+        │       ├── company/                                 # 회사 (멀티테넌시)
+        │       │   ├── controller/CompanyController.java    # /api/companies
+        │       │   ├── dto/CompanyRegisterRequest.java
+        │       │   ├── dto/CompanyResponse.java
+        │       │   ├── entity/Company.java
+        │       │   ├── repository/CompanyRepository.java
+        │       │   └── service/CompanyService.java
+        │       │
+        │       ├── dashboard/                               # 관제 대시보드
+        │       │   ├── controller/DashboardController.java  # GET /api/dashboard/summary|vehicles
+        │       │   ├── dto/DashboardSummaryResponse.java
+        │       │   ├── dto/VehicleStatusResponse.java
+        │       │   └── service/DashboardService.java
+        │       │
+        │       ├── drivelog/                                # 운행 기록
+        │       │   ├── controller/DriveHistoryController.java # GET /api/drive-history
+        │       │   ├── controller/SimulationController.java  # POST /api/simulation/start
+        │       │   │                                          # PATCH /api/simulation/{id}/stop
+        │       │   ├── dto/DriveHistoryDetailResponse.java
+        │       │   ├── dto/DriveHistoryListResponse.java
+        │       │   ├── dto/SimulationStartRequest.java
+        │       │   ├── dto/SimulationStartResponse.java
+        │       │   ├── entity/DriveLog.java
+        │       │   ├── repository/DriveLogRepository.java
+        │       │   ├── service/DriveHistoryService.java
+        │       │   └── service/SimulationService.java
+        │       │
+        │       ├── driver/                                  # 운전자 관리
+        │       │   ├── controller/DriverController.java     # /api/drivers CRUD
+        │       │   ├── dto/DriverRequest.java
+        │       │   ├── dto/DriverResponse.java
+        │       │   ├── entity/Driver.java
+        │       │   ├── repository/DriverRepository.java
+        │       │   └── service/DriverService.java
+        │       │
+        │       ├── fatigue/                                 # 피로도 판단
+        │       │   ├── controller/FatigueThresholdController.java # /api/thresholds
+        │       │   ├── dto/ThresholdResponse.java
+        │       │   ├── dto/ThresholdUpdateRequest.java
+        │       │   ├── entity/FatigueEvent.java
+        │       │   ├── entity/FatigueThreshold.java
+        │       │   ├── repository/FatigueEventRepository.java
+        │       │   ├── repository/FatigueThresholdRepository.java
+        │       │   ├── service/FatigueScoreService.java     # 점수 합산, 등급 결정, reason 생성
+        │       │   └── service/FatigueThresholdService.java
+        │       │
+        │       ├── gps/                                     # GPS 수신
+        │       │   ├── controller/GpsController.java        # POST /api/gps
+        │       │   ├── dto/GpsDataRequest.java
+        │       │   ├── entity/GpsData.java
+        │       │   ├── repository/GpsDataRepository.java
+        │       │   └── service/GpsReceiverService.java      # GPS 저장 → RestEvent → FatigueScore
+        │       │
+        │       ├── plateevent/                              # 번호판 이벤트 기록
+        │       │   ├── controller/PlateEventController.java # POST /api/plate-events
+        │       │   ├── dto/PlateEventCreateRequest.java
+        │       │   ├── dto/PlateEventResponse.java
+        │       │   ├── entity/PlateEvent.java
+        │       │   ├── repository/PlateEventRepository.java
+        │       │   └── service/PlateEventService.java
+        │       │
+        │       ├── rest/                                    # 휴식 판단
+        │       │   ├── entity/RestEvent.java
+        │       │   ├── repository/RestEventRepository.java
+        │       │   └── service/RestEventService.java        # speed≤3 판정, VALID/SUFFICIENT 분류
+        │       │
+        │       └── vehicle/                                 # 차량 관리
+        │           ├── controller/VehicleController.java    # /api/vehicles CRUD
+        │           ├── dto/VehicleRequest.java
+        │           ├── dto/VehicleResponse.java
+        │           ├── entity/Vehicle.java
+        │           ├── repository/VehicleRepository.java
+        │           └── service/VehicleService.java
         │
         └── resources/
             └── application.yml                              # server, spring.datasource, jpa, jwt 설정
 ```
 
-### MVC 계층 흐름
+### 계층 흐름
 
 ```
 HTTP 요청
     ↓
 Controller  (요청 파라미터 수신, DTO 변환, 응답 반환)
     ↓
-Service     (비즈니스 로직, 트랜잭션, 계산, TenantAccess 검증)
+Service     (비즈니스 로직, 트랜잭션, 계산)
     ↓
 Repository  (JPA 쿼리, DB 접근)
     ↓
@@ -202,16 +210,16 @@ logmile_ai/
     ├── core/
     │   └── config.py                 # 환경변수, 신뢰도 임계값 설정 (0.85)
     ├── router/
-    │   └── ocr_router.py             # POST /api/ocr/recognize, /api/ocr/observe
+    │   └── ocr_router.py             # POST /api/ocr/recognize
     ├── service/
     │   ├── yolo_service.py           # YOLO11n 번호판 영역 탐지
     │   ├── ocr_service.py            # EasyOCR 문자 추출
-    │   └── plate_service.py          # 탐지 + OCR 통합, 신뢰도 판정, 관측 유형 반환
+    │   └── plate_service.py          # 탐지 + OCR 통합, 신뢰도 판정
     ├── schema/
     │   ├── ocr_request.py            # 이미지 업로드 요청 스키마
-    │   └── ocr_response.py           # { plate_no, confidence, is_manual_required, source_type, location_type }
+    │   └── ocr_response.py           # { plate_no, confidence, is_manual_required }
     └── model/
-        └── yolo11n.pt                # 사전학습 모델 가중치
+        └── yolov8n.pt                # 사전학습 모델 가중치
 ```
 
 **OCR API 흐름:**
@@ -225,8 +233,6 @@ EasyOCR → 번호판 문자 추출 + confidence
 confidence ≥ 0.85 ?
   ├── YES → { plate_no, confidence, is_manual_required: false }
   └── NO  → { plate_no: null, confidence, is_manual_required: true }
-    ↓
-출발/도착/고속도로/휴게소 진입·진출 관측 이벤트로 BE 저장
 ```
 
 ---
@@ -258,6 +264,17 @@ logmile_sim/
 | B (주의) | 120~180분 | 15분 유효 1~2회 | 30분 내외 | 주의 (40~69) |
 | C (위험) | 240분 이상 | 누락 2회 이상 | 2시간 이상 | 위험 (70+) |
 
+**GPS 데이터 전송 형식:**
+```json
+{
+  "driveLogId": 1,
+  "latitude": 37.5665,
+  "longitude": 126.9780,
+  "speedKmh": 72.5,
+  "recordedAt": "2026-04-29T22:30:00"
+}
+```
+
 ---
 
 ## 5. 프론트엔드 (FE) 상세 구조
@@ -270,36 +287,36 @@ logmile_fe/
 └── src/
     ├── main.js                       # Vue 앱 생성, Pinia, Router 등록
     ├── router/
-    │   └── index.js                  # 라우트 정의 + 인증 가드 (role/status 기반)
+    │   └── index.js                  # 라우트 정의 + 인증 가드 (requiresAuth, requiresSuper)
     │
     ├── stores/
-    │   ├── authStore.js              # JWT 토큰, 로그인 상태, role, status, companyId
-    │   ├── vehicleStore.js           # 차량 목록, 상태
+    │   ├── authStore.js              # JWT 토큰, 로그인 상태, 역할(role) 관리
     │   ├── dashboardStore.js         # 대시보드 요약, polling 관리
     │   └── simulationStore.js        # 시뮬레이션 진행 상태
     │
     ├── api/
-    │   ├── axios.js                  # Axios 인스턴스, JWT 인터셉터, PENDING 상태 응답 처리
-    │   ├── authApi.js                # POST /api/auth/login, /signup | GET /api/auth/me
-    │   ├── superAdminApi.js          # /api/super/admins/*, /api/super/companies
-    │   ├── companyApi.js             # GET /api/company/me
+    │   ├── axios.js                  # Axios 인스턴스, JWT 인터셉터
+    │   ├── authApi.js                # POST /api/auth/login, /api/auth/signup
+    │   ├── approvalApi.js            # 관리자 승인 API (SUPER_ADMIN 전용)
     │   ├── vehicleApi.js             # /api/vehicles CRUD
     │   ├── driverApi.js              # /api/drivers CRUD
-    │   ├── dashboardApi.js           # /api/dashboard/summary
-    │   ├── simulationApi.js          # /api/simulation/start|stop
-    │   ├── plateEventApi.js          # /api/plate-events
-    │   ├── driveHistoryApi.js        # /api/drive-logs
-    │   ├── fatigueStatsApi.js        # /api/fatigue/stats
-    │   └── thresholdApi.js           # /api/fatigue/thresholds
+    │   ├── dashboardApi.js           # GET /api/dashboard/summary|vehicles
+    │   ├── simulationApi.js          # POST /api/simulation/start
+    │   │                             # PATCH /api/simulation/{id}/stop
+    │   ├── driveHistoryApi.js        # GET /api/drive-history
+    │   ├── fatigueStatsApi.js        # GET /api/fatigue/stats
+    │   └── thresholdApi.js           # GET|PATCH /api/thresholds
     │
     ├── views/
-    │   ├── LoginView.vue             # FR-AUTH01 (로그인)
-    │   ├── SignupView.vue            # FR-AUTH02 (일반 관리자 회원가입)
-    │   ├── PendingApprovalView.vue   # FR-AUTH03 (승인 대기 안내)
-    │   ├── SuperAdminDashboardView.vue  # 최상위 관리자 전용 홈
-    │   ├── AdminApprovalView.vue     # FR-SUPER01~04 (가입 승인/거절/정지)
-    │   ├── CompanyManagementView.vue # FR-SUPER05 (업체 목록 및 상태 관리)
-    │   ├── CompanyInfoView.vue       # FR-COMPANY01 (내 업체 정보)
+    │   │   ── 인증 (레이아웃 없음) ──────────────────────
+    │   ├── LoginView.vue             # FR-AUTH01 — 로그인
+    │   ├── SignupView.vue            # FR-AUTH01 — 회원가입
+    │   ├── PendingView.vue           # 승인 대기 안내 화면
+    │   │   ── Super Admin 전용 (/super) ─────────────────
+    │   ├── SuperHomeView.vue         # Super Admin 홈
+    │   ├── SuperApprovalView.vue     # 관리자 계정 승인 관리
+    │   ├── SuperCompanyView.vue      # 회사 목록 관리
+    │   │   ── Admin 전용 (/) ──────────────────────────────
     │   ├── DashboardView.vue         # FR-A01~A06
     │   ├── SimulationView.vue        # FR-B01, B04
     │   ├── VehicleView.vue           # FR-C01
@@ -307,38 +324,28 @@ logmile_fe/
     │   ├── ThresholdView.vue         # FR-C03
     │   ├── DriveHistoryView.vue      # FR-D01
     │   ├── DriveHistoryDetailView.vue # FR-D02
-    │   ├── PlateEventTimelineView.vue # 번호판 관측 타임라인
     │   └── FatigueStatsView.vue      # FR-E01
     │
-    └── components/
-        ├── dashboard/
-        │   ├── SummaryCard.vue       # 운행중/주의/위험/완료/평균 피로
-        │   ├── VehicleTable.vue      # 차량 목록 테이블
-        │   ├── FatigueBadge.vue      # 정상/주의/위험 배지
-        │   ├── PlateEventTimeline.vue # 출발/고속도로/휴게소/도착 관측 타임라인
-        │   └── VehicleDetailPanel.vue # 상세 패널, 타임라인
-        ├── charts/
-        │   ├── SpeedChart.vue        # 속도 변화 Chart.js
-        │   ├── FatigueScoreChart.vue # 피로 점수 변화 Chart.js
-        │   └── StatsChart.vue        # 일별 통계 Chart.js
-        └── common/
-            ├── NavBar.vue
-            └── LoadingSpinner.vue
+    ├── components/
+    │   ├── layout/
+    │   │   ├── AppLayout.vue         # 사이드바 + 상단바 레이아웃 래퍼
+    │   │   ├── AppSidebar.vue        # 네비게이션 사이드바
+    │   │   ├── AppTopbar.vue         # 상단 바
+    │   │   └── AppLogo.vue           # 로고 컴포넌트
+    │   └── common/
+    │       └── AppIcon.vue           # 공통 아이콘 컴포넌트
+    │
+    └── data/
+        └── mockData.js               # 개발/시연용 목 데이터
 ```
 
-### 라우터 가드 (권한/상태 기반)
+**라우트 가드 규칙:**
 
-```
-로그인 여부 확인
-    ↓
-role === ROLE_SUPER_ADMIN ?
-  └── YES → /super/* 화면으로 이동
-role === ROLE_ADMIN ?
-  ├── status === PENDING   → /pending-approval 으로 redirect
-  ├── status === REJECTED  → 로그인 화면 + 거절 안내
-  ├── status === SUSPENDED → 로그인 화면 + 정지 안내
-  └── status === ACTIVE    → /dashboard 등 관제 화면 접근 허용
-```
+| 조건 | 동작 |
+|---|---|
+| 비로그인 → requiresAuth 페이지 | `/login` 리다이렉트 |
+| ROLE_ADMIN → requiresSuper 페이지 | `/` 리다이렉트 |
+| 로그인 상태 → login/signup/pending | 역할별 홈으로 리다이렉트 |
 
 ---
 
@@ -349,8 +356,8 @@ logmile_infra/
 ├── docker-compose.yml                # 전체 서비스 오케스트레이션
 ├── .env                              # 공통 환경변수
 └── db/
-    ├── init.sql                      # 테이블 DDL (9개 테이블, v1.5)
-    └── seed.sql                      # 초기 데이터 (최상위 관리자, 업체, 차량 10대, 운전자 10명, 임계값)
+    ├── init.sql                      # 테이블 DDL (9개 테이블)
+    └── seed.sql                      # 초기 데이터 (회사 10개, 관리자 31명, 차량 50대, 운전자 50명, 임계값 21건)
 ```
 
 **Docker Compose 서비스 구성:**
@@ -367,58 +374,33 @@ services:
 
 ## 7. API 엔드포인트 전체 목록
 
-### 인증 / 회원가입
-
 | 메서드 | 경로 | 기능 | 인증 |
 |---|---|---|---|
-| POST | `/api/auth/login` | 관리자 로그인, JWT 발급 (`ACTIVE`만 허용) | 불필요 |
-| POST | `/api/auth/signup` | 일반 관리자 회원가입 (상태 `PENDING`) | 불필요 |
-| GET | `/api/auth/me` | 현재 로그인 사용자 정보 조회 | JWT |
-
-### 최상위 관리자 (`ROLE_SUPER_ADMIN` 전용)
-
-| 메서드 | 경로 | 기능 | 인증 |
-|---|---|---|---|
-| GET | `/api/super/admins/pending` | 승인 대기 관리자 목록 조회 | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/approve` | 일반 관리자 승인 (`ACTIVE`) | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/reject` | 일반 관리자 거절 (`REJECTED`) | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/suspend` | 일반 관리자 정지 (`SUSPENDED`) | JWT (SUPER) |
-| PATCH | `/api/super/admins/{adminId}/activate` | 일반 관리자 정지 해제 (`ACTIVE`) | JWT (SUPER) |
-| GET | `/api/super/companies` | 업체 목록 조회 | JWT (SUPER) |
-| GET | `/api/super/companies/{companyId}` | 업체 상세 조회 | JWT (SUPER) |
-
-### 일반 관리자 (`ROLE_ADMIN`, `ACTIVE` 전용)
-
-| 메서드 | 경로 | 기능 | 인증 |
-|---|---|---|---|
-| GET | `/api/company/me` | 내 업체 정보 조회 | JWT |
-| GET | `/api/vehicles` | 소속 업체 차량 목록 | JWT |
+| POST | `/api/auth/login` | 관리자 로그인, JWT 발급 | 불필요 |
+| POST | `/api/auth/signup` | 관리자 회원가입 (승인 대기) | 불필요 |
+| GET | `/api/vehicles` | 차량 목록 조회 | JWT |
 | POST | `/api/vehicles` | 차량 등록 | JWT |
-| PUT | `/api/vehicles/{id}` | 차량 수정 | JWT |
+| PATCH | `/api/vehicles/{id}` | 차량 수정 | JWT |
 | DELETE | `/api/vehicles/{id}` | 차량 삭제 | JWT |
-| GET | `/api/drivers` | 소속 업체 운전자 목록 | JWT |
+| GET | `/api/drivers` | 운전자 목록 조회 | JWT |
 | POST | `/api/drivers` | 운전자 등록 | JWT |
-| PUT | `/api/drivers/{id}` | 운전자 수정/차량 배정 | JWT |
+| PATCH | `/api/drivers/{id}` | 운전자 수정 | JWT |
+| PATCH | `/api/drivers/{id}/assign/{vehicleId}` | 차량 배정 | JWT |
+| PATCH | `/api/drivers/{id}/unassign` | 차량 배정 해제 | JWT |
 | DELETE | `/api/drivers/{id}` | 운전자 삭제 | JWT |
-| POST | `/api/simulation/start` | 시뮬레이션 시작 | JWT |
-| POST | `/api/simulation/stop` | 시뮬레이션 중지 | JWT |
+| POST | `/api/simulation/start` | 시뮬레이션 시작 (DriveLog 생성) | JWT |
+| PATCH | `/api/simulation/{driveLogId}/stop` | 시뮬레이션 중지 | JWT |
 | POST | `/api/gps` | GPS 데이터 수신 + 피로도 재계산 | JWT |
-| POST | `/api/plate-events` | 출발/도착/고속도로/휴게소 번호판 관측 이벤트 저장 | JWT |
-| GET | `/api/drive-logs/{id}/plate-events` | 운행별 번호판 관측 타임라인 조회 | JWT |
-| GET | `/api/dashboard/summary` | 통계 요약 카드 (소속 업체 기준) | JWT |
+| GET | `/api/dashboard/summary` | 통계 요약 카드 데이터 | JWT |
 | GET | `/api/dashboard/vehicles` | 차량별 현재 피로도 상태 | JWT |
-| GET | `/api/drive-logs` | 운행 이력 목록 (소속 업체 기준) | JWT |
-| GET | `/api/drive-logs/{id}` | 운행 이력 상세 | JWT |
+| GET | `/api/drive-history` | 운행 이력 목록 | JWT |
+| GET | `/api/drive-history/{driveLogId}` | 운행 이력 상세 | JWT |
 | GET | `/api/fatigue/stats` | 일별 피로도 통계 | JWT |
-| GET | `/api/fatigue/thresholds` | 피로도 임계값 전체 조회 | JWT |
-| PUT | `/api/fatigue/thresholds/{key}` | 임계값 수정 | JWT |
-
-### AI 서버
-
-| 메서드 | 경로 | 기능 | 인증 |
-|---|---|---|---|
-| POST | `/api/ocr/recognize` | 번호판 이미지 인식 | 없음(내부) |
-| POST | `/api/ocr/observe` | 관측 유형을 포함한 번호판 이미지 인식 | 없음(내부) |
+| GET | `/api/thresholds` | 피로도 임계값 전체 조회 | JWT |
+| PATCH | `/api/thresholds/{id}` | 임계값 수정 | JWT (SUPER_ADMIN) |
+| POST | `/api/plate-events` | 번호판 인식 이벤트 기록 | JWT |
+| GET | `/api/companies` | 회사 목록 조회 | JWT (SUPER_ADMIN) |
+| POST | `/api/ocr/recognize` (AI) | 번호판 이미지 인식 | 없음(내부) |
 
 ---
 
@@ -427,83 +409,50 @@ services:
 ```
 GPS 데이터 수신 (POST /api/gps)
     ↓
-TenantAccessService → 소속 업체 검증
-    ↓
 GpsData 저장
     ↓
-speed ≤ 3 km/h 판정
+RestEventService.process()
+  speed ≤ 3 km/h ?
   ├── YES → 휴식 시작/진행 중 업데이트 (RestEvent)
   │         15분 이상 → VALID / 30분 이상 → SUFFICIENT
   └── NO  → 운행 중 처리
     ↓
-피로도 재계산 (GPS 수신마다 또는 주기적)
+FatigueScoreService.calculate()
   ├── 연속 운행 시간 계산 (마지막 유효 휴식 이후)
-  ├── 일일 총 운행 시간 계산 (당일 drive_log 합산)
+  ├── 일일 총 운행 시간 계산 (당일 DriveLog 합산)
   ├── 야간 운행 시간 계산 (22:00~06:00 구간)
-  └── 점수 합산 → 등급 결정 → reason 생성
+  ├── 휴식 부족/보정 점수 적용
+  └── 점수 합산 → 등급 결정 → reason 텍스트 생성
     ↓
 FatigueEvent 저장
     ↓
 대시보드 polling (5초) → 최신 FatigueEvent 반환
 ```
 
-**번호판 관측 보정 흐름:**
-
-```
-출발 번호판 인식
-    ↓
-vehicle.plate_no 매칭 및 drive_log 생성
-    ↓
-고속도로 관측 이벤트 저장 → 연속 운행 판단 근거 보강
-    ↓
-휴게소 진입 이벤트 저장
-    ↓
-휴게소 진출 이벤트 저장
-    ↓
-진입/진출 시각 차이로 휴식 여부 보조 검증
-    ↓
-도착 번호판 인식 및 출발 번호판과 일치 여부 검증
-    ↓
-차량 상세 화면에 번호판 관측 타임라인 표시
-```
-
 ---
 
-## 9. 관리자 회원가입/승인 흐름
-
-```
-일반 관리자 회원가입 (POST /api/auth/signup)
-    ↓
-admin 레코드 생성 (status = PENDING, company 생성/연결)
-    ↓
-최상위 관리자 로그인 후 승인 대기 목록 조회 (GET /api/super/admins/pending)
-    ↓
-승인 처리 (PATCH /api/super/admins/{adminId}/approve)
-    ↓
-admin.status = ACTIVE, approved_at, approved_by 기록
-    ↓
-일반 관리자 로그인 가능 → 소속 업체 관제 화면 접근
-```
-
----
-
-## 10. DB 테이블 관계도 (ERD 요약)
+## 9. DB 테이블 관계도 (ERD 요약)
 
 ```
 company
-  └── admin (1:N, 최상위 관리자는 company_id = NULL)
-  └── vehicle (1:N)
-  └── driver  (1:N)
-  └── drive_log (1:N)
+  │
+  └──< admin           (company_id FK — 회사별 관리자)
+
+admin
+  (admin 인증 + 승인 상태 관리)
+
+company ──< vehicle    (company_id FK)
+company ──< driver     (company_id FK)
 
 vehicle ──< drive_log >── driver
    │                         │
-   └── driver_id (nullable,UK) └── vehicle_id (nullable,UK)
-   (상호 참조 — 1:1 배정)
+   └── driver_id (nullable)  └── vehicle_id (nullable)
+   (상호 참조 — 배정 관계)
 
-drive_log ──< gps_data       (CASCADE DELETE)
-drive_log ──< rest_event     (CASCADE DELETE)
-drive_log ──< fatigue_event  (CASCADE DELETE)
+drive_log ──< gps_data        (CASCADE DELETE)
+drive_log ──< rest_event      (CASCADE DELETE)
+drive_log ──< fatigue_event   (CASCADE DELETE)
+drive_log ──< plate_event     (번호판 인식 이벤트)
 
 fatigue_threshold
   (독립 테이블 — key/value 설정값)

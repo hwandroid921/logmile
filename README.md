@@ -10,7 +10,7 @@
 
 ## 주요 기능
 
-- YOLO11 + EasyOCR 기반 화물차 번호판 인식
+- YOLO11n + EasyOCR 기반 화물차 번호판 인식
 - Python GPS 시뮬레이터 기반 운행 시나리오 A/B/C 생성
 - 연속 운행 시간, 휴식 여부, 일일 총 운행 시간, 야간 운행 시간 기반 피로도 점수 산정
 - 정상·주의·위험 피로도 등급 표시
@@ -23,7 +23,7 @@
 
 | 이름 | 담당 분야 | 주요 역할 |
 |---|---|---|
-| 유환희 | 백엔드 + AI 번호판 인식 | Spring Boot API, JPA Entity, 피로도 점수 계산, 휴식 판단, JWT/Security, FastAPI, YOLO11 + EasyOCR |
+| 유환희 | 백엔드 + AI 번호판 인식 | Spring Boot API, JPA Entity, 피로도 점수 계산, 휴식 판단, JWT/Security, FastAPI, YOLO11n + EasyOCR |
 | 백경서 | 프론트엔드 + GPS 시뮬레이터 + 산출물 | Vue.js 대시보드, Pinia/Axios, Chart.js, Python GPS 시나리오 설계, ERD/DB 설계, 요구사항/화면/발표 문서 |
 
 ## 기술 스택
@@ -31,7 +31,7 @@
 | 구분 | 기술 |
 |---|---|
 | AI / Python | Python 3.11, FastAPI, YOLO11n, EasyOCR |
-| Backend | Java 17, Spring Boot 3.x, Spring Data JPA, Spring Security + JWT, Springdoc |
+| Backend | Java 21, Spring Boot 3.5, Spring Data JPA, Spring Security + JWT, Springdoc |
 | Frontend | Vue.js 3, Vite, Pinia, Axios, Chart.js |
 | Database | PostgreSQL 16 |
 | Infra | Docker, Docker Compose |
