@@ -12,49 +12,15 @@
 Thumbs.db
 desktop.ini
 
-# ── 에디터 / IDE ─────────────────────────────────────────────
+# ── 에디터 ───────────────────────────────────────────────────
 .vscode/
-
-# IntelliJ IDEA / Android Studio
-.idea/
-*.iml
-*.iws
-*.ipr
-
-# Eclipse / STS
-.classpath
-.project
-.settings/
-.springBeans
-.sts4-cache
-.apt_generated
-.factorypath
-
-# Vim
 *.swp
 *.swo
 
 # ── Claude Code ──────────────────────────────────────────────
 .claude/
 
-# ── Frontend / Vue / Vite ───────────────────────────────────
-node_modules/
-dist/
-.vite/
-coverage/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# ── Java / Spring Boot / Gradle ─────────────────────────────
-.gradle/
-build/
-out/
-bin/
-!gradle/wrapper/gradle-wrapper.jar
-
-# ── Python ──────────────────────────────────────────────────
+# ── Python / AI local runtime ────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
@@ -65,16 +31,17 @@ __pycache__/
 venv/
 env/
 
-# ── AI / Runtime outputs ────────────────────────────────────
+# ── AI 학습 결과물 / 모델 가중치 (로컬 또는 외부 저장소 보관) ─
 runs/
 outputs/
 uploads/
 wandb/
 mlruns/
+*.pt
+*.pth
 *.onnx
 *.engine
-
-# ── AI 학습 결과물 / 모델 가중치 (로컬 또는 외부 저장소 보관) ─
+*.ckpt
 logmile_ai/.venv/
 logmile_ai/venv/
 logmile_ai/env/
@@ -94,19 +61,19 @@ logmile_ai/evaluate/results/*
 !logmile_ai/evaluate/results/.gitkeep
 logmile_ai/evaluate/ground_truth.json
 
-# ── Local data ──────────────────────────────────────────────
-*.db
-*.sqlite
-docker-data/
-postgres-data/
-
-# ── AI 데이터셋 원본 (대용량, 로컬 보관) ─────────────────────
+# ── AI 데이터셋 원본 / 라벨링 export (대용량, 로컬 보관) ─────
 logmile_ai/dataset/car_plate_data1/
 logmile_ai/dataset/car_plate_data2/
 logmile_ai/dataset/raw/
+logmile_ai/dataset/exports/
+logmile_ai/dataset/roboflow/
 logmile_ai/dataset/images/train/
 logmile_ai/dataset/images/val/
 logmile_ai/dataset/images/test/
 logmile_ai/dataset/labels/train/
 logmile_ai/dataset/labels/val/
 logmile_ai/dataset/labels/test/
+logmile_ai/dataset/*.zip
+logmile_ai/dataset/*.tar
+logmile_ai/dataset/*.tar.gz
+logmile_ai/dataset/*.7z
