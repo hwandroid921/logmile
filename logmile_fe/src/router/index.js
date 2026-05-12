@@ -21,6 +21,50 @@ const router = createRouter({
       component: () => import('@/views/PendingView.vue'),
     },
 
+    // ── 공개 페이지 (로그인 불필요, AppLayout 사용) ───
+    {
+      path: '/',
+      name: 'publicHome',
+      component: () => import('@/views/public/PublicHomeView.vue'),
+    },
+    {
+      path: '/intro',
+      name: 'publicIntro',
+      component: () => import('@/views/public/PublicIntroView.vue'),
+    },
+    {
+      path: '/board',
+      name: 'publicBoard',
+      component: () => import('@/views/public/BoardView.vue'),
+    },
+    {
+      path: '/features',
+      name: 'publicFeatures',
+      component: () => import('@/views/public/PublicFeaturesView.vue'),
+    },
+    {
+      path: '/contact',
+      name: 'publicContact',
+      component: () => import('@/views/public/PublicContactView.vue'),
+    },
+
+    // ── 공개 데모 (로그인 불필요, mockData 사용) ────────
+    {
+      path: '/demo/dashboard',
+      name: 'demoBoard',
+      component: () => import('@/views/DashboardView.vue'),
+    },
+    {
+      path: '/demo/simulation',
+      name: 'demoSim',
+      component: () => import('@/views/SimulationView.vue'),
+    },
+    {
+      path: '/demo/thresholds',
+      name: 'demoThresholds',
+      component: () => import('@/views/ThresholdView.vue'),
+    },
+
     // ── Super Admin (레이아웃 있음, ROLE_SUPER_ADMIN) ──
     {
       path: '/super',
@@ -43,7 +87,7 @@ const router = createRouter({
 
     // ── Admin (레이아웃 있음, ROLE_ADMIN) ─────────────
     {
-      path: '/',
+      path: '/dashboard',
       name: 'dashboard',
       component: () => import('@/views/DashboardView.vue'),
       meta: { requiresAuth: true },
@@ -107,8 +151,13 @@ router.beforeEach((to) => {
   }
 
   // 로그인 상태에서 login/signup/pending 접근 → 역할별 홈으로
-  const publicRoutes = ['login', 'signup', 'pending']
-  if (publicRoutes.includes(to.name) && authStore.isLoggedIn) {
+  const authOnlyRoutes = ['login', 'signup', 'pending']
+  if (authOnlyRoutes.includes(to.name) && authStore.isLoggedIn) {
+    return authStore.isSuperAdmin ? { name: 'superHome' } : { name: 'dashboard' }
+  }
+
+  // 로그인 상태에서 공개 메인('/') 접근 → 역할별 홈으로
+  if (to.name === 'publicHome' && authStore.isLoggedIn) {
     return authStore.isSuperAdmin ? { name: 'superHome' } : { name: 'dashboard' }
   }
 })
