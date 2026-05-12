@@ -13,13 +13,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "FatigueThreshold", description = "피로도 임계값 관리 API")
 @RestController
-@RequestMapping("/api/thresholds")
+@RequestMapping({"/api/thresholds", "/api/fatigue/thresholds"})
 @RequiredArgsConstructor
 public class FatigueThresholdController {
 
@@ -39,5 +40,14 @@ public class FatigueThresholdController {
 		@PathVariable Long id,
 		@Valid @RequestBody ThresholdUpdateRequest request) {
 		return ResponseEntity.ok(fatigueThresholdService.update(id, request));
+	}
+
+	@Operation(summary = "임계값 수정 (key 기준)", description = "SUPER_ADMIN만 임계값을 수정할 수 있습니다.")
+	@PutMapping("/{key}")
+	@PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<ThresholdResponse> updateByKey(
+		@PathVariable String key,
+		@Valid @RequestBody ThresholdUpdateRequest request) {
+		return ResponseEntity.ok(fatigueThresholdService.updateByKey(key, request));
 	}
 }
