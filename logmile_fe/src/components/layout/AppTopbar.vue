@@ -1,15 +1,38 @@
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import AppLogo from './AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 
-const router = useRouter()
+const route     = useRoute()
+const router    = useRouter()
 const authStore = useAuthStore()
 
-const adminName = computed(() => authStore.name ?? '관리자')
+const adminName    = computed(() => authStore.name ?? '관리자')
 const isSuperAdmin = computed(() => authStore.role === 'ROLE_SUPER_ADMIN')
+
+const adminNavItems = [
+  { name: 'dashboard',    label: '대시보드' },
+  { name: 'simulation',   label: '시뮬레이션' },
+  { name: 'vehicles',     label: '차량 관리' },
+  { name: 'drivers',      label: '운전자 관리' },
+  { name: 'driveHistory', label: '운행 이력' },
+  { name: 'thresholds',   label: '임계값 설정' },
+  { name: 'stats',        label: '피로도 통계' },
+]
+
+const superNavItems = [
+  { name: 'superHome',     label: '대시보드' },
+  { name: 'superApproval', label: '가입 승인' },
+  { name: 'superCompany',  label: '업체 관리' },
+]
+
+const navItems = computed(() => isSuperAdmin.value ? superNavItems : adminNavItems)
+
+function isActive(name) {
+  return route.name === name
+}
 
 function logout() {
   authStore.clearAuth()
@@ -19,40 +42,51 @@ function logout() {
 
 <template>
   <header class="topbar">
-    <!-- 로고 -->
-    <div class="topbar-left">
-      <AppLogo />
-      <span class="topbar-env">
-        {{ isSuperAdmin ? '최상위 관리자' : '업체 관리자' }}
-      </span>
-    </div>
-
-    <!-- 우측 상태 + 유저 -->
-    <div class="topbar-right">
-      <!-- 실시간 상태 표시 -->
-      <div class="live-badge">
-        <span class="dot dot-ok" style="animation: blink-soft 2s infinite" />
-        <span class="mono">LIVE</span>
+    <div class="topbar-inner">
+      <!-- 로고 -->
+      <div class="topbar-left">
+        <AppLogo />
+        <span class="topbar-env mono">
+          {{ isSuperAdmin ? 'SUPER_ADMIN' : 'ADMIN · 한라물류센터' }}
+        </span>
       </div>
 
-      <div class="divider" />
+      <!-- 가운데 네비게이션 -->
+      <nav class="topbar-nav">
+        <router-link
+          v-for="item in navItems"
+          :key="item.name"
+          :to="{ name: item.name }"
+          class="nav-item"
+          :class="{ active: isActive(item.name) }"
+        >
+          {{ item.label }}
+        </router-link>
+      </nav>
 
-      <!-- 알림 버튼 -->
-      <button class="icon-btn" title="알림">
-        <AppIcon name="bell" :size="16" />
-      </button>
+      <!-- 우측 상태 + 유저 -->
+      <div class="topbar-right">
+        <div class="live-badge">
+          <span class="dot dot-ok blink" />
+          <span class="mono">SYSTEM ONLINE</span>
+        </div>
 
-      <!-- 유저 칩 -->
-      <div class="user-chip">
-        <div class="user-avatar">{{ adminName.charAt(0) }}</div>
-        <span class="user-name">{{ adminName }}</span>
-        <AppIcon name="chevronR" :size="13" style="color: var(--text-4)" />
+        <div class="divider" />
+
+        <button class="icon-btn" title="알림">
+          <AppIcon name="bell" :size="16" />
+        </button>
+
+        <div class="user-chip">
+          <div class="user-avatar">{{ adminName.charAt(0) }}</div>
+          <span class="user-name">{{ adminName }}</span>
+          <AppIcon name="chevronD" :size="13" style="color: var(--text-4)" />
+        </div>
+
+        <button class="icon-btn logout-btn" title="로그아웃" @click="logout">
+          <AppIcon name="x" :size="16" />
+        </button>
       </div>
-
-      <!-- 로그아웃 -->
-      <button class="icon-btn logout-btn" title="로그아웃" @click="logout">
-        <AppIcon name="logout" :size="16" />
-      </button>
     </div>
   </header>
 </template>
@@ -63,25 +97,33 @@ function logout() {
   top: 0;
   z-index: 50;
   height: var(--topbar-height);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: rgba(241, 243, 246, 0.9);
+  background: rgba(241, 243, 246, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line-1);
   flex-shrink: 0;
 }
 
+.topbar-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+/* 로고 영역 */
 .topbar-left {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .topbar-env {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   letter-spacing: 0.08em;
   color: var(--text-4);
   padding: 2px 7px;
@@ -90,10 +132,41 @@ function logout() {
   border-radius: var(--r-sm);
 }
 
+/* 네비게이션 */
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  justify-content: center;
+}
+
+.nav-item {
+  padding: 7px 13px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.nav-item:hover {
+  background: var(--bg-3);
+  color: var(--text-1);
+}
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+}
+
+/* 우측 */
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .live-badge {
@@ -121,13 +194,8 @@ function logout() {
   color: var(--text-3);
   transition: background 0.15s, color 0.15s;
 }
-.icon-btn:hover {
-  background: var(--bg-3);
-  color: var(--text-1);
-}
-.logout-btn:hover {
-  color: var(--danger);
-}
+.icon-btn:hover { background: var(--bg-3); color: var(--text-1); }
+.logout-btn:hover { color: var(--danger); }
 
 .user-chip {
   display: flex;
@@ -138,30 +206,22 @@ function logout() {
   border: 1px solid var(--line-2);
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 }
-.user-chip:hover {
-  background: var(--bg-4);
-  border-color: var(--line-3);
-}
+.user-chip:hover { background: var(--bg-2); }
 
 .user-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-line);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent-soft); border: 1px solid var(--accent-line);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--accent);
 }
 
-.user-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-2);
-}
+.user-name { font-size: 13px; font-weight: 500; color: var(--text-2); }
+
+/* 점 & 애니메이션 */
+.dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.dot-ok  { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+.blink   { animation: blink-soft 2s infinite; }
+@keyframes blink-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 </style>
