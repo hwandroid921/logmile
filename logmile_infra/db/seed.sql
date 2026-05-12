@@ -29,7 +29,7 @@ INSERT INTO company (name, address, phone, is_active) VALUES
 INSERT INTO admin (email, password, name, phone, role, status)
 VALUES (
     'admin@logmile.com',
-    '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi',
+    '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly',
     '최상위관리자',
     '010-0000-0000',
     'ROLE_SUPER_ADMIN',
@@ -39,63 +39,63 @@ VALUES (
 -- 2-2. 업체별 관리자 3명씩 (총 30명)
 -- company 1 : 로그마일운송
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (1, 'c1_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '로그마일 총괄관리자', '010-2001-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (1, 'c1_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '로그마일 운행관리자', '010-2001-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (1, 'c1_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '로그마일 안전관리자', '010-2001-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (1, 'c1_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '로그마일 총괄관리자', '010-2001-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (1, 'c1_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '로그마일 운행관리자', '010-2001-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (1, 'c1_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '로그마일 안전관리자', '010-2001-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 2 : 한빛물류
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (2, 'c2_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '한빛물류 총괄관리자', '010-2002-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (2, 'c2_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '한빛물류 운행관리자', '010-2002-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (2, 'c2_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '한빛물류 안전관리자', '010-2002-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (2, 'c2_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '한빛물류 총괄관리자', '010-2002-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (2, 'c2_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '한빛물류 운행관리자', '010-2002-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (2, 'c2_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '한빛물류 안전관리자', '010-2002-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 3 : 부평카고
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (3, 'c3_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '부평카고 총괄관리자', '010-2003-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (3, 'c3_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '부평카고 운행관리자', '010-2003-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (3, 'c3_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '부평카고 안전관리자', '010-2003-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (3, 'c3_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '부평카고 총괄관리자', '010-2003-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (3, 'c3_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '부평카고 운행관리자', '010-2003-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (3, 'c3_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '부평카고 안전관리자', '010-2003-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 4 : 서해로지스
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (4, 'c4_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '서해로지스 총괄관리자', '010-2004-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (4, 'c4_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '서해로지스 운행관리자', '010-2004-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (4, 'c4_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '서해로지스 안전관리자', '010-2004-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (4, 'c4_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '서해로지스 총괄관리자', '010-2004-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (4, 'c4_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '서해로지스 운행관리자', '010-2004-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (4, 'c4_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '서해로지스 안전관리자', '010-2004-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 5 : 경기특송
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (5, 'c5_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '경기특송 총괄관리자', '010-2005-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (5, 'c5_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '경기특송 운행관리자', '010-2005-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (5, 'c5_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '경기특송 안전관리자', '010-2005-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (5, 'c5_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '경기특송 총괄관리자', '010-2005-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (5, 'c5_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '경기특송 운행관리자', '010-2005-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (5, 'c5_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '경기특송 안전관리자', '010-2005-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 6 : 남부윙바디
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (6, 'c6_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '남부윙바디 총괄관리자', '010-2006-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (6, 'c6_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '남부윙바디 운행관리자', '010-2006-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (6, 'c6_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '남부윙바디 안전관리자', '010-2006-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (6, 'c6_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '남부윙바디 총괄관리자', '010-2006-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (6, 'c6_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '남부윙바디 운행관리자', '010-2006-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (6, 'c6_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '남부윙바디 안전관리자', '010-2006-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 7 : 동해냉동물류
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (7, 'c7_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '동해냉동 총괄관리자', '010-2007-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (7, 'c7_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '동해냉동 운행관리자', '010-2007-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (7, 'c7_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '동해냉동 안전관리자', '010-2007-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (7, 'c7_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '동해냉동 총괄관리자', '010-2007-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (7, 'c7_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '동해냉동 운행관리자', '010-2007-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (7, 'c7_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '동해냉동 안전관리자', '010-2007-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 8 : 충청화물
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (8, 'c8_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '충청화물 총괄관리자', '010-2008-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (8, 'c8_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '충청화물 운행관리자', '010-2008-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (8, 'c8_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '충청화물 안전관리자', '010-2008-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (8, 'c8_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '충청화물 총괄관리자', '010-2008-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (8, 'c8_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '충청화물 운행관리자', '010-2008-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (8, 'c8_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '충청화물 안전관리자', '010-2008-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 9 : 영남트레일러
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (9, 'c9_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '영남트레일러 총괄관리자', '010-2009-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (9, 'c9_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '영남트레일러 운행관리자', '010-2009-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (9, 'c9_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '영남트레일러 안전관리자', '010-2009-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (9, 'c9_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '영남트레일러 총괄관리자', '010-2009-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (9, 'c9_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '영남트레일러 운행관리자', '010-2009-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (9, 'c9_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '영남트레일러 안전관리자', '010-2009-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- company 10 : 호남종합운수
 INSERT INTO admin (company_id, email, password, name, phone, role, status) VALUES
-    (10, 'c10_admin1@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '호남종합 총괄관리자', '010-2010-0001', 'ROLE_ADMIN', 'ACTIVE'),
-    (10, 'c10_admin2@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '호남종합 운행관리자', '010-2010-0002', 'ROLE_ADMIN', 'ACTIVE'),
-    (10, 'c10_admin3@logmile.com', '$2a$10$VgBMTWqr3oBJBOvRl3sVXuCR6PjGLxUoB7C7sNH3FAJH4VK5kDkRi', '호남종합 안전관리자', '010-2010-0003', 'ROLE_ADMIN', 'ACTIVE');
+    (10, 'c10_admin1@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '호남종합 총괄관리자', '010-2010-0001', 'ROLE_ADMIN', 'ACTIVE'),
+    (10, 'c10_admin2@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '호남종합 운행관리자', '010-2010-0002', 'ROLE_ADMIN', 'ACTIVE'),
+    (10, 'c10_admin3@logmile.com', '$2a$10$ZPWzjI5qMP3FOZSLriOE8.AHCt8zdmXYlwhLFTNjFQB0skhb.Ttly', '호남종합 안전관리자', '010-2010-0003', 'ROLE_ADMIN', 'ACTIVE');
 
 -- ============================================================
 -- 3. vehicle 초기 차량 50대 (업체당 5대, driver_id 없이 먼저 INSERT)
