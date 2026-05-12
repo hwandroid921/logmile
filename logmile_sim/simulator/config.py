@@ -40,7 +40,7 @@ class SimulatorConfig:
 def load_config() -> SimulatorConfig:
     token = getenv("API_TOKEN", "").strip()
     return SimulatorConfig(
-        backend_base_url=getenv("BACKEND_BASE_URL", "http://localhost:8080"),
+        backend_base_url=getenv("BE_API_URL", "http://localhost:8080"),
         gps_endpoint=getenv("GPS_ENDPOINT", "/api/gps"),
         plate_event_endpoint=getenv("PLATE_EVENT_ENDPOINT", "/api/simulation/plate-events"),
         ai_base_url=getenv("AI_BASE_URL", "http://localhost:8000"),

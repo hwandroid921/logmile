@@ -12,7 +12,7 @@ class Settings:
     OCR_CONFIDENCE_THRESHOLD: float = float(os.getenv("OCR_CONFIDENCE_THRESHOLD", "0.85"))
 
     # YOLO11 번호판 탐지 모델 경로
-    YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "app/model/license_plate_yolo11n_best.pt")
+    YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "app/model/yolo11n.pt")
 
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
