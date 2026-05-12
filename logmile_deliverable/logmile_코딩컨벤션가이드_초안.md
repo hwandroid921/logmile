@@ -3,6 +3,7 @@
 ## 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
+- 문서 버전: `v1.0`
 - 작성 기준일: 2026.04.29
 - 적용 대상:
   - Backend: Java 21, Spring Boot 3.5.14, Spring Data JPA, Spring Security + JWT

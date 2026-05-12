@@ -3,10 +3,12 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 기준 원본: `docx/logmile_ERD.docx`
-- 버전 표기: `원본 docx에 별도 버전 표기 없음`
+- 문서 버전: `v1.5`
+- 기준 문서: `logmile_DB설계서.md`
+- 참조 원본: `docx/logmile_ERD.docx`
 - 작성 기준일: `2026.04`
-- 비고: 이 문서는 `docx/logmile_ERD.docx` 내용을 Markdown 기준으로 정리한 문서이며, 다이어그램 이미지는 원본 docx를 참조한다.
+- 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
+- 비고: 이 문서는 ERD 내용을 Markdown 기준으로 정리한 문서이며, 다이어그램 이미지는 보관용 docx를 참조한다.
 
 ## 1. 문서 개요
 
