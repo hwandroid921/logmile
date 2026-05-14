@@ -140,23 +140,41 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
-  // 비로그인 → 로그인 필요 페이지 접근 차단
+  // 1. 비로그인 → 로그인 필요 페이지 접근 차단
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     return { name: 'login' }
   }
 
-  // Super Admin 전용 페이지 — 일반 관리자 접근 차단
+  // 2. 계정 상태 체크 (로그인은 됐지만 상태 이상) — 보호 경로 접근 시에만 적용
+  if (authStore.isLoggedIn && to.meta.requiresAuth) {
+    const status = authStore.status
+
+    // PENDING → 승인 대기 페이지로
+    if (status === 'PENDING' && to.name !== 'pending') {
+      return { name: 'pending' }
+    }
+
+    // REJECTED · SUSPENDED → 로그인 페이지로 (토큰 제거)
+    if (status === 'REJECTED' || status === 'SUSPENDED') {
+      authStore.clearAuth()
+      return { name: 'login' }
+    }
+  }
+
+  // 3. Super Admin 전용 페이지 — 일반 관리자 접근 차단
   if (to.meta.requiresSuper && !authStore.isSuperAdmin) {
     return { name: 'dashboard' }
   }
 
-  // 로그인 상태에서 login/signup/pending 접근 → 역할별 홈으로
+  // 4. 로그인 상태에서 login/signup/pending 접근 → 역할별 홈으로
   const authOnlyRoutes = ['login', 'signup', 'pending']
   if (authOnlyRoutes.includes(to.name) && authStore.isLoggedIn) {
+    // PENDING 상태이면 pending 페이지 유지
+    if (authStore.status === 'PENDING' && to.name === 'pending') return
     return authStore.isSuperAdmin ? { name: 'superHome' } : { name: 'dashboard' }
   }
 
-  // 로그인 상태에서 공개 메인('/') 접근 → 역할별 홈으로
+  // 5. 로그인 상태에서 공개 메인('/') 접근 → 역할별 홈으로
   if (to.name === 'publicHome' && authStore.isLoggedIn) {
     return authStore.isSuperAdmin ? { name: 'superHome' } : { name: 'dashboard' }
   }
