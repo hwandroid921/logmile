@@ -1,60 +1,198 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AppIcon from '@/components/common/AppIcon.vue'
-import { drivers, levelOf } from '@/data/mockData'
+import { driverApi } from '@/api/driverApi'
+import { vehicleApi } from '@/api/vehicleApi'
 
-const list        = ref(drivers.map(d => ({ ...d })))
-const search      = ref('')
-const levelFilter = ref('ALL')
+const list       = ref([])
+const vehicleList = ref([])   // 배정 드롭다운용
+const loading    = ref(true)
+const error      = ref(null)
+const search     = ref('')
+const assignFilter = ref('ALL')
+
+async function fetchData() {
+  loading.value = true
+  error.value   = null
+  try {
+    const [dRes, vRes] = await Promise.all([driverApi.getAll(), vehicleApi.getAll()])
+    vehicleList.value = vRes.data
+    const vehicleMap = Object.fromEntries(vRes.data.map(v => [v.id, v]))
+    list.value = dRes.data.map(d => ({
+      id:          d.id,
+      name:        d.name,
+      phone:       d.phone,
+      license:     d.licenseType,
+      vehicleId:   d.vehicleId,
+      plate:       d.vehicleId ? (vehicleMap[d.vehicleId]?.plateNo ?? '—') : '미배정',
+      vehicleType: d.vehicleId ? (vehicleMap[d.vehicleId]?.type ?? '—') : '—',
+      createdAt:   d.createdAt ? d.createdAt.slice(0, 10) : '—',
+    }))
+  } catch (e) {
+    error.value = '데이터를 불러오는 중 오류가 발생했습니다.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchData)
 
 const filtered = computed(() => list.value.filter(d => {
-  if (levelFilter.value !== 'ALL' && d.level !== levelFilter.value) return false
-  if (search.value && !(d.name.includes(search.value) || d.plate.includes(search.value) || d.phone.includes(search.value))) return false
+  if (assignFilter.value === 'ASSIGNED'   &&  !d.vehicleId) return false
+  if (assignFilter.value === 'UNASSIGNED' && !!d.vehicleId) return false
+  if (search.value && !(
+    d.name.includes(search.value) ||
+    d.plate.includes(search.value) ||
+    d.phone.includes(search.value)
+  )) return false
   return true
 }))
 
-const dangerCount  = computed(() => list.value.filter(d => d.level === 'DANGER').length)
-const cautionCount = computed(() => list.value.filter(d => d.level === 'CAUTION').length)
-const normalCount  = computed(() => list.value.filter(d => d.level === 'NORMAL').length)
+const assignedCount   = computed(() => list.value.filter(d =>  d.vehicleId).length)
+const unassignedCount = computed(() => list.value.filter(d => !d.vehicleId).length)
 
-function levelChipStyle(l) {
-  if (l === 'DANGER')  return { color:'var(--danger)', bg:'var(--danger-soft)',  border:'rgba(181,84,74,.3)' }
-  if (l === 'CAUTION') return { color:'var(--warn)',   bg:'var(--warn-soft)',    border:'rgba(197,138,58,.3)' }
-  return                      { color:'var(--ok)',     bg:'var(--ok-soft)',      border:'rgba(94,138,111,.3)' }
+/* ─── 등록/수정 모달 ─── */
+const showModal  = ref(false)
+const modalMode  = ref('create')   // 'create' | 'edit'
+const editTarget = ref(null)
+const submitting = ref(false)
+const form = ref({ name: '', phone: '', licenseType: '' })
+
+const licenseTypes = ['1종 대형', '1종 보통', '2종 보통', '특수(트레일러)', '특수(레커)']
+
+function openCreate() {
+  modalMode.value = 'create'
+  editTarget.value = null
+  form.value = { name: '', phone: '', licenseType: '' }
+  showModal.value = true
 }
-function statusStyle(s) {
-  if (s === 'RUNNING') return { color:'var(--accent)', bg:'var(--accent-soft)', border:'var(--accent-line)' }
-  return                      { color:'var(--text-3)', bg:'var(--bg-4)',        border:'var(--line-2)' }
+
+function openEdit(d) {
+  modalMode.value = 'edit'
+  editTarget.value = d
+  form.value = { name: d.name, phone: d.phone, licenseType: d.license }
+  showModal.value = true
+}
+
+function closeModal() {
+  showModal.value = false
+  editTarget.value = null
+}
+
+async function submitModal() {
+  if (!form.value.name.trim() || !form.value.phone.trim() || !form.value.licenseType) {
+    alert('이름, 전화번호, 면허 종류는 필수 항목입니다.')
+    return
+  }
+  submitting.value = true
+  const payload = {
+    name:        form.value.name.trim(),
+    phone:       form.value.phone.trim(),
+    licenseType: form.value.licenseType,
+  }
+  try {
+    if (modalMode.value === 'create') {
+      await driverApi.create(payload)
+    } else {
+      await driverApi.update(editTarget.value.id, payload)
+    }
+    closeModal()
+    await fetchData()
+  } catch (e) {
+    alert('저장 중 오류가 발생했습니다.')
+  } finally {
+    submitting.value = false
+  }
+}
+
+async function removeItem(d) {
+  if (!confirm(`운전자 "${d.name}"을(를) 삭제하시겠습니까?`)) return
+  try {
+    await driverApi.remove(d.id)
+    await fetchData()
+  } catch (e) {
+    alert('삭제 중 오류가 발생했습니다.')
+  }
+}
+
+/* ─── 차량 배정 모달 ─── */
+const showAssignModal  = ref(false)
+const assignTarget     = ref(null)
+const selectedVehicleId = ref('')
+const assigning        = ref(false)
+
+// 배정되지 않은 차량 + 현재 운전자의 차량 포함
+const availableVehicles = computed(() => {
+  return vehicleList.value.filter(v => v.active && (!v.driverId || v.id === assignTarget.value?.vehicleId))
+})
+
+function openAssign(d) {
+  assignTarget.value = d
+  selectedVehicleId.value = d.vehicleId ?? ''
+  showAssignModal.value = true
+}
+
+function closeAssignModal() {
+  showAssignModal.value = false
+  assignTarget.value = null
+  selectedVehicleId.value = ''
+}
+
+async function submitAssign() {
+  if (!selectedVehicleId.value) {
+    alert('배정할 차량을 선택해 주세요.')
+    return
+  }
+  assigning.value = true
+  try {
+    await driverApi.assignVehicle(assignTarget.value.id, Number(selectedVehicleId.value))
+    closeAssignModal()
+    await fetchData()
+  } catch (e) {
+    alert('배정 중 오류가 발생했습니다.')
+  } finally {
+    assigning.value = false
+  }
+}
+
+async function doUnassign(d) {
+  if (!confirm(`"${d.name}" 운전자의 차량 배정을 해제하시겠습니까?`)) return
+  try {
+    await driverApi.unassign(d.id)
+    await fetchData()
+  } catch (e) {
+    alert('배정 해제 중 오류가 발생했습니다.')
+  }
 }
 </script>
 
 <template>
   <div class="view">
     <div class="breadcrumb mono">
-      ADMIN / DRIVER_TABLE · {{ list.length }} record(s) · 한라물류센터
+      ADMIN / DRIVER_TABLE · {{ list.length }} record(s)
     </div>
 
     <div class="page-header">
       <h2 class="page-title">운전자 관리</h2>
-      <button class="btn btn-ghost hdr-btn"><AppIcon name="refresh" :size="13" />새로고침</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-ghost hdr-btn" @click="fetchData">
+          <AppIcon name="refresh" :size="13" />새로고침
+        </button>
+        <button class="btn btn-primary hdr-btn" @click="openCreate">+ 운전자 등록</button>
+      </div>
     </div>
 
     <!-- 요약 카드 -->
     <div class="sum-row">
       <div class="sum-card">
-        <span class="sum-dot" style="background:var(--danger)" />
-        <span class="sum-lbl mono">DANGER</span>
-        <span class="sum-val mono" style="color:var(--danger)">{{ dangerCount }}</span>
+        <span class="sum-dot" style="background:var(--accent)" />
+        <span class="sum-lbl mono">ASSIGNED</span>
+        <span class="sum-val mono" style="color:var(--accent)">{{ assignedCount }}</span>
       </div>
       <div class="sum-card">
-        <span class="sum-dot" style="background:var(--warn)" />
-        <span class="sum-lbl mono">CAUTION</span>
-        <span class="sum-val mono" style="color:var(--warn)">{{ cautionCount }}</span>
-      </div>
-      <div class="sum-card">
-        <span class="sum-dot" style="background:var(--ok)" />
-        <span class="sum-lbl mono">NORMAL</span>
-        <span class="sum-val mono" style="color:var(--ok)">{{ normalCount }}</span>
+        <span class="sum-dot" style="background:var(--text-3)" />
+        <span class="sum-lbl mono">UNASSIGNED</span>
+        <span class="sum-val mono" style="color:var(--text-3)">{{ unassignedCount }}</span>
       </div>
       <div class="sum-card">
         <span class="sum-dot" style="background:var(--text-4)" />
@@ -67,17 +205,21 @@ function statusStyle(s) {
     <div class="filter-row">
       <input v-model="search" class="search-inp" placeholder="이름 / 번호판 / 전화 검색" />
       <div class="filter-group">
-        <span class="filter-lbl mono">LEVEL</span>
+        <span class="filter-lbl mono">배정</span>
         <div class="filter-btns">
-          <button v-for="l in ['ALL','NORMAL','CAUTION','DANGER']" :key="l"
-            class="filter-btn mono" :class="{ active: levelFilter===l }"
-            @click="levelFilter=l">{{ l }}</button>
+          <button v-for="s in ['ALL','ASSIGNED','UNASSIGNED']" :key="s"
+            class="filter-btn mono" :class="{ active: assignFilter===s }"
+            @click="assignFilter=s">{{ s }}</button>
         </div>
       </div>
     </div>
 
+    <!-- 로딩 / 에러 -->
+    <div v-if="loading" class="state-row mono">데이터 로드 중...</div>
+    <div v-else-if="error" class="state-row" style="color:var(--danger)">{{ error }}</div>
+
     <!-- 테이블 -->
-    <div class="card table-card">
+    <div v-else class="card table-card">
       <div class="table-wrap">
         <table class="tbl">
           <thead>
@@ -86,9 +228,9 @@ function statusStyle(s) {
               <th>전화번호</th>
               <th>면허</th>
               <th>배정 차량</th>
-              <th>STATUS</th>
-              <th>피로 점수</th>
-              <th>입사일</th>
+              <th>차종</th>
+              <th>등록일</th>
+              <th style="text-align:right">관리</th>
             </tr>
           </thead>
           <tbody>
@@ -105,31 +247,88 @@ function statusStyle(s) {
               <td class="mono" style="font-size:12px;color:var(--text-2)">{{ d.phone }}</td>
               <td class="sub-txt">{{ d.license }}</td>
               <td>
-                <div class="mono plate-txt">{{ d.plate }}</div>
-              </td>
-              <td>
-                <span class="status-chip mono"
-                  :style="{ color: statusStyle(d.status).color, background: statusStyle(d.status).bg, borderColor: statusStyle(d.status).border }">
-                  {{ d.status === 'RUNNING' ? '운행중' : '대기' }}
-                </span>
-              </td>
-              <td>
-                <div class="score-row">
-                  <span class="mono score-num" :style="{ color: levelOf(d.level).color }">{{ d.score }}</span>
-                  <span class="level-chip mono"
-                    :style="{ color: levelChipStyle(d.level).color, background: levelChipStyle(d.level).bg, borderColor: levelChipStyle(d.level).border }">
-                    {{ d.level }}
-                  </span>
+                <div v-if="d.vehicleId" style="display:flex;align-items:center;gap:6px;">
+                  <div class="mono plate-txt">{{ d.plate }}</div>
+                  <button class="act-btn act-unassign" @click="doUnassign(d)" title="배정 해제">✕</button>
                 </div>
-                <div class="score-bar-wrap">
-                  <div class="score-bar-fill" :style="{ width: d.score+'%', background: levelOf(d.level).color }" />
+                <div v-else style="display:flex;align-items:center;gap:6px;">
+                  <span class="sub-txt">미배정</span>
+                  <button class="act-btn act-assign" @click="openAssign(d)">배정</button>
                 </div>
               </td>
-              <td class="mono sub-txt">{{ d.employedAt }}</td>
+              <td class="sub-txt">{{ d.vehicleType !== '—' ? d.vehicleType : '—' }}</td>
+              <td class="mono sub-txt">{{ d.createdAt }}</td>
+              <td style="text-align:right;white-space:nowrap;">
+                <button class="act-btn" @click="openEdit(d)">수정</button>
+                <button class="act-btn act-del" @click="removeItem(d)">삭제</button>
+              </td>
             </tr>
           </tbody>
         </table>
         <div v-if="filtered.length===0" class="empty-row">조건에 맞는 운전자가 없습니다.</div>
+      </div>
+    </div>
+
+    <!-- 운전자 등록/수정 모달 -->
+    <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
+      <div class="modal">
+        <div class="modal-hdr">
+          <span class="modal-title">{{ modalMode === 'create' ? '운전자 등록' : '운전자 수정' }}</span>
+          <button class="modal-close" @click="closeModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label class="form-lbl">이름 <span class="req">*</span></label>
+            <input v-model="form.name" class="form-inp" placeholder="홍길동" />
+          </div>
+          <div class="form-row">
+            <label class="form-lbl">전화번호 <span class="req">*</span></label>
+            <input v-model="form.phone" class="form-inp mono" placeholder="010-0000-0000" />
+          </div>
+          <div class="form-row">
+            <label class="form-lbl">면허 종류 <span class="req">*</span></label>
+            <select v-model="form.licenseType" class="form-inp">
+              <option value="" disabled>면허 선택</option>
+              <option v-for="l in licenseTypes" :key="l" :value="l">{{ l }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" @click="closeModal">취소</button>
+          <button class="btn btn-primary" :disabled="submitting" @click="submitModal">
+            {{ submitting ? '저장 중...' : (modalMode === 'create' ? '등록' : '저장') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 차량 배정 모달 -->
+    <div v-if="showAssignModal" class="modal-backdrop" @click.self="closeAssignModal">
+      <div class="modal">
+        <div class="modal-hdr">
+          <span class="modal-title">차량 배정 — {{ assignTarget?.name }}</span>
+          <button class="modal-close" @click="closeAssignModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label class="form-lbl">배정할 차량 <span class="req">*</span></label>
+            <select v-model="selectedVehicleId" class="form-inp">
+              <option value="" disabled>차량 선택</option>
+              <option v-for="v in availableVehicles" :key="v.id" :value="v.id">
+                {{ v.plateNo }} ({{ v.type }})
+              </option>
+            </select>
+            <div v-if="availableVehicles.length === 0" style="font-size:11.5px;color:var(--text-4);margin-top:4px">
+              배정 가능한 활성 차량이 없습니다.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" @click="closeAssignModal">취소</button>
+          <button class="btn btn-primary" :disabled="assigning || availableVehicles.length === 0" @click="submitAssign">
+            {{ assigning ? '배정 중...' : '배정' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -167,6 +366,8 @@ function statusStyle(s) {
 }
 .filter-btn.active { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:600; }
 
+.state-row { padding:40px; text-align:center; font-size:13px; color:var(--text-4); }
+
 .table-card { padding:0; overflow:hidden; }
 .table-wrap { overflow-x:auto; }
 .tbl { width:100%; border-collapse:collapse; font-size:13px; }
@@ -189,18 +390,50 @@ function statusStyle(s) {
 .sub-txt   { font-size:11px; color:var(--text-4); margin-top:2px; }
 .plate-txt { font-size:12px; color:var(--text-2); }
 
-.status-chip {
-  display:inline-block; padding:2px 8px; border-radius:var(--r-sm);
-  font-size:10px; font-weight:600; letter-spacing:0.06em; border:1px solid;
+.act-btn {
+  font-size:11px; padding:3px 9px; margin-left:4px;
+  border-radius:var(--r-sm); cursor:pointer; border:1px solid var(--line-2);
+  background:transparent; color:var(--text-2); font-family:var(--font-mono);
+  transition:all .12s;
 }
-.score-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
-.score-num { font-size:16px; font-weight:800; letter-spacing:-0.01em; }
-.level-chip {
-  display:inline-block; padding:1px 6px; border-radius:var(--r-sm);
-  font-size:9px; font-weight:700; letter-spacing:0.06em; border:1px solid;
-}
-.score-bar-wrap { height:4px; background:var(--bg-3); border-radius:2px; overflow:hidden; width:80px; }
-.score-bar-fill { height:100%; border-radius:2px; transition:width .3s; }
+.act-btn:first-child { margin-left:0; }
+.act-btn:hover        { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); }
+.act-del:hover        { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color:var(--danger); }
+.act-assign           { font-size:10px; padding:2px 7px; color:var(--accent); border-color:var(--accent-line); background:var(--accent-soft); }
+.act-unassign         { font-size:10px; padding:2px 6px; color:var(--text-3); }
+.act-unassign:hover   { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color:var(--danger); }
 
 .empty-row { padding:40px; text-align:center; color:var(--text-4); font-size:13px; }
+
+/* 모달 */
+.modal-backdrop {
+  position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200;
+  display:flex; align-items:center; justify-content:center;
+}
+.modal {
+  background:var(--bg-1); border:1px solid var(--line-1); border-radius:var(--r-lg);
+  width:420px; max-width:95vw; box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.modal-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid var(--line-1);
+}
+.modal-title { font-size:15px; font-weight:700; color:var(--text-1); }
+.modal-close {
+  background:none; border:none; cursor:pointer; color:var(--text-3);
+  font-size:16px; padding:0 4px; transition:color .12s;
+}
+.modal-close:hover { color:var(--text-1); }
+.modal-body   { padding:20px; display:flex; flex-direction:column; gap:14px; }
+.modal-footer { display:flex; justify-content:flex-end; gap:8px; padding:14px 20px; border-top:1px solid var(--line-1); }
+
+.form-row { display:flex; flex-direction:column; gap:5px; }
+.form-lbl { font-size:11.5px; color:var(--text-3); font-weight:600; }
+.req      { color:var(--danger); }
+.form-inp {
+  padding:8px 11px; border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--bg-2); color:var(--text-1); font-size:13px; outline:none;
+  transition:border-color .15s;
+}
+.form-inp:focus { border-color:var(--accent-line); }
 </style>

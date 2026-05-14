@@ -3,12 +3,16 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 문서 버전: `v1.5`
-- 기준 문서: `logmile_DB설계서.md`
-- 참조 원본: `docx/logmile_테이블정의서.docx`
-- 작성 기준일: `2026.04`
+- 기준 원본: `docx/logmile_테이블정의서.docx`
+- 버전: `v5.0`
+- 작성 기준일: `2026.05.12`
+- 변경 기준: 실제 구현 코드(PlateEvent.java, 관련 enum) 기반 plate_event 테이블 현행화
 - 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
-- 비고: 이 문서는 테이블 정의 내용을 Markdown 기준으로 정리한 문서다.
+
+| 버전 | 작성일 | 변경 내용 |
+|---|---|---|
+| v4.0 이전 | 2026.04 | 초기 설계 |
+| v5.0 | 2026.05.12 | §7 `plate_recognition_event` → `plate_event` 테이블명 수정; `drive_log_id` 컬럼 제거; `captured_at` → `observed_at`; `event_type` 컬럼 추가; `detection_confidence`, `memo` 컬럼 추가; source_type/location_type enum 실제 값으로 수정 |
 
 ## 1. 목차
 
@@ -17,7 +21,7 @@
 3. `vehicle`
 4. `driver`
 5. `drive_log`
-6. `plate_recognition_event`
+6. `plate_event`
 7. `gps_data`
 8. `rest_event`
 9. `fatigue_event`
@@ -113,48 +117,53 @@
 | 16 | `max_fatigue_level` | `VARCHAR(20)` | NULL | - | CHK | 최고 피로 등급 |
 | 17 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 레코드 생성 시각 |
 
-## 7. plate_recognition_event (번호판 관측 이벤트)
+## 7. plate_event (번호판 관측 이벤트)
 
-- 설명: 출발/도착 번호판 검증, 고속도로 관측, 휴게소 진입/진출 번호판 인식 결과를 운행 기록과 연결하여 저장
-- 인덱스: `PK(id)`, `idx_plate_event_drive_log_id`, `idx_plate_event_vehicle_id`, `idx_plate_event_captured_at`, `idx_plate_event_location_type`
-- CHECK: `confidence 0.0~1.0` / `source_type` / `location_type`
-- 비고: 실제 CCTV/RTSP 실시간 스트리밍은 제외하고 샘플 이미지/영상 프레임 기반 이벤트 저장을 우선 범위로 한다.
+- 설명: 고속도로 게이트, 휴게소, CCTV 지점에서 인식된 번호판 이벤트. drive_log와의 FK는 없으며 vehicle_id만 FK로 연결
+- 인덱스: `PK(id)`, `idx_plate_event_vehicle_id`, `idx_plate_event_observed_at`, `idx_plate_event_location_type`
+- CHECK: `confidence 0.0~1.0` / `event_type IN (ENTRY,EXIT)` / `source_type IN (OCR,SIMULATOR,MANUAL,DUMMY)` / `location_type IN (HIGHWAY_GATE,REST_AREA,CCTV)`
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
 | 1 | `id` | `BIGSERIAL` | NOT NULL | `auto` | PK | 번호판 관측 이벤트 식별자 |
-| 2 | `drive_log_id` | `BIGINT` | NOT NULL | - | `FK CASCADE → drive_log.id` | 연결된 운행 기록 ID |
-| 3 | `vehicle_id` | `BIGINT` | NULL | - | `FK SET NULL → vehicle.id` | 매칭된 차량 ID |
-| 4 | `recognized_plate_no` | `VARCHAR(20)` | NOT NULL | - | - | OCR 인식 번호판 |
-| 5 | `expected_plate_no` | `VARCHAR(20)` | NULL | - | - | 운행/차량 기준 기대 번호판 |
-| 6 | `confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | 번호판 인식 신뢰도 |
-| 7 | `source_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 입력 소스 (`DEPARTURE`, `ARRIVAL`, `HIGHWAY_CCTV`, `REST_AREA_CCTV`) |
-| 8 | `location_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 관측 위치 유형 (`DEPOT`, `HIGHWAY`, `REST_AREA_ENTRY`, `REST_AREA_EXIT`) |
-| 9 | `location_name` | `VARCHAR(100)` | NULL | - | - | 관측 지점명 |
-| 10 | `latitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 위도 |
-| 11 | `longitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 경도 |
-| 12 | `captured_at` | `TIMESTAMP` | NOT NULL | - | - | 번호판 이미지/프레임 관측 시각 |
-| 13 | `matched` | `BOOLEAN` | NOT NULL | `FALSE` | - | 기대 번호판과 일치 여부 |
-| 14 | `image_path` | `VARCHAR(255)` | NULL | - | - | 샘플 이미지 또는 저장 이미지 경로 |
+| 2 | `vehicle_id` | `BIGINT` | NULL | - | `FK SET NULL → vehicle.id` | 매칭된 차량 ID |
+| 3 | `plate_no` | `VARCHAR(20)` | NOT NULL | - | - | 인식된 번호판 |
+| 4 | `event_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 이벤트 유형 (`ENTRY`, `EXIT`) |
+| 5 | `location_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 관측 위치 유형 (`HIGHWAY_GATE`, `REST_AREA`, `CCTV`) |
+| 6 | `source_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 입력 소스 (`OCR`, `SIMULATOR`, `MANUAL`, `DUMMY`) |
+| 7 | `observed_at` | `TIMESTAMP` | NOT NULL | - | - | 번호판 관측 시각 |
+| 8 | `latitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 위도 |
+| 9 | `longitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 경도 |
+| 10 | `confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | OCR 번호판 인식 신뢰도 |
+| 11 | `detection_confidence` | `DOUBLE PRECISION` | NULL | - | - | YOLO 객체 탐지 신뢰도 |
+| 12 | `is_manual_required` | `BOOLEAN` | NOT NULL | `FALSE` | - | 수동 검토 필요 여부 (confidence < 0.85 시 TRUE) |
+| 13 | `image_path` | `VARCHAR(500)` | NULL | - | - | 번호판 이미지 경로 |
+| 14 | `memo` | `TEXT` | NULL | - | - | 비고 |
 | 15 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 이벤트 저장 시각 |
 
-### 7.1 source_type 값 정의
+### 7.1 event_type 값 정의
 
 | 값 | 설명 |
 |---|---|
-| `DEPARTURE` | 운행 시작 시 번호판 인식 |
-| `ARRIVAL` | 운행 종료 시 번호판 인식 |
-| `HIGHWAY_CCTV` | 고속도로 관측 지점 번호판 인식 |
-| `REST_AREA_CCTV` | 휴게소 진입/진출 지점 번호판 인식 |
+| `ENTRY` | 진입 이벤트 (게이트/휴게소 진입) |
+| `EXIT` | 진출 이벤트 (게이트/휴게소 진출) |
 
-### 7.2 location_type 값 정의
+### 7.2 source_type 값 정의
 
 | 값 | 설명 |
 |---|---|
-| `DEPOT` | 출발지 또는 도착지 |
-| `HIGHWAY` | 고속도로 관측 지점 |
-| `REST_AREA_ENTRY` | 휴게소 진입 지점 |
-| `REST_AREA_EXIT` | 휴게소 진출 지점 |
+| `OCR` | YOLO11n + EasyOCR 실인식 |
+| `SIMULATOR` | GPS 시뮬레이터 자동 생성 |
+| `MANUAL` | 관리자 수동 입력 |
+| `DUMMY` | 테스트/시드 더미 데이터 |
+
+### 7.3 location_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `HIGHWAY_GATE` | 고속도로 진입/출입 게이트 |
+| `REST_AREA` | 휴게소 |
+| `CCTV` | 일반 CCTV 관측 지점 |
 
 ## 8. gps_data (GPS 데이터)
 

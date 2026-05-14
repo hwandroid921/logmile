@@ -1,46 +1,97 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
-import { vehicles, alerts, days, plateTimeline, levelOf, fmtMin } from '@/data/mockData'
+import { dashboardApi } from '@/api/dashboardApi'
 
 const router = useRouter()
 
-/* ─── State ─── */
-const now     = ref('2026.05.04 14:32:08')
-const mapTab  = ref('전체')
-const mapTabs = ['전체', '위험', '주의', '정상']
-const selected = ref(vehicles[0])
+/* ─── 로컬 헬퍼 (mockData 대체) ─── */
+function levelOf(l) {
+  if (l === 'DANGER')  return { label:'DANGER',  color:'var(--danger)', bg:'var(--danger-soft)' }
+  if (l === 'CAUTION') return { label:'CAUTION', color:'var(--warn)',   bg:'var(--warn-soft)' }
+  return                      { label:'NORMAL',  color:'var(--ok)',     bg:'var(--ok-soft)' }
+}
+function fmtMin(m) {
+  if (!m && m !== 0) return '—'
+  const h = Math.floor(m / 60), mn = m % 60
+  return h > 0 ? `${h}h ${mn}m` : `${mn}m`
+}
 
-function select(v) { selected.value = v }
-function refresh()  { now.value = new Date().toLocaleString('ko-KR') }
+/* ─── State ─── */
+const now      = ref(new Date().toLocaleString('ko-KR'))
+const mapTab   = ref('전체')
+const mapTabs  = ['전체', '위험', '주의', '정상']
+const vehicles = ref([])   // VehicleStatusResponse[]
+const summary  = ref(null) // DashboardSummaryResponse
+const loading  = ref(true)
+const selected = ref(null)
+const plateTimeline = ref([])
+const days = ref([])
+
+function select(v)  { selected.value = v }
+async function refresh() {
+  now.value = new Date().toLocaleString('ko-KR')
+  await fetchData()
+}
+
+/* ─── API 로드 ─── */
+async function fetchData() {
+  loading.value = true
+  try {
+    const [sumRes, vRes] = await Promise.all([dashboardApi.getSummary(), dashboardApi.getVehicles()])
+    summary.value = sumRes.data
+    vehicles.value = vRes.data.map(v => ({
+      id:         v.vehicleId,
+      driveLogId: v.driveLogId,
+      plate:      v.plateNo,
+      driver:     v.driverName,
+      type:       v.vehicleType,
+      score:      v.fatigueScore  ?? 0,
+      level:      v.fatigueLevel  ?? 'NORMAL',
+      status:     'RUNNING',
+      startedAt:  v.startedAt ? String(v.startedAt).slice(11, 16) : '—',
+      // 미제공 필드 기본값
+      contMin: null, dailyMin: null, nightMin: null,
+      restValid: 0, restSuff: 0, restMiss: 0,
+      loc: '—', scenario: '—', phone: '—',
+    }))
+    if (vehicles.value.length && !selected.value) selected.value = vehicles.value[0]
+  } catch (e) {
+    // 에러 무시 — 빈 상태로 유지
+  } finally {
+    loading.value = false
+  }
+}
+
+let timer = null
+onMounted(() => { fetchData(); timer = setInterval(fetchData, 5000) })
+onUnmounted(() => clearInterval(timer))
 
 /* ─── 차량 필터 ─── */
 const runningVehicles = computed(() => {
-  const r = vehicles.filter(v => v.status === 'RUNNING')
+  const r = vehicles.value.filter(v => v.status === 'RUNNING')
   if (mapTab.value === '전체') return r
   const need = mapTab.value === '위험' ? 'DANGER' : mapTab.value === '주의' ? 'CAUTION' : 'NORMAL'
   return r.filter(v => v.level === need)
 })
 
 /* ─── KPI ─── */
-const runningCount = computed(() => vehicles.filter(v => v.status === 'RUNNING').length)
-const dangerCount  = computed(() => vehicles.filter(v => v.status === 'RUNNING' && v.level === 'DANGER').length)
-const cautionCount = computed(() => vehicles.filter(v => v.status === 'RUNNING' && v.level === 'CAUTION').length)
-const normalCount  = computed(() => vehicles.filter(v => v.status === 'RUNNING' && v.level === 'NORMAL').length)
-const idleCount    = computed(() => vehicles.filter(v => v.status === 'IDLE').length)
-const avgScore     = computed(() => {
-  const r = vehicles.filter(v => v.status === 'RUNNING')
-  return r.length ? Math.round(r.reduce((a, v) => a + v.score, 0) / r.length * 10) / 10 : 0
-})
+const runningCount = computed(() => summary.value?.runningVehicles ?? vehicles.value.filter(v => v.status === 'RUNNING').length)
+const dangerCount  = computed(() => summary.value?.dangerVehicles  ?? vehicles.value.filter(v => v.level === 'DANGER').length)
+const cautionCount = computed(() => summary.value?.cautionVehicles ?? vehicles.value.filter(v => v.level === 'CAUTION').length)
+const normalCount  = computed(() => Math.max(0, runningCount.value - dangerCount.value - cautionCount.value))
+const avgScore     = computed(() => summary.value?.avgFatigueScore ?? 0)
+const todayCompleted = computed(() => summary.value?.todayCompleted ?? 0)
+const idleCount    = ref(0)
 
 const kpis = computed(() => [
-  { label:'TOTAL FLEET', value:vehicles.length,     unit:'대', delta:'한라물류',    dir:'flat', color:'var(--text-1)',  sub:'전체 등록',        spark:[10,10,10,10,10,10,10] },
-  { label:'RUNNING',     value:runningCount.value,  unit:'대', delta:'+2 last hr', dir:'up',   color:'var(--accent)',  sub:'RUNNING',          spark:[4,5,6,7,7,8,runningCount.value] },
-  { label:'IDLE',        value:idleCount.value,     unit:'대', delta:'차고지',     dir:'flat', color:'var(--text-2)',  sub:'대기',             spark:[6,5,4,3,3,2,idleCount.value] },
-  { label:'NORMAL',      value:normalCount.value,   unit:'대', delta:'0~39점',     dir:'flat', color:'var(--ok)',      sub:'정상',             spark:[3,3,3,3,3,3,normalCount.value] },
-  { label:'CAUTION',     value:cautionCount.value,  unit:'대', delta:'40~69점',    dir:'flat', color:'var(--warn)',    sub:'주의',             spark:[1,2,2,2,3,3,cautionCount.value] },
-  { label:'DANGER',      value:dangerCount.value,   unit:'대', delta:'70+점',      dir:dangerCount.value>0?'up':'flat', color:'var(--danger)', sub:'위험 (전화 권고)', spark:[0,0,1,1,1,2,dangerCount.value] },
+  { label:'RUNNING',     value:runningCount.value,   unit:'대', delta:'운행 중',      dir:'flat', color:'var(--accent)',  sub:'RUNNING',          spark:[4,5,6,7,7,8,runningCount.value] },
+  { label:'COMPLETED',   value:todayCompleted.value, unit:'건', delta:'오늘 완료',    dir:'flat', color:'var(--text-2)',  sub:'오늘 완료 운행',    spark:[2,3,3,4,4,5,todayCompleted.value] },
+  { label:'NORMAL',      value:normalCount.value,    unit:'대', delta:'0~39점',       dir:'flat', color:'var(--ok)',      sub:'정상',              spark:[3,3,3,3,3,3,normalCount.value] },
+  { label:'CAUTION',     value:cautionCount.value,   unit:'대', delta:'40~69점',      dir:'flat', color:'var(--warn)',    sub:'주의',              spark:[1,2,2,2,3,3,cautionCount.value] },
+  { label:'DANGER',      value:dangerCount.value,    unit:'대', delta:'70+점',        dir:dangerCount.value>0?'up':'flat', color:'var(--danger)', sub:'위험 (전화 권고)', spark:[0,0,1,1,1,2,dangerCount.value] },
+  { label:'AVG SCORE',   value:Math.round(avgScore.value*10)/10, unit:'점', delta:'평균 피로도', dir:'flat', color:'var(--text-1)', sub:'운행 평균',  spark:[20,22,25,24,26,28,Math.round(avgScore.value)] },
 ])
 
 /* ─── Donut ─── */
@@ -65,7 +116,18 @@ const donutArcs = computed(() => {
 })
 
 /* ─── 알림 ─── */
-const alertCount = computed(() => alerts.filter(a => a.sev !== 'info').length)
+const alertCount = computed(() => dangerCount.value + cautionCount.value)
+const alerts = computed(() =>
+  vehicles.value
+    .filter(v => v.level === 'DANGER' || v.level === 'CAUTION')
+    .map(v => ({
+      sev:    v.level === 'DANGER' ? 'danger' : 'warn',
+      v:      v.plate,
+      t:      v.startedAt,
+      d:      `피로 점수 ${v.score}점 · ${v.level === 'DANGER' ? '위험 (전화 권고)' : '주의'}`,
+      action: v.level === 'DANGER' ? '즉시 전화 권고 필요' : '휴식 안내 권고',
+    }))
+)
 function alertBorderColor(sev) {
   return sev === 'danger' ? 'var(--danger)' : sev === 'warn' ? 'var(--warn)' : 'var(--info)'
 }
@@ -83,9 +145,10 @@ const POS = {
   '1032':{x:250,y:260}, '1033':{x:256,y:264},
 }
 const placedVehicles = computed(() =>
-  runningVehicles.value.map(v => {
+  runningVehicles.value.map((v, i) => {
     const num = (v.plate.match(/(\d{4})\s*$/) || [])[1] || ''
-    const pos = POS[num] || { x: 280, y: 250 }
+    const fallback = { x: 180 + (i % 4) * 60, y: 150 + Math.floor(i / 4) * 70 }
+    const pos = POS[num] || fallback
     return {
       plate: v.plate, level: v.level, x: pos.x, y: pos.y,
       fill: v.level === 'DANGER' ? 'var(--danger)' : v.level === 'CAUTION' ? 'var(--warn)' : 'var(--accent)',
@@ -96,21 +159,18 @@ const placedVehicles = computed(() =>
 /* ─── 선택 차량 드릴다운 ─── */
 const timelinePoints = computed(() => {
   const v = selected.value
-  if (v.status !== 'RUNNING') return [{ t:0, score:0, speed:0, event:'운행 없음' }, { t:720, score:0, speed:0, event:null }]
+  if (!v || v.status !== 'RUNNING') return [{ t:0, score:0, speed:0, event:'운행 없음' }, { t:720, score:0, speed:0, event:null }]
   const pts = [], target = v.score
   for (let m = 0; m <= 720; m += 30) {
     const h = m / 60
     const progress = Math.min(1, m / 600)
     let s = 5 + (target - 5) * progress
-    if (h > 3.5 && h < 3.9 && v.restValid + v.restSuff > 0) s = Math.max(5, s - 12)
-    if (h > 9.4 && h < 9.7 && v.restSuff > 0) s = Math.max(5, s - 20)
     s = Math.max(2, Math.min(98, s + Math.sin(m / 45) * 3))
-    let speed = m < 100 ? 60 : (h > 3.5 && h < 3.9) ? 0 : (h > 9.4 && h < 9.7) ? 0 : 80 + Math.sin(m / 60) * 8
+    let speed = m < 100 ? 60 : 80 + Math.sin(m / 60) * 8
     let event = null
     if (m === 0) event = '운행 시작'
     else if (m === 90) event = '90분'
-    else if (m === 240) event = '4h · 야간진입'
-    else if (m === 360) event = '휴식'
+    else if (m === 240) event = '4h'
     else if (target >= 40 && Math.abs(s - 40) < 3 && !pts.some(p => p.event === '주의 진입')) event = '주의 진입'
     else if (target >= 70 && Math.abs(s - 70) < 3 && !pts.some(p => p.event === '위험 진입')) event = '위험 진입'
     pts.push({ t: m, score: Math.round(s), speed: Math.round(speed), event })
@@ -131,7 +191,7 @@ const tlSpeedPts = computed(() => timelinePoints.value.map(p => `${tlPx(p.t)},${
 const tlEvents   = computed(() => timelinePoints.value.filter(p => p.event))
 function tlEventColor(e) {
   if (e === '위험 진입') return 'var(--danger)'
-  if (e === '주의 진입' || e === '야간 진입') return 'var(--warn)'
+  if (e === '주의 진입') return 'var(--warn)'
   return 'var(--accent)'
 }
 
@@ -141,25 +201,26 @@ function sourceColor(s) {
   if (s === 'REST_AREA_CCTV') return 'var(--ok)'
   return 'var(--text-2)'
 }
-const plateAvgConf = computed(() => (plateTimeline.reduce((a, p) => a + p.conf, 0) / plateTimeline.length).toFixed(2))
+const plateAvgConf = computed(() =>
+  plateTimeline.value.length ? (plateTimeline.value.reduce((a, p) => a + p.conf, 0) / plateTimeline.value.length).toFixed(2) : '—'
+)
 
 /* ─── Heatmap ─── */
 const heatmapDrivers = computed(() => {
-  const make = (start, end, dipAt, dipDepth) => {
+  const make = (start, score) => {
     const arr = new Array(24).fill(null)
+    const cur = new Date().getHours()
     let acc = 5
     for (let h = 0; h < 24; h++) {
-      if (h < start || h > end) continue
+      if (h < start || h > cur) continue
       acc += (h >= 22 || h <= 5) ? 8 : 5
-      if (h === dipAt) acc = Math.max(5, acc - dipDepth)
-      arr[h] = Math.min(95, Math.round(acc))
+      arr[h] = Math.min(score, Math.round(acc))
     }
     return arr
   }
-  return vehicles.filter(v => v.status === 'RUNNING').slice(0, 8).map(v => {
-    const start = parseInt(v.startedAt.split(':')[0], 10) || 6
-    const cur = 14, dipAt = start + Math.floor((cur - start) / 2)
-    return { name: v.driver, plate: v.plate, hours: make(start, cur, dipAt, v.restValid * 10 + v.restSuff * 20) }
+  return runningVehicles.value.slice(0, 8).map(v => {
+    const start = parseInt((v.startedAt || '06').split(':')[0], 10) || 6
+    return { name: v.driver, plate: v.plate, hours: make(start, v.score) }
   })
 })
 function heatCellColor(s) {
@@ -173,7 +234,7 @@ function heatCellColor(s) {
 
 /* ─── Ranking ─── */
 const rankingItems = computed(() =>
-  vehicles.filter(v => v.status === 'RUNNING').slice().sort((a, b) => b.score - a.score).slice(0, 6)
+  vehicles.value.filter(v => v.status === 'RUNNING').slice().sort((a, b) => b.score - a.score).slice(0, 6)
     .map(v => ({
       label: v.driver, sub: v.plate, value: v.score, max: 100,
       color: v.level === 'DANGER' ? 'var(--danger)' : v.level === 'CAUTION' ? 'var(--warn)' : 'var(--ok)',
@@ -181,28 +242,24 @@ const rankingItems = computed(() =>
     }))
 )
 
-/* ─── Trend chart ─── */
-const trendAvg   = computed(() => Math.round(days.reduce((a, d) => a + d.avgScore, 0) / days.length * 10) / 10)
-const trendDelta = computed(() => {
-  const a = days.slice(0, 7).reduce((s, d) => s + d.avgScore, 0) / 7
-  const b = days.slice(7).reduce((s, d) => s + d.avgScore, 0) / 7
-  return Math.round((b - a) * 10) / 10
-})
-const dangerSum   = computed(() => days.reduce((a, d) => a + d.danger, 0))
-const totalDriveH = computed(() => Math.round(days.reduce((a, d) => a + d.driveHours, 0) * 10) / 10)
+/* ─── Trend chart (API 미지원 → 빈 상태) ─── */
+const trendAvg   = computed(() => Math.round(avgScore.value * 10) / 10)
+const trendDelta = ref(0)
+const dangerSum  = computed(() => dangerCount.value)
+const totalDriveH = ref(0)
 
 const TC_H = 220
-const tcBx = i => 40 + i * (740 / (days.length - 1))
+const tcBx = i => 40 + i * (740 / Math.max(days.value.length - 1, 1))
 const tcLy = s => 20 + (1 - s / 100) * (TC_H - 50)
-const tcLinePts = computed(() => days.map((d, i) => `${tcBx(i)},${tcLy(d.avgScore)}`).join(' '))
-const tcAreaPts = computed(() => `${tcBx(0)},${TC_H - 30} ${tcLinePts.value} ${tcBx(days.length - 1)},${TC_H - 30}`)
+const tcLinePts = computed(() => days.value.length > 1 ? days.value.map((d, i) => `${tcBx(i)},${tcLy(d.avgScore)}`).join(' ') : '')
+const tcAreaPts = computed(() => days.value.length > 1 ? `${tcBx(0)},${TC_H - 30} ${tcLinePts.value} ${tcBx(days.value.length - 1)},${TC_H - 30}` : '')
 
 /* ─── Scatter ─── */
 const scatterItems = computed(() =>
-  vehicles.filter(v => v.status === 'RUNNING').map(v => ({
-    x: v.dailyMin / 60, y: v.score, r: 5 + v.restMiss * 4,
+  vehicles.value.filter(v => v.status === 'RUNNING').map((v, i) => ({
+    x: 4 + (i % 5) * 1.5, y: v.score, r: 5,
     color: v.level === 'DANGER' ? '#B5544A' : v.level === 'CAUTION' ? '#C58A3A' : '#5E8A6F',
-    label: v.plate.split(' ').pop().slice(0, 4),
+    label: v.plate.split(' ').pop()?.slice(0, 4) ?? '',
   }))
 )
 
@@ -367,8 +424,8 @@ function fbColor(val, thr) {
                 @click="select(v)"
                 :style="{ display:'grid', gridTemplateColumns:'auto 1fr auto', gap:'10px', alignItems:'center',
                           padding:'10px', cursor:'pointer', borderRadius:'4px',
-                          background: selected.plate===v.plate ? 'var(--accent-soft)' : 'var(--bg-2)',
-                          border:'1px solid '+(selected.plate===v.plate ? 'var(--accent-line)' : 'var(--line-2)') }">
+                          background: selected?.plate===v.plate ? 'var(--accent-soft)' : 'var(--bg-2)',
+                          border:'1px solid '+(selected?.plate===v.plate ? 'var(--accent-line)' : 'var(--line-2)') }">
                 <!-- plate photo placeholder -->
                 <div :style="{ width:'96px', height:'64px', borderRadius:'4px', flexShrink:0,
                                background:'linear-gradient(135deg,#DCDFE4,#B8BFC9)',
@@ -392,7 +449,7 @@ function fbColor(val, thr) {
                   <div style="font-size:11px;color:var(--text-3);margin-top:3px;">{{ v.driver }} · {{ v.loc }}</div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
-                  <span class="mono" :style="{ fontSize:'20px', fontWeight:700, color:levelOf(v.score).color, lineHeight:1 }">{{ v.score }}</span>
+                  <span class="mono" :style="{ fontSize:'20px', fontWeight:700, color:levelOf(v.level).color, lineHeight:1 }">{{ v.score }}</span>
                   <span style="font-size:9px;color:var(--text-4);">/100</span>
                 </div>
               </div>
@@ -472,7 +529,7 @@ function fbColor(val, thr) {
       </div>
 
       <!-- ── 차량 드릴다운 ── -->
-      <div class="card" style="margin-bottom:16px;overflow:hidden;">
+      <div v-if="selected" class="card" style="margin-bottom:16px;overflow:hidden;">
         <div style="padding:18px 20px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
           <div style="display:flex;gap:18px;align-items:center;">
             <!-- plate photo md -->
@@ -563,13 +620,13 @@ function fbColor(val, thr) {
                 <div>
                   <div class="label-sm">현재 점수</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-top:4px;">
-                    <span class="mono" :style="{ fontSize:'22px', fontWeight:700, color:levelOf(selected.score).color, lineHeight:1 }">{{ selected.score }}</span>
+                    <span class="mono" :style="{ fontSize:'22px', fontWeight:700, color:levelOf(selected.level).color, lineHeight:1 }">{{ selected.score }}</span>
                     <span class="mono" style="font-size:10px;color:var(--text-4);">/100</span>
                   </div>
                 </div>
                 <div style="border-left:1px solid var(--line-2);padding-left:14px;">
                   <div class="label-sm">최고 점수</div>
-                  <span class="mono" :style="{ fontSize:'22px', fontWeight:800, color:levelOf(selected.score).color, letterSpacing:'-0.01em' }">{{ peakScore }}</span>
+                  <span class="mono" :style="{ fontSize:'22px', fontWeight:800, color:levelOf(selected.level).color, letterSpacing:'-0.01em' }">{{ peakScore }}</span>
                 </div>
               </div>
             </div>

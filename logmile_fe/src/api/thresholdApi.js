@@ -1,6 +1,7 @@
 import api from './axios'
 
 export const thresholdApi = {
-  getAll: () => api.get('/api/fatigue/thresholds'),
-  update: (key, thresholdValue) => api.put(`/api/fatigue/thresholds/${key}`, { thresholdValue }),
+  getAll: () => api.get('/api/thresholds'),
+  update: (id, thresholdValue, description = null) =>
+    api.patch(`/api/thresholds/${id}`, { thresholdValue, description }),
 }
