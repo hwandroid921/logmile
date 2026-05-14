@@ -45,7 +45,7 @@
 | 사용자 | 권한 | 설명 |
 |---|---|---|
 | 최상위 관리자 | `ROLE_SUPER_ADMIN` | 전체 업체 관리자 계정과 업체 정보를 관리한다. |
-| 일반 관리자 | `ROLE_COMPANY_ADMIN` | 소속 업체의 차량, 운전자, 운행 데이터, 피로도 정보를 관리한다. |
+| 일반 관리자 | `ROLE_ADMIN` | 소속 업체의 차량, 운전자, 운행 데이터, 피로도 정보를 관리한다. |
 
 ### 2.2 일반 관리자 상태
 
@@ -82,7 +82,7 @@ flowchart TD
 
 | 기존 | 변경 |
 |---|---|
-| 관제 관리자 / `ROLE_ADMIN` | 일반 관리자 / `ROLE_COMPANY_ADMIN` |
+| 관제 관리자 / `ROLE_ADMIN` | 일반 관리자 / `ROLE_ADMIN` |
 | 시스템 관리자 / `ROLE_ADMIN` | 최상위 관리자 / `ROLE_SUPER_ADMIN` |
 
 ### 추가해야 할 기능 요구사항
@@ -128,7 +128,7 @@ flowchart TD
 |---|---|
 | company_id | 일반 관리자 소속 업체 FK 추가 |
 | password | `password_hash` 명칭 검토 |
-| role | `ROLE_SUPER_ADMIN`, `ROLE_COMPANY_ADMIN` 구분 |
+| role | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` 구분 |
 | status | `PENDING`, `ACTIVE`, `REJECTED`, `SUSPENDED` 상태 추가 |
 | approved_at | 승인 일시 추가 |
 | approved_by | 승인한 최상위 관리자 ID 추가 |
@@ -269,7 +269,7 @@ erDiagram
 
 | Method | URL | 설명 |
 |---|---|---|
-| GET | `/api/company/me` | 내 업체 정보 조회 |
+| GET | `/api/companies/me` | 내 업체 정보 조회 |
 | GET | `/api/dashboard/summary` | 소속 업체 기준 대시보드 요약 |
 | GET | `/api/vehicles` | 소속 업체 차량 목록 |
 | GET | `/api/drivers` | 소속 업체 운전자 목록 |
@@ -287,7 +287,7 @@ erDiagram
 |---|---|
 | `company` | 신규 테이블 생성 |
 | `admin` | `company_id`, `status`, `approved_at`, `approved_by`, `updated_at` 컬럼 추가 |
-| `admin.role` | `ROLE_SUPER_ADMIN`, `ROLE_COMPANY_ADMIN` 값 허용 |
+| `admin.role` | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` 값 허용 |
 | `admin.status` | `PENDING`, `ACTIVE`, `REJECTED`, `SUSPENDED` 값 허용 |
 | `vehicle` | `company_id` FK 추가 |
 | `driver` | `company_id` FK 추가 |
@@ -300,7 +300,7 @@ erDiagram
 |---|---|
 | 최상위 관리자 | `ROLE_SUPER_ADMIN`, `ACTIVE` 상태 계정 추가 |
 | 샘플 업체 | 테스트용 업체 데이터 추가 |
-| 일반 관리자 | 샘플 업체에 소속된 `ROLE_COMPANY_ADMIN`, `ACTIVE` 상태 계정 추가 |
+| 일반 관리자 | 샘플 업체에 소속된 `ROLE_ADMIN`, `ACTIVE` 상태 계정 추가 |
 | 차량/운전자 | 샘플 업체 `company_id`를 포함해 입력 |
 
 ---

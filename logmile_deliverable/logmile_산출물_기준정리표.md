@@ -1,9 +1,9 @@
 # logmile 산출물 기준 정리표
 
 - 프로젝트명: `logmile`
-- 문서 버전: `v1.6`
-- 작성 기준일: `2026.05.08`
-- 변경 기준: 산출물 버전 단위 관리 및 `md` 우선 작업 원칙 반영
+- 문서 버전: `v1.7`
+- 작성 기준일: `2026.05.14`
+- 변경 기준: 실제 프로젝트 구현물 검증 결과, 산출물 버전 단위 관리 및 `md` 우선 작업 원칙 반영
 - 버전 운영 원칙: `초안 및 정리 단계는 v1.x 유지`, `초안 완료 후 v2.x로 전환`
 - 관리 원칙:
   - `md`: Git 기준 원본 문서
@@ -15,12 +15,13 @@
 
 | 구분 | 기준 |
 |---|---|
-| 버전 정책 | 현재 산출물은 `v1.x` 기준으로 유지한다. |
+| 버전 정책 | 산출물 관리 문서는 `v1.x` 기준으로 유지하되, 실제 구현 반영 핵심 문서는 해당 문서의 최신 구현 기준 버전을 우선한다. |
 | 문서 원본 | 내용 수정의 기준 원본은 `md`로 관리한다. |
 | 제출 문서 | 사용자가 요청하거나 제출/보관이 필요한 경우에만 `docx`를 생성 또는 최신화한다. |
 | 반영 원칙 | 기준 문서(`md`)를 먼저 수정하고, `docx`는 요청 시 해당 버전 기준으로 별도 반영한다. |
 | DOCX 보관 | 생성된 `docx`는 우선 `logmile_deliverable/docx/`에 보관하고 추후 정리한다. |
 | 문서 상태 표기 | `초안` 표기가 있는 문서는 아직 확정 전 문서로 본다. |
+| 구현 검증 기준 | 코드/SQL 기준은 `logmile_be`, `logmile_fe`, `logmile_ai`, `logmile_sim`, `logmile_infra`의 실제 파일을 우선한다. |
 
 ## 2. 최우선 기준 문서
 
@@ -28,11 +29,11 @@
 
 | 문서명 | Git 기준 (`md`) | 제출 기준 (`docx`) | 현재 운영 기준 | 비고 |
 |---|---|---|---|---|
-| 프로젝트개요서 | `logmile_프로젝트개요서.md` | `docx/logmile_프로젝트개요서_v1.5.docx` | `v1.5` | 프로젝트 방향과 범위의 최상위 기준, `docx`는 보관본 |
-| 요구사항정의서 | `logmile_요구사항정의서.md` | `docx/logmile_요구사항정의서_v1.5.docx` | `v1.5` | 기능 범위와 인수 기준의 중심 문서, `docx`는 보관본 |
-| DB 설계서 | `logmile_DB설계서.md` | `docx/logmile_테이블정의서_v1.5.docx`, `docx/logmile_ERD_v1.5.docx` | `v1.5` | DB/ERD 관련 기준 문서, `docx`는 보관본 |
+| 프로젝트개요서 | `logmile_프로젝트개요서.md` | `docx/logmile_프로젝트개요서_v1.5.docx` | `v5.1` | 프로젝트 방향과 범위의 최상위 기준, 2026.05.14 구현 검증 반영 |
+| 요구사항정의서 | `logmile_요구사항정의서.md` | `docx/logmile_요구사항정의서_v1.5.docx` | `v5.1` | 기능 범위와 인수 기준의 중심 문서, 2026.05.14 구현 검증 반영 |
+| DB 설계서 | `logmile_DB설계서.md` | `docx/logmile_테이블정의서_v1.5.docx`, `docx/logmile_ERD_v1.5.docx` | `v5.1` | `init.sql`/`seed.sql` v5.0 기준 구조 반영 |
 | 프로젝트수행계획서 | `logmile_프로젝트수행계획서.md` | `docx/logmile_프로젝트수행계획서_v1.5.docx` | `v1.5` | 일정, 마일스톤, 브랜치 운영 계획 기준, `docx`는 보관본 |
-| 프로젝트구조도 | `logmile_프로젝트구조도.md` | `docx/logmile_프로젝트구조도.docx` | `v1.5` | `md` 우선 관리, `docx`는 보관본 |
+| 프로젝트구조도 | `logmile_프로젝트구조도.md` | `docx/logmile_프로젝트구조도.docx` | `v5.1` | 실제 패키지/API/FE 연동 상태 반영, `docx`는 보관본 |
 
 ## 3. 현재 남은 산출물 정리표
 
@@ -60,6 +61,17 @@
 | `logmile_AI_모델재학습절차.md` | md | AI 재학습 절차 | 유지 | Git 원본 | `v1.0` 기준으로 버전 표기 정리 완료 |
 | `logmile_관리자권한구조_변경사항.md` | md | 권한 구조 변경 | 유지 | Git 원본 | `v1.0` 기준으로 버전 표기 정리 완료 |
 | `logmile_릴리즈전략.md` | md | 릴리즈 전략 | 유지 | Git 원본 | `v1.0` 기준으로 버전 표기 정리 완료 |
+| `logmile_산출물_현황분석_및_수정가이드.md` | md | 산출물 현재화 가이드 | 신규 | Git 원본 | 실제 구현 기준으로 요구사항/DB/구조도/WBS/API 명세 수정 방향 관리 |
+
+### 3.2.1 2026.05.14 실제 구현 검증 기준
+
+| 영역 | 실제 기준 파일/폴더 | 산출물 반영 기준 |
+|---|---|---|
+| 권한/인증 | `logmile_be/src/main/java/com/project/logmile/common/enums`, `domain/auth`, `domain/admin` | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN`, `PENDING/ACTIVE/INACTIVE/REJECTED/SUSPENDED` |
+| DB 구조 | `logmile_infra/db/init.sql`, `logmile_infra/db/seed.sql` | `company`, `admin`, `vehicle`, `driver`, `drive_log`, `gps_data`, `rest_event`, `fatigue_event`, `plate_event`, `fatigue_threshold` |
+| API 경로 | BE Controller 및 FE `src/api/*.js` | `/api/drive-history`와 `/api/drive-logs` alias, `/api/thresholds`와 `/api/fatigue/thresholds` alias 반영 |
+| 번호판 이벤트 | `domain/plateevent`, `common/enums/Plate*` | `PlateEvent`, `ENTRY/EXIT`, `HIGHWAY_GATE/REST_AREA/CCTV`, `OCR/SIMULATOR/MANUAL/DUMMY` |
+| FE 상태 | `logmile_fe/src/views`, `logmile_fe/src/api` | API 연동 화면과 mock 기반 화면을 구분 |
 
 ### 3.3 제출용 문서
 
@@ -95,15 +107,15 @@
 | 항목 | 현재 기준 |
 |---|---|
 | 문서 체계 | `md` 중심 관리 + `docx` 요청 시 제출/보관용 생성 |
-| 버전 체계 | `v1.x` 유지 |
+| 버전 체계 | 관리 문서는 `v1.x`, 구현 반영 핵심 문서는 해당 문서 최신 버전 우선 |
 | 핵심 기준선 | `프로젝트개요서`, `요구사항정의서`, `DB설계서`, `프로젝트구조도` |
 | 초안 문서 처리 | 초안 완료 전까지 `v1.x` 안에서 보완 |
 | 구버전 문서 처리 | `v1.4` 및 판본명이 불명확한 docx는 보관 후 추후 정리 |
 
 ## 5. 바로 이어서 할 작업
 
-1. 핵심 기준 문서 5종의 제목/버전/기준일을 `v1.x` 체계로 유지한다.
-2. 산출물 수정 시 `md` 문서를 먼저 수정하고 변경 버전을 보고한다.
-3. `docx`는 사용자가 요청한 경우에만 최신 `md` 기준으로 생성 또는 갱신한다.
-4. 기존 `docx` 및 `v1.4` 문서는 제출/보관용 폴더에 유지하고 추후 정리한다.
-5. 제출용 `straffic` 폴더 문서와 기준 문서 간 제목/버전 차이를 재확인한다.
+1. 요구사항정의서, DB 설계서, 프로젝트구조도는 2026.05.14 실제 구현 기준을 우선 반영한다.
+2. 프로젝트개요서, WBS, 릴리즈전략은 실제 구현 단계(`v0.2.0 완료권 / v0.3.0 통합 진입`) 기준으로 후속 보완한다.
+3. 산출물 수정 시 `md` 문서를 먼저 수정하고 변경 버전을 보고한다.
+4. `docx`는 사용자가 요청한 경우에만 최신 `md` 기준으로 생성 또는 갱신한다.
+5. 기존 `docx` 및 `v1.4` 문서는 제출/보관용 폴더에 유지하고 추후 정리한다.
