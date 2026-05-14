@@ -3,8 +3,8 @@
 ## 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 버전: v1.5
-- 작성 기준일: 2026.04.30
+- 버전: v1.6
+- 작성 기준일: 2026.05.14
 - 개발 기간: 2026.04.28 ~ 2026.05.27 제출 / 2026.06.02 발표
 - 기준 산출물:
   - `logmile_프로젝트개요서.md`
@@ -38,29 +38,29 @@
 |---|---|---|---|---|---|---|---|---|
 | 프로젝트 기획 및 설계 | PL-001 | 프로젝트 개요 작성 | 프로젝트 목적, 범위, 시스템 구성, 팀원 역할 정리 | 프로젝트 개요서 | 백경서 | 2026-04-28 | 2026-04-28 | 완료 |
 | 프로젝트 기획 및 설계 | PL-002 | 요구사항 정의 | 기능/비기능 요구사항, 인수 기준 정리 | 요구사항 정의서 | 백경서 | 2026-04-28 | 2026-04-29 | 완료 |
-| 프로젝트 기획 및 설계 | PL-003 | DB 설계 | company, admin, vehicle, driver, drive_log, plate_recognition_event, gps_data, rest_event, fatigue_event, fatigue_threshold 설계 | DB 설계서, ERD, 테이블정의서 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
+| 프로젝트 기획 및 설계 | PL-003 | DB 설계 | company, admin, vehicle, driver, drive_log, plate_event, gps_data, rest_event, fatigue_event, fatigue_threshold 설계 | DB 설계서, ERD, 테이블정의서 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
 | 프로젝트 기획 및 설계 | PL-004 | 프로젝트 구조도 작성 | BE/FE/AI/SIM/INFRA 구조 및 API 흐름 정리 | 프로젝트 구조도 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
-| 프로젝트 기획 및 설계 | PL-005 | 최상위 관리자 권한 구조 확정 | ROLE_SUPER_ADMIN/ROLE_COMPANY_ADMIN, 승인 상태, company 구조, API 정의까지 확정 | 최상위관리자_수정사항정리.md, 요구사항·DB 반영 | 백경서/유환희 | 2026-04-29 | 2026-04-30 | 완료 |
+| 프로젝트 기획 및 설계 | PL-005 | 최상위 관리자 권한 구조 확정 | ROLE_SUPER_ADMIN/ROLE_ADMIN, 승인 상태, company 구조, API 정의까지 확정 | 최상위관리자_수정사항정리.md, 요구사항·DB 반영 | 백경서/유환희 | 2026-04-29 | 2026-04-30 | 완료 |
 | 프로젝트 기획 및 설계 | PL-006 | WBS 작성 | 기능 구현 순서와 일정 계획 수립 | WBS 문서 | 백경서 | 2026-04-29 | 2026-04-30 | 완료 |
 | 공통/인프라 | ENV-001 | Git 브랜치 전략 정리 | `main`, `dev`, `feature/*`, `release/*` 브랜치 운영 규칙 정리 | 브랜치 전략 문서 | 공통 | 2026-04-28 | 2026-04-29 | 완료 |
 | 공통/인프라 | ENV-002 | 릴리즈 전략 정리 | `v0.1.0`~`v1.0.1` 버전별 범위와 검증 기준 정리 | 릴리즈 전략 문서 | 공통 | 2026-04-30 | 2026-04-30 | 완료 |
 | 공통/인프라 | ENV-003 | 루트 `.gitignore` 정리 | FE/BE/AI/SIM 생성물, 환경변수, 빌드 결과물 제외 | `.gitignore` | 공통 | 2026-04-29 | 2026-04-29 | 완료 |
-| 공통/인프라 | ENV-004 | Docker Compose 구성 | Backend, Frontend, AI, PostgreSQL, Simulator 실행 환경 구성 | `docker-compose.yml` | 공통 | 2026-04-30 | 2026-05-02 | 예정 |
-| 공통/인프라 | ENV-005 | 환경변수 정리 | DB 접속, JWT, CORS, API URL, AI/SIM URL 설정 | `.env.example`, 설정 문서 | 공통 | 2026-05-01 | 2026-05-03 | 예정 |
-| 공통/인프라 | ENV-006 | DB 초기화 스크립트 정리 | PostgreSQL DDL(10테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 예정 |
-| 백엔드 개발 | BE-001 | Entity/Repository 구현 | DB 설계 기반 JPA Entity, Repository 매핑 (company 포함) | Entity, Repository | 유환희 | 2026-04-29 | 2026-05-02 | 진행 |
-| 백엔드 개발 | BE-002 | 관리자 권한 구조 반영 | ROLE_SUPER_ADMIN/ROLE_COMPANY_ADMIN Enum, AdminStatus Enum, CompanyStatus Enum, Security 설정 | AdminRole, AdminStatus, CompanyStatus, SecurityConfig | 유환희 | 2026-05-02 | 2026-05-04 | 예정 |
-| 백엔드 개발 | BE-003 | 인증/JWT 구현 | 로그인(ACTIVE만), JWT 발급/검증, Security Filter 구성 | Auth API, Security 설정 | 유환희 | 2026-05-04 | 2026-05-06 | 예정 |
-| 백엔드 개발 | BE-004a | 일반 관리자 회원가입 API | 업체 생성 + admin 생성(PENDING), SignupController | Signup API | 유환희 | 2026-05-06 | 2026-05-07 | 예정 |
-| 백엔드 개발 | BE-004b | 최상위 관리자 승인/거절/정지 API | approve/reject/suspend/activate, AdminApprovalService | SuperAdmin API | 유환희 | 2026-05-07 | 2026-05-09 | 예정 |
-| 백엔드 개발 | BE-004c | 업체 조회 API | 업체 목록/상세, CompanyController, CompanyService | Company API | 유환희 | 2026-05-09 | 2026-05-10 | 예정 |
+| 공통/인프라 | ENV-004 | Docker Compose 구성 | Backend, Frontend, AI, PostgreSQL, Simulator 실행 환경 구성 | `docker-compose.yml` | 공통 | 2026-04-30 | 2026-05-02 | 1차 완료 |
+| 공통/인프라 | ENV-005 | 환경변수 정리 | DB 접속, JWT, CORS, API URL, AI/SIM URL 설정 | `.env.example`, 설정 문서 | 공통 | 2026-05-01 | 2026-05-03 | 1차 완료 |
+| 공통/인프라 | ENV-006 | DB 초기화 스크립트 정리 | PostgreSQL DDL(10테이블) 및 seed 데이터 실행 검증 | `init.sql`, `seed.sql` | 공통 | 2026-05-02 | 2026-05-04 | 1차 완료 |
+| 백엔드 개발 | BE-001 | Entity/Repository 구현 | DB 설계 기반 JPA Entity, Repository 매핑 (company 포함) | Entity, Repository | 유환희 | 2026-04-29 | 2026-05-02 | 1차 완료 |
+| 백엔드 개발 | BE-002 | 관리자 권한 구조 반영 | ROLE_SUPER_ADMIN/ROLE_ADMIN Enum, AdminStatus Enum, Security 설정 | AdminRole, AdminStatus, SecurityConfig | 유환희 | 2026-05-02 | 2026-05-04 | 1차 완료 |
+| 백엔드 개발 | BE-003 | 인증/JWT 구현 | 로그인(ACTIVE만), JWT 발급/검증, Security Filter 구성 | Auth API, Security 설정 | 유환희 | 2026-05-04 | 2026-05-06 | 1차 완료 |
+| 백엔드 개발 | BE-004a | 일반 관리자 회원가입 API | 업체 생성 + admin 생성(PENDING), SignupController | Signup API | 유환희 | 2026-05-06 | 2026-05-07 | 1차 완료 |
+| 백엔드 개발 | BE-004b | 최상위 관리자 승인/거절/정지 API | approve/reject/suspend/unsuspend, AdminApprovalService | SuperAdmin API | 유환희 | 2026-05-07 | 2026-05-09 | 1차 완료 |
+| 백엔드 개발 | BE-004c | 업체 조회/활성 관리 API | 업체 목록/상세, 활성/비활성, CompanyController, CompanyService | Company API | 유환희 | 2026-05-09 | 2026-05-10 | 1차 완료 |
 | 백엔드 개발 | BE-005 | Swagger 설정 | Springdoc 기반 API 문서 자동 생성 | Swagger UI | 유환희 | 2026-05-06 | 2026-05-08 | 예정 |
 | 백엔드 개발 | BE-006 | 차량 CRUD API | 차량 등록/조회/수정/삭제, TenantAccess(업체별 격리) | Vehicle API | 유환희 | 2026-05-08 | 2026-05-10 | 예정 |
 | 백엔드 개발 | BE-007 | 운전자 CRUD API | 운전자 등록/조회/수정/삭제, 차량 배정, TenantAccess | Driver API | 유환희 | 2026-05-10 | 2026-05-12 | 예정 |
 | 백엔드 개발 | BE-008 | 시뮬레이션 시작/중지 API | `drive_log` 생성, company_id 포함, RUNNING/STOPPED/COMPLETED | Simulation API | 유환희 | 2026-05-12 | 2026-05-14 | 예정 |
 | 백엔드 개발 | BE-009 | GPS 수신 API | GPS 데이터 수신, TenantAccess 검증, `gps_data` 저장 | GPS Receiver API | 유환희 | 2026-05-14 | 2026-05-15 | 예정 |
 | 백엔드 개발 | BE-010 | 휴식 이벤트 판단 | `speed_kmh <= 3`, 15분/30분 기준 휴식 이벤트 생성 | RestEventService | 유환희 | 2026-05-15 | 2026-05-17 | 예정 |
-| 백엔드 개발 | BE-010a | 번호판 관측 이벤트 저장 | 출발/도착, 고속도로 관측, 휴게소 진입/진출 이벤트 저장 및 조회 | PlateRecognitionEvent API/Service | 유환희 | 2026-05-16 | 2026-05-18 | 예정 |
+| 백엔드 개발 | BE-010a | 번호판 관측 이벤트 저장 | ENTRY/EXIT, HIGHWAY_GATE/REST_AREA/CCTV 이벤트 저장 | PlateEvent API/Service | 유환희 | 2026-05-16 | 2026-05-18 | 1차 완료 |
 | 백엔드 개발 | BE-010b | 휴게소 관측 기반 휴식 보정 | 휴게소 진입/진출 시각 차이로 휴식 여부와 휴식 시간 보조 검증 | PlateRestVerificationService | 유환희 | 2026-05-18 | 2026-05-19 | 예정 |
 | 백엔드 개발 | BE-011 | 피로도 계산 로직 | 연속 운행, 일일 총 운행, 야간 운행, 휴식 부족/보정 점수 계산 | FatigueService | 유환희 | 2026-05-17 | 2026-05-19 | 예정 |
 | 백엔드 개발 | BE-012 | 피로도 이벤트 저장 | 점수, 등급, 판단 근거를 `fatigue_event`에 저장 | FatigueEvent API/Service | 유환희 | 2026-05-19 | 2026-05-20 | 예정 |

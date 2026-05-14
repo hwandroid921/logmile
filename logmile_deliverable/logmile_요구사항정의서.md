@@ -3,16 +3,12 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 버전: v5.0
-- 기준 산출물: `logmile_요구사항정의서_v4.docx`, `AGENTS.md`
-- 작성 기준일: 2026.05.12
+- 버전: v5.1
+- 기준 산출물: `AGENTS.md`, `logmile_infra/db/init.sql`, `logmile_infra/db/seed.sql`, 실제 BE/FE/AI/SIM 구현물
+- 작성 기준일: 2026.05.14
+- 변경 기준: 최상위 관리자/업체 관리자 구조, 업체 기반 멀티테넌시, PlateEvent, FE-BE API 정합성 검증 반영
 - 플랫폼: 웹 브라우저 기반 SPA
 - 주요 사용자: 관제 관리자, 시스템 관리자
-
-| 버전 | 작성일 | 변경 내용 |
-|---|---|---|
-| v4.0 | 2026.04.28 | 초기 정의 |
-| v5.0 | 2026.05.12 | §2 ROLE_SUPER_ADMIN 추가; §4.6 FR-AUTH02~04(회원가입/승인 흐름) 추가; §6 company·plate_event 테이블 추가, admin/vehicle/driver company_id·status 반영 |
 
 ## 1. 프로젝트 개요
 
@@ -24,12 +20,10 @@
 
 | 사용자 | 권한 | 주요 기능 |
 |---|---|---|
-| 최상위 관리자 | ROLE_SUPER_ADMIN | 전체 업체·관리자 관리, 가입 승인, 모든 데이터 접근 (`company_id = NULL`) |
-| 업체 관리자 | ROLE_ADMIN | 소속 업체 차량/운전자 관리, 대시보드 조회, 운행 이력 조회, 피로도 임계값 관리 |
+| 최상위 관리자 | ROLE_SUPER_ADMIN | 업체 목록 조회, 업체 활성/비활성, 가입 관리자 승인/거절/정지/해제, 대시보드/이력 조회 |
+| 업체 관리자 | ROLE_ADMIN | 소속 업체의 대시보드 조회, 차량/운전자 관리, 시뮬레이션 실행, 운행 이력/피로도 통계 조회 |
 
-- `ROLE_SUPER_ADMIN`은 회원가입 없이 시드 데이터로 초기 등록되며, 모든 업체 데이터에 접근 가능하다.
-- `ROLE_ADMIN`은 회원가입 후 `PENDING` 상태로 등록되며, `ROLE_SUPER_ADMIN` 승인 시 `ACTIVE`로 전환된다.
-- 계정 상태: `PENDING` (가입 대기) / `ACTIVE` (승인 완료) / `REJECTED` (가입 거부) / `SUSPENDED` (정지) / `INACTIVE` (비활성)
+관리자 계정 상태는 `PENDING`, `ACTIVE`, `INACTIVE`, `REJECTED`, `SUSPENDED`로 구분한다. 로그인은 `ACTIVE` 상태 계정만 허용하며, 그 외 상태는 서버가 계정 상태별 오류를 반환한다.
 
 ## 3. 팀원 역할
 
@@ -39,6 +33,21 @@
 | 백경서 | 프론트엔드 + GPS 시뮬레이터 + 산출물 | Vue 대시보드, Chart.js, Pinia/Axios, Python GPS 시나리오, ERD/문서/화면 설계 |
 
 ## 4. 기능 요구사항
+
+### 4.0 인증, 승인, 업체 관리
+
+| ID | 기능 | 요구사항 | 담당 |
+|---|---|---|---|
+| FR-AUTH01 | 관리자 로그인 | 이메일/비밀번호 기반 JWT 로그인을 제공하고 `adminId`, `name`, `role`, `status`, `companyId`를 응답한다. | 환희/경서 |
+| FR-AUTH02 | 업체 관리자 회원가입 | 업체 정보와 관리자 정보를 입력해 신규 업체와 `PENDING` 관리자 계정을 생성한다. | 환희/경서 |
+| FR-AUTH03 | 계정 상태별 접근 제어 | `PENDING`, `REJECTED`, `SUSPENDED`, `INACTIVE` 계정은 로그인 또는 보호 API 접근을 제한한다. | 환희 |
+| FR-SUPER01 | 승인 대기 목록 조회 | 최상위 관리자가 `PENDING` 상태 관리자 목록을 조회할 수 있다. | 환희/경서 |
+| FR-SUPER02 | 관리자 승인 | 최상위 관리자가 가입 요청을 `ACTIVE` 상태로 변경할 수 있다. | 환희/경서 |
+| FR-SUPER03 | 관리자 거절 | 최상위 관리자가 가입 요청을 `REJECTED` 상태로 변경할 수 있다. | 환희/경서 |
+| FR-SUPER04 | 관리자 정지/해제 | 최상위 관리자가 업체 관리자 계정을 `SUSPENDED` 또는 `ACTIVE` 상태로 변경할 수 있다. | 환희/경서 |
+| FR-COMPANY01 | 업체 목록/상세 조회 | 최상위 관리자가 업체 목록과 상세 정보를 조회할 수 있다. | 환희/경서 |
+| FR-COMPANY02 | 업체 활성/비활성 | 최상위 관리자가 업체를 활성 또는 비활성 상태로 변경할 수 있다. | 환희/경서 |
+| FR-COMPANY03 | 업체별 데이터 격리 | 업체 관리자는 JWT의 `companyId` 기준으로 자기 업체의 차량, 운전자, 운행 데이터만 접근한다. | 환희 |
 
 ### 4.1 관제 대시보드
 
@@ -91,13 +100,10 @@
 
 | ID | 기능 | 요구사항 | 담당 |
 |---|---|---|---|
-| FR-OCR01 | 출발 번호판 인식 | YOLO11n + EasyOCR로 번호판을 인식하고 운행 시작에 활용한다. | 환희 |
-| FR-OCR02 | 도착 번호판 인식 | 도착 차량 번호판을 재인식하고 운행 종료에 활용한다. | 환희 |
-| FR-OCR03 | 미인식 예외 처리 | OCR 신뢰도 0.85 미만 시 `is_manual_required = TRUE`로 설정하고 수동 입력 fallback을 제공한다. | 환희 |
-| FR-AUTH01 | 관리자 로그인 | JWT 기반 인증을 제공한다 (`ROLE_ADMIN` / `ROLE_SUPER_ADMIN`). | 환희 |
-| FR-AUTH02 | 관리자 회원가입 | 업체 관리자가 이메일·비밀번호·업체 정보로 회원가입하며, 상태는 `PENDING`으로 등록된다. | 환희 |
-| FR-AUTH03 | 가입 승인 대기 | `PENDING` 상태의 관리자는 로그인은 가능하나 보호된 기능에 접근할 수 없다. | 환희 |
-| FR-AUTH04 | 최상위 관리자 승인 | `ROLE_SUPER_ADMIN`이 `PENDING` 관리자를 `ACTIVE` 또는 `REJECTED`로 변경한다. | 환희 |
+| FR-OCR01 | 번호판 영역 탐지 | YOLO11n으로 번호판 영역을 탐지한다. | 환희 |
+| FR-OCR02 | 번호판 문자 인식 | EasyOCR로 번호판 문자열과 인식 신뢰도를 반환한다. | 환희 |
+| FR-OCR03 | 미인식 예외 처리 | OCR 신뢰도 0.85 미만 시 수동 입력 fallback을 제공한다. | 환희 |
+| FR-OCR04 | 번호판 관측 이벤트 저장 | `plate_event`에 `ENTRY/EXIT`, 관측 위치, 입력 출처, 신뢰도, 수동 확인 여부를 저장한다. | 환희 |
 
 ## 5. 피로도 점수 기준
 
@@ -132,11 +138,11 @@
 | `admin` | `id`, `company_id`, `email`, `password`, `name`, `phone`, `role`, `status`, `created_at` |
 | `driver` | `id`, `company_id`, `name`, `phone`, `license_type`, `vehicle_id`, `created_at` |
 | `vehicle` | `id`, `company_id`, `plate_no`, `type`, `driver_id`, `is_active`, `created_at` |
-| `drive_log` | `id`, `company_id`, `vehicle_id`, `driver_id`, `started_at`, `ended_at`, `scenario_type`, `status`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level`, `created_at` |
-| `plate_event` | `id`, `vehicle_id`, `plate_no`, `event_type`, `location_type`, `source_type`, `observed_at`, `confidence`, `is_manual_required`, `created_at` |
+| `drive_log` | `id`, `company_id`, `vehicle_id`, `driver_id`, `started_at`, `ended_at`, `scenario_type`, `status`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level` |
 | `gps_data` | `id`, `drive_log_id`, `latitude`, `longitude`, `speed_kmh`, `recorded_at` |
 | `rest_event` | `id`, `drive_log_id`, `rest_started_at`, `rest_ended_at`, `rest_minutes`, `rest_type` |
 | `fatigue_event` | `id`, `drive_log_id`, `fatigue_score`, `fatigue_level`, `continuous_driving_minutes`, `daily_total_driving_minutes`, `night_driving_minutes`, `rest_count`, `rest_violation_count`, `reason`, `occurred_at` |
+| `plate_event` | `id`, `vehicle_id`, `plate_no`, `event_type`, `location_type`, `source_type`, `observed_at`, `confidence`, `detection_confidence`, `is_manual_required` |
 | `fatigue_threshold` | `id`, `threshold_key`, `threshold_value`, `description`, `updated_at` |
 
 ## 7. 비기능 요구사항
@@ -186,3 +192,6 @@
 | 관리 기능 | 차량, 운전자, 피로도 임계값을 관리할 수 있어야 한다. |
 | 이력/통계 | 운행 이력과 피로도 통계를 조회할 수 있어야 한다. |
 | 인증 | 관리자 로그인 후 보호된 기능에 접근할 수 있어야 한다. |
+| 승인 흐름 | 신규 업체 관리자 회원가입 후 최상위 관리자의 승인 전까지 로그인 또는 보호 기능 접근이 제한되어야 한다. |
+| 업체 격리 | 업체 관리자는 자기 업체의 차량, 운전자, 운행 이력만 조회 및 관리할 수 있어야 한다. |
+| 통합 시연 | 데모 계정으로 로그인 후 승인, 시뮬레이션, GPS 수신, 피로도 산정, 대시보드/이력/통계 확인 흐름을 설명할 수 있어야 한다. |

@@ -3,16 +3,12 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 기준 원본: `docx/logmile_테이블정의서.docx`
-- 버전: `v5.0`
-- 작성 기준일: `2026.05.12`
-- 변경 기준: 실제 구현 코드(PlateEvent.java, 관련 enum) 기반 plate_event 테이블 현행화
+- 문서 버전: `v1.6`
+- 기준 문서: `logmile_DB설계서.md`
+- 참조 원본: `docx/logmile_테이블정의서.docx`
+- 작성 기준일: `2026.05.14`
 - 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
-
-| 버전 | 작성일 | 변경 내용 |
-|---|---|---|
-| v4.0 이전 | 2026.04 | 초기 설계 |
-| v5.0 | 2026.05.12 | §7 `plate_recognition_event` → `plate_event` 테이블명 수정; `drive_log_id` 컬럼 제거; `captured_at` → `observed_at`; `event_type` 컬럼 추가; `detection_confidence`, `memo` 컬럼 추가; source_type/location_type enum 실제 값으로 수정 |
+- 비고: `logmile_infra/db/init.sql` v5.0 기준으로 실제 테이블명을 보정한 Markdown 원본 문서다.
 
 ## 1. 목차
 
@@ -119,51 +115,52 @@
 
 ## 7. plate_event (번호판 관측 이벤트)
 
-- 설명: 고속도로 게이트, 휴게소, CCTV 지점에서 인식된 번호판 이벤트. drive_log와의 FK는 없으며 vehicle_id만 FK로 연결
-- 인덱스: `PK(id)`, `idx_plate_event_vehicle_id`, `idx_plate_event_observed_at`, `idx_plate_event_location_type`
-- CHECK: `confidence 0.0~1.0` / `event_type IN (ENTRY,EXIT)` / `source_type IN (OCR,SIMULATOR,MANUAL,DUMMY)` / `location_type IN (HIGHWAY_GATE,REST_AREA,CCTV)`
+- 설명: OCR, 시뮬레이터, 수동 입력, 더미 데이터 기반 번호판 입출차 관측 이벤트 저장
+- 인덱스: `PK(id)`, `idx_plate_event_vehicle_id`, `idx_plate_event_plate_no`, `idx_plate_event_observed_at`
+- CHECK: `event_type IN (ENTRY,EXIT)` / `location_type IN (HIGHWAY_GATE,REST_AREA,CCTV)` / `source_type IN (OCR,SIMULATOR,MANUAL,DUMMY)` / `confidence 0.0~1.0` / `detection_confidence 0.0~1.0`
+- 비고: 실제 CCTV/RTSP 실시간 스트리밍은 제외하고 API 또는 시뮬레이터가 생성한 관측 이벤트 저장을 우선 범위로 한다.
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
 | 1 | `id` | `BIGSERIAL` | NOT NULL | `auto` | PK | 번호판 관측 이벤트 식별자 |
 | 2 | `vehicle_id` | `BIGINT` | NULL | - | `FK SET NULL → vehicle.id` | 매칭된 차량 ID |
-| 3 | `plate_no` | `VARCHAR(20)` | NOT NULL | - | - | 인식된 번호판 |
-| 4 | `event_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 이벤트 유형 (`ENTRY`, `EXIT`) |
-| 5 | `location_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 관측 위치 유형 (`HIGHWAY_GATE`, `REST_AREA`, `CCTV`) |
-| 6 | `source_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 입력 소스 (`OCR`, `SIMULATOR`, `MANUAL`, `DUMMY`) |
+| 3 | `plate_no` | `VARCHAR(20)` | NOT NULL | - | - | 관측 또는 입력된 번호판 |
+| 4 | `event_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 입출차 이벤트 유형 |
+| 5 | `location_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 관측 위치 유형 |
+| 6 | `source_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 입력 출처 |
 | 7 | `observed_at` | `TIMESTAMP` | NOT NULL | - | - | 번호판 관측 시각 |
 | 8 | `latitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 위도 |
 | 9 | `longitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 경도 |
-| 10 | `confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | OCR 번호판 인식 신뢰도 |
-| 11 | `detection_confidence` | `DOUBLE PRECISION` | NULL | - | - | YOLO 객체 탐지 신뢰도 |
-| 12 | `is_manual_required` | `BOOLEAN` | NOT NULL | `FALSE` | - | 수동 검토 필요 여부 (confidence < 0.85 시 TRUE) |
-| 13 | `image_path` | `VARCHAR(500)` | NULL | - | - | 번호판 이미지 경로 |
-| 14 | `memo` | `TEXT` | NULL | - | - | 비고 |
+| 10 | `confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | OCR 문자 인식 신뢰도 |
+| 11 | `detection_confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | YOLO 탐지 신뢰도 |
+| 12 | `is_manual_required` | `BOOLEAN` | NOT NULL | `FALSE` | - | 수동 확인 필요 여부 |
+| 13 | `image_path` | `VARCHAR(500)` | NULL | - | - | 샘플 이미지 또는 저장 이미지 경로 |
+| 14 | `memo` | `TEXT` | NULL | - | - | 관측 메모 |
 | 15 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 이벤트 저장 시각 |
 
 ### 7.1 event_type 값 정의
 
 | 값 | 설명 |
 |---|---|
-| `ENTRY` | 진입 이벤트 (게이트/휴게소 진입) |
-| `EXIT` | 진출 이벤트 (게이트/휴게소 진출) |
+| `ENTRY` | 진입/입차 관측 |
+| `EXIT` | 진출/출차 관측 |
 
-### 7.2 source_type 값 정의
-
-| 값 | 설명 |
-|---|---|
-| `OCR` | YOLO11n + EasyOCR 실인식 |
-| `SIMULATOR` | GPS 시뮬레이터 자동 생성 |
-| `MANUAL` | 관리자 수동 입력 |
-| `DUMMY` | 테스트/시드 더미 데이터 |
-
-### 7.3 location_type 값 정의
+### 7.2 location_type 값 정의
 
 | 값 | 설명 |
 |---|---|
-| `HIGHWAY_GATE` | 고속도로 진입/출입 게이트 |
+| `HIGHWAY_GATE` | 고속도로 톨게이트/관문 |
 | `REST_AREA` | 휴게소 |
 | `CCTV` | 일반 CCTV 관측 지점 |
+
+### 7.3 source_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `OCR` | AI OCR 인식 결과 |
+| `SIMULATOR` | GPS/번호판 시뮬레이터 생성 이벤트 |
+| `MANUAL` | 사용자가 수동 입력한 이벤트 |
+| `DUMMY` | 개발/시연용 더미 이벤트 |
 
 ## 8. gps_data (GPS 데이터)
 

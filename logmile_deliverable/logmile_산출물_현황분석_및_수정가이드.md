@@ -1,7 +1,7 @@
 # logmile 산출물 현황 분석 및 수정 가이드
 
 - 프로젝트명: `logmile`
-- 문서 버전: `v1.0`
+- 문서 버전: `v1.1`
 - 작성 기준일: `2026.05.14`
 - 작성 기준: 실제 프로젝트 구현물, 핵심 산출물 `md`, 브랜치 전략, 릴리즈 전략
 - 목적: 현재 산출물이 실제 프로젝트 구조와 전체 의도를 정확히 설명하도록 수정해야 할 지점을 정리한다.
@@ -21,6 +21,18 @@
 | 문서 관리 원칙 | `md` 우선 수정, `docx`는 요청 시 제출/보관용으로 생성 또는 갱신 |
 
 ---
+
+## 1.1 2026.05.14 실제 구현 재검증 결과
+
+| 영역 | 확인 결과 | 산출물 반영 |
+|---|---|---|
+| 권한 | 실제 enum은 `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` | 과거 업체 관리자 권한 표기는 `ROLE_ADMIN`으로 정리 |
+| 관리자 상태 | `PENDING`, `ACTIVE`, `INACTIVE`, `REJECTED`, `SUSPENDED` | 요구사항/DB/구조도에 반영 |
+| DB | `init.sql` 기준 10개 테이블, `seed.sql` 기준 업체 10개/관리자 31명/차량 50대/운전자 50명/임계값 21건 | DB 설계서/테이블정의서/ERD에 반영 |
+| 번호판 이벤트 | 실제 테이블명은 `plate_event`, 차량 FK만 보유 | 과거 번호판 이벤트 테이블명과 `drive_log_id` 기반 설명 보정 |
+| BE API | `/api/drive-history`와 `/api/drive-logs`, `/api/thresholds`와 `/api/fatigue/thresholds` alias 존재 | 프로젝트구조도에 반영 |
+| FE API | 로그인/회원가입/승인/업체관리/피로도통계 API 연동 확인 | FE mock/API 상태를 구조도에 분리 표기 |
+| FE mock | Dashboard, DriveHistory, Vehicle, Driver, Threshold 주요 화면은 mock 기반 유지 | 후속 연동 작업 대상으로 유지 |
 
 ## 2. 현재 프로젝트 의도 재정의
 
@@ -45,7 +57,7 @@
 | 영역 | 현재 수준 | 판단 |
 |---|---|---|
 | Backend | 인증, 승인, 업체, 차량, 운전자, GPS, 피로도, 대시보드, 이력, 통계 API 구현 | 핵심 도메인 구현은 상당 부분 완료 |
-| Frontend | 로그인/회원가입/승인/대시보드/관리/통계 화면 존재 | 화면 구현은 진행됐으나 주요 관제 화면은 mock 데이터 기반이 남아 있음 |
+| Frontend | 로그인/회원가입/승인/업체관리/피로도통계 API 연동, 대시보드/이력/차량/운전자/임계값 화면 존재 | 일부 화면은 API 연동 완료, 주요 관제 화면에는 mock 데이터 기반이 남아 있음 |
 | AI | FastAPI OCR 라우터와 YOLO/EasyOCR 서비스 구조 존재 | OCR API 구조는 있으나 실제 모델/데이터 검증 결과 정리가 필요 |
 | Simulator | A/B/C 시나리오, GPS 전송, 번호판 이벤트 생성 기능 존재 | 시뮬레이션 구조는 구현됐고 통합 검증 문서화가 필요 |
 | Infra | PostgreSQL, BE, AI, FE, Simulator Docker Compose 구성 | 통합 실행 기반은 있음 |
@@ -63,7 +75,7 @@
 
 | 문제 | 수정 방향 |
 |---|---|
-| 산출물 기준정리표는 핵심 문서를 `v1.5` 기준으로 보지만, 실제 문서에는 `v4.0`, `v5.0`이 혼재 | 현재 구현 반영 기준을 새 버전으로 선언하고 기준정리표 갱신 |
+| 산출물 기준정리표는 핵심 문서를 `v1.5` 기준으로 보지만, 실제 문서에는 `v4.0`, `v5.0`이 혼재 | `v1.7` 기준정리표에서 실제 운영 기준을 재정리 |
 | `md`와 `docx` 기준이 섞여 보임 | `md`를 최신 원본, `docx`를 제출/보관본으로 재확인 |
 | 문서별 작성 기준일이 현재 구현 상태와 다름 | 핵심 문서 상단에 최신 반영일과 변경 기준 추가 |
 
@@ -94,7 +106,7 @@
 
 ### 현재 문제
 
-- 문서 버전은 `v1.6`이지만 핵심 문서 운영 기준은 `v1.5`로 되어 있다.
+- 문서 버전은 `v1.6`이지만 핵심 문서 운영 기준은 `v1.5`로 되어 있었다.
 - 실제 핵심 문서 중 프로젝트개요서와 요구사항정의서는 `v4.0`, 프로젝트구조도는 `v5.0`, SQL은 `v5.0`이다.
 - 현재 구현을 기준으로 어떤 문서가 최신 원본인지 판단하기 어렵다.
 
@@ -102,7 +114,7 @@
 
 | 항목 | 수정 내용 |
 |---|---|
-| 문서 버전 | `v1.7` 또는 현재화 기준 버전으로 갱신 |
+| 문서 버전 | `v1.7`로 갱신 완료 |
 | 작성 기준일 | `2026.05.14` 이후 기준으로 갱신 |
 | 핵심 기준 문서 표 | 실제 문서 버전과 현재 운영 기준을 일치시킴 |
 | 보조 문서 표 | 본 문서 `logmile_산출물_현황분석_및_수정가이드.md` 추가 |
@@ -115,8 +127,8 @@
 ### 현재 문제
 
 - 전체 목적과 기술 스택 설명은 적절하다.
-- 다만 현재 구현된 `company` 기반 멀티테넌시와 최상위 관리자 승인 흐름이 핵심 목표에 충분히 드러나지 않는다.
-- `plate_event` 기반 번호판 관측 이벤트가 주요 기능과 DB 설계 방향에 부족하게 반영되어 있다.
+- 현재 구현된 `company` 기반 멀티테넌시와 최상위 관리자 승인 흐름을 핵심 목표에 반영했다.
+- `plate_event` 기반 번호판 관측 이벤트를 주요 기능과 DB 설계 방향에 반영했다.
 
 ### 수정 방향
 
@@ -195,14 +207,14 @@
 ### 현재 문제
 
 - 현재 구현 반영도가 높지만 일부 용어와 enum 설명이 실제 코드와 다르다.
-- 변경 내용에 `SlateEvent`라는 오타가 있다.
+- 변경 내용에 PlateEvent 관련 오타가 있었다.
 - API 경로 일부는 실제 컨트롤러와 재확인이 필요하다.
 
 ### 수정 방향
 
 | 항목 | 수정 내용 |
 |---|---|
-| 오타 | `SlateEvent`를 `PlateEvent`로 수정 |
+| 오타 | PlateEvent 관련 오타 수정 |
 | AdminStatus | `PENDING`, `ACTIVE`, `INACTIVE`, `REJECTED`, `SUSPENDED` 기준으로 수정 |
 | PlateEventType | 실제 코드 기준 `ENTRY`, `EXIT`로 수정 |
 | PlateLocationType | 실제 코드 기준 `HIGHWAY_GATE`, `REST_AREA`, `CCTV`로 수정 |
@@ -220,7 +232,7 @@
 - 상태가 과거 일정 기준으로 남아 있어 실제 구현 진척과 맞지 않는다.
 - 이미 구현된 BE 기능이 `예정` 또는 `진행`으로 남아 있다.
 - FE 화면은 존재하지만 API 연동 상태가 분리되어 있지 않다.
-- `ROLE_COMPANY_ADMIN`, `PlateRecognitionEvent` 등 실제 코드와 다른 용어가 남아 있다.
+- 과거 업체 관리자 권한명, 과거 번호판 이벤트 클래스명 등 실제 코드와 다른 용어가 남아 있었다.
 
 ### 수정 방향
 
@@ -232,7 +244,7 @@
 | SIM 상태 | A/B/C 시나리오와 전송 기능을 구현 상태로 갱신 |
 | AI 상태 | OCR API 구조와 모델 검증 산출물을 분리 |
 | QA 상태 | 지금부터 핵심 작업으로 우선순위 상향 |
-| 용어 | `ROLE_COMPANY_ADMIN` → `ROLE_ADMIN`, `PlateRecognitionEvent` → `PlateEvent` |
+| 용어 | 업체 관리자 권한은 `ROLE_ADMIN`, 번호판 이벤트는 `PlateEvent` 기준으로 정리 |
 
 ---
 
@@ -285,12 +297,14 @@
 
 | 화면 | 현재 데이터 소스 | 연결 API | 정합성 | 남은 작업 |
 |---|---|---|---|---|
-| LoginView | API | `/api/auth/login` | 정상 | status/companyId 저장 보완 |
+| LoginView | API | `/api/auth/login` | 정상 | status/companyId 저장 기준 유지 |
 | SignupView | API | `/api/auth/signup` | 정상 | 오류 메시지 세분화 |
 | DashboardView | mock | `/api/dashboard/*` | 연동 필요 | store/API 연결 |
 | SimulationView | mock/API 혼재 | `/api/simulation/*` | 경로 재확인 | stop 경로 수정 |
-| DriveHistoryView | mock | `/api/drive-history` | 경로 수정 필요 | 실제 API 연결 |
-| ThresholdView | mock | `/api/thresholds` | 경로 수정 필요 | 실제 API 연결 |
+| DriveHistoryView | mock | `/api/drive-logs` 또는 `/api/drive-history` | BE alias 존재 | 화면 실제 API 연결 |
+| ThresholdView | mock | `/api/fatigue/thresholds` 또는 `/api/thresholds` | BE alias 존재 | 화면 실제 API 연결 |
+| SuperCompanyView | API | `/api/companies` | 정상 | 활성/비활성 동작 통합 검증 |
+| FatigueStatsView | API | `/api/fatigue/stats` | 정상 | 차트 렌더링 검증 |
 
 ## 6.3 `logmile_통합시연시나리오.md`
 
@@ -320,10 +334,10 @@
 
 | 영역 | 확인 필요 |
 |---|---|
-| 운행 이력 | FE API가 `/api/drive-logs`를 바라보는 경우 BE의 `/api/drive-history`와 맞춤 |
-| 임계값 | FE API가 `/api/fatigue/thresholds`를 바라보는 경우 BE의 `/api/thresholds`와 맞춤 |
+| 운행 이력 | BE가 `/api/drive-history`, `/api/drive-logs` alias를 제공하므로 화면 연결만 남음 |
+| 임계값 | BE가 `/api/thresholds`, `/api/fatigue/thresholds` alias를 제공하고 key 기준 PUT을 제공하므로 화면 연결만 남음 |
 | 수정 메서드 | FE의 `PUT` 호출과 BE의 `PATCH` 매핑 정합성 확인 |
-| 시뮬레이션 중지 | FE의 `/api/simulation/stop` 호출과 BE의 `/api/simulation/{driveLogId}/stop` 정합성 확인 |
+| 시뮬레이션 중지 | FE API 모듈과 BE 모두 `/api/simulation/{driveLogId}/stop` 기준으로 정합 |
 | 인증 상태 | 로그인 응답의 `adminId`, `status`, `companyId`를 FE store에 저장 |
 | 권한 가드 | PENDING, REJECTED, SUSPENDED 상태 처리 |
 | mock 데이터 | 발표용 demo 화면과 실제 관리자 화면의 데이터 소스 분리 |

@@ -1,9 +1,9 @@
 # logmile 프로젝트 전체 구조도
 
 - 프로젝트명: `logmile`
-- 버전: v5.0
-- 작성 기준일: 2026.05.12
-- 변경 내용: BE 도메인 패키지 구조 반영, API 엔드포인트 실제 구현 기준으로 수정, FE 뷰/스토어/API 파일 최신화, 잘못된 서비스명 및 열거형명 수정, Company 멀티테넌시 및 SlateEvent 구조 추가
+- 버전: v5.1
+- 작성 기준일: 2026.05.14
+- 변경 내용: 실제 프로젝트 파일 기준 재검증, BE API alias 및 FE API 연동 상태 반영, Company 멀티테넌시 및 PlateEvent 구조 보정
 
 ---
 
@@ -68,10 +68,10 @@ logmile_be/
         │   │   │   ├── RestType.java                        # PENDING, VALID, SUFFICIENT, INVALID
         │   │   │   ├── FatigueLevel.java                    # NORMAL, CAUTION, DANGER
         │   │   │   ├── AdminRole.java                       # ROLE_ADMIN, ROLE_SUPER_ADMIN
-        │   │   │   ├── AdminStatus.java                     # PENDING, APPROVED, REJECTED
-        │   │   │   ├── PlateEventType.java                  # DEPARTURE, ARRIVAL
-        │   │   │   ├── PlateLocationType.java               # ENTRY, EXIT
-        │   │   │   └── PlateSourceType.java                 # OCR, MANUAL
+        │   │   │   ├── AdminStatus.java                     # PENDING, ACTIVE, INACTIVE, REJECTED, SUSPENDED
+        │   │   │   ├── PlateEventType.java                  # ENTRY, EXIT
+        │   │   │   ├── PlateLocationType.java               # HIGHWAY_GATE, REST_AREA, CCTV
+        │   │   │   └── PlateSourceType.java                 # OCR, SIMULATOR, MANUAL, DUMMY
         │   │   ├── exception/
         │   │   │   ├── BusinessException.java               # 비즈니스 예외 (ErrorCode 기반)
         │   │   │   ├── ErrorCode.java                       # 에러 코드 열거형
@@ -117,7 +117,7 @@ logmile_be/
         │       │   └── service/DashboardService.java
         │       │
         │       ├── drivelog/                                # 운행 기록
-        │       │   ├── controller/DriveHistoryController.java # GET /api/drive-history
+        │       │   ├── controller/DriveHistoryController.java # GET /api/drive-history, /api/drive-logs
         │       │   ├── controller/SimulationController.java  # POST /api/simulation/start
         │       │   │                                          # PATCH /api/simulation/{id}/stop
         │       │   ├── dto/DriveHistoryDetailResponse.java
@@ -138,7 +138,7 @@ logmile_be/
         │       │   └── service/DriverService.java
         │       │
         │       ├── fatigue/                                 # 피로도 판단
-        │       │   ├── controller/FatigueThresholdController.java # /api/thresholds
+        │       │   ├── controller/FatigueThresholdController.java # /api/thresholds, /api/fatigue/thresholds
         │       │   ├── dto/ThresholdResponse.java
         │       │   ├── dto/ThresholdUpdateRequest.java
         │       │   ├── entity/FatigueEvent.java
@@ -156,7 +156,7 @@ logmile_be/
         │       │   └── service/GpsReceiverService.java      # GPS 저장 → RestEvent → FatigueScore
         │       │
         │       ├── plateevent/                              # 번호판 이벤트 기록
-        │       │   ├── controller/PlateEventController.java # POST /api/plate-events
+        │       │   ├── controller/PlateEventController.java # POST /api/simulation/plate-events
         │       │   ├── dto/PlateEventCreateRequest.java
         │       │   ├── dto/PlateEventResponse.java
         │       │   ├── entity/PlateEvent.java
@@ -303,9 +303,9 @@ logmile_fe/
     │   ├── dashboardApi.js           # GET /api/dashboard/summary|vehicles
     │   ├── simulationApi.js          # POST /api/simulation/start
     │   │                             # PATCH /api/simulation/{id}/stop
-    │   ├── driveHistoryApi.js        # GET /api/drive-history
+    │   ├── driveHistoryApi.js        # GET /api/drive-logs
     │   ├── fatigueStatsApi.js        # GET /api/fatigue/stats
-    │   └── thresholdApi.js           # GET|PATCH /api/thresholds
+    │   └── thresholdApi.js           # GET /api/fatigue/thresholds, PUT /api/fatigue/thresholds/{key}
     │
     ├── views/
     │   │   ── 인증 (레이아웃 없음) ──────────────────────
@@ -347,6 +347,18 @@ logmile_fe/
 | ROLE_ADMIN → requiresSuper 페이지 | `/` 리다이렉트 |
 | 로그인 상태 → login/signup/pending | 역할별 홈으로 리다이렉트 |
 
+**2026.05.14 FE 데이터 소스 검증 결과:**
+
+| 화면/API 모듈 | 현재 기준 | 비고 |
+|---|---|---|
+| LoginView / SignupView | API 연동 | `/api/auth/login`, `/api/auth/signup` |
+| SuperApprovalView / SuperHomeView | API 연동 | `/api/admin/approvals/*` |
+| SuperCompanyView | API 연동 | `/api/companies`, activate/deactivate |
+| FatigueStatsView | API 연동 | `/api/fatigue/stats` |
+| driveHistoryApi / thresholdApi | API 모듈 경로 정합 | BE alias 기준 `/api/drive-logs`, `/api/fatigue/thresholds` 사용 가능 |
+| DashboardView / DriveHistoryView / DriveHistoryDetailView / VehicleView / DriverView / ThresholdView | mock 기반 화면 유지 | 실제 API 모듈은 존재하나 화면 단위 연결은 후속 작업 |
+| SimulationView | mock/API 혼재 | start/stop API 모듈은 정합, 화면 상태와 GPS 시뮬레이터 통합 검증 필요 |
+
 ---
 
 ## 6. 인프라 (INFRA) 상세 구조
@@ -356,7 +368,7 @@ logmile_infra/
 ├── docker-compose.yml                # 전체 서비스 오케스트레이션
 ├── .env                              # 공통 환경변수
 └── db/
-    ├── init.sql                      # 테이블 DDL (9개 테이블)
+    ├── init.sql                      # 테이블 DDL (10개 테이블)
     └── seed.sql                      # 초기 데이터 (회사 10개, 관리자 31명, 차량 50대, 운전자 50명, 임계값 21건)
 ```
 
@@ -378,28 +390,40 @@ services:
 |---|---|---|---|
 | POST | `/api/auth/login` | 관리자 로그인, JWT 발급 | 불필요 |
 | POST | `/api/auth/signup` | 관리자 회원가입 (승인 대기) | 불필요 |
-| GET | `/api/vehicles` | 차량 목록 조회 | JWT |
-| POST | `/api/vehicles` | 차량 등록 | JWT |
-| PATCH | `/api/vehicles/{id}` | 차량 수정 | JWT |
-| DELETE | `/api/vehicles/{id}` | 차량 삭제 | JWT |
-| GET | `/api/drivers` | 운전자 목록 조회 | JWT |
-| POST | `/api/drivers` | 운전자 등록 | JWT |
-| PATCH | `/api/drivers/{id}` | 운전자 수정 | JWT |
-| PATCH | `/api/drivers/{id}/assign/{vehicleId}` | 차량 배정 | JWT |
-| PATCH | `/api/drivers/{id}/unassign` | 차량 배정 해제 | JWT |
-| DELETE | `/api/drivers/{id}` | 운전자 삭제 | JWT |
-| POST | `/api/simulation/start` | 시뮬레이션 시작 (DriveLog 생성) | JWT |
-| PATCH | `/api/simulation/{driveLogId}/stop` | 시뮬레이션 중지 | JWT |
+| GET | `/api/admin/approvals/pending` | 승인 대기 관리자 목록 | JWT (SUPER_ADMIN) |
+| PATCH | `/api/admin/approvals/{adminId}/approve` | 관리자 승인 | JWT (SUPER_ADMIN) |
+| PATCH | `/api/admin/approvals/{adminId}/reject` | 관리자 거절 | JWT (SUPER_ADMIN) |
+| PATCH | `/api/admin/approvals/{adminId}/suspend` | 관리자 정지 | JWT (SUPER_ADMIN) |
+| PATCH | `/api/admin/approvals/{adminId}/unsuspend` | 관리자 정지 해제 | JWT (SUPER_ADMIN) |
+| GET | `/api/companies` | 업체 목록 조회 | JWT (SUPER_ADMIN) |
+| GET | `/api/companies/{companyId}` | 업체 상세 조회 | JWT (SUPER_ADMIN) |
+| PATCH | `/api/companies/{companyId}/activate` | 업체 활성화 | JWT (SUPER_ADMIN) |
+| PATCH | `/api/companies/{companyId}/deactivate` | 업체 비활성화 | JWT (SUPER_ADMIN) |
+| GET | `/api/companies/me` | 내 업체 정보 조회 | JWT (ADMIN) |
+| GET | `/api/vehicles` | 차량 목록 조회 | JWT (ADMIN) |
+| POST | `/api/vehicles` | 차량 등록 | JWT (ADMIN) |
+| GET | `/api/vehicles/{id}` | 차량 상세 조회 | JWT (ADMIN) |
+| PATCH | `/api/vehicles/{id}` | 차량 수정 | JWT (ADMIN) |
+| DELETE | `/api/vehicles/{id}` | 차량 삭제 | JWT (ADMIN) |
+| GET | `/api/drivers` | 운전자 목록 조회 | JWT (ADMIN) |
+| POST | `/api/drivers` | 운전자 등록 | JWT (ADMIN) |
+| GET | `/api/drivers/{id}` | 운전자 상세 조회 | JWT (ADMIN) |
+| PATCH | `/api/drivers/{id}` | 운전자 수정 | JWT (ADMIN) |
+| PATCH | `/api/drivers/{id}/assign/{vehicleId}` | 차량 배정 | JWT (ADMIN) |
+| PATCH | `/api/drivers/{id}/unassign` | 차량 배정 해제 | JWT (ADMIN) |
+| DELETE | `/api/drivers/{id}` | 운전자 삭제 | JWT (ADMIN) |
+| POST | `/api/simulation/start` | 시뮬레이션 시작 (DriveLog 생성) | JWT (ADMIN) |
+| PATCH | `/api/simulation/{driveLogId}/stop` | 시뮬레이션 중지 | JWT (ADMIN) |
 | POST | `/api/gps` | GPS 데이터 수신 + 피로도 재계산 | JWT |
-| GET | `/api/dashboard/summary` | 통계 요약 카드 데이터 | JWT |
-| GET | `/api/dashboard/vehicles` | 차량별 현재 피로도 상태 | JWT |
-| GET | `/api/drive-history` | 운행 이력 목록 | JWT |
-| GET | `/api/drive-history/{driveLogId}` | 운행 이력 상세 | JWT |
-| GET | `/api/fatigue/stats` | 일별 피로도 통계 | JWT |
-| GET | `/api/thresholds` | 피로도 임계값 전체 조회 | JWT |
+| POST | `/api/simulation/plate-events` | 번호판 관측 이벤트 저장 | JWT |
+| GET | `/api/dashboard/summary` | 통계 요약 카드 데이터 | JWT (ADMIN/SUPER_ADMIN) |
+| GET | `/api/dashboard/vehicles` | 차량별 현재 피로도 상태 | JWT (ADMIN/SUPER_ADMIN) |
+| GET | `/api/drive-history`, `/api/drive-logs` | 운행 이력 목록 | JWT (ADMIN/SUPER_ADMIN) |
+| GET | `/api/drive-history/{driveLogId}`, `/api/drive-logs/{driveLogId}` | 운행 이력 상세 | JWT (ADMIN/SUPER_ADMIN) |
+| GET | `/api/fatigue/stats` | 일별 피로도 통계 | JWT (ADMIN) |
+| GET | `/api/thresholds`, `/api/fatigue/thresholds` | 피로도 임계값 전체 조회 | JWT (ADMIN/SUPER_ADMIN) |
 | PATCH | `/api/thresholds/{id}` | 임계값 수정 | JWT (SUPER_ADMIN) |
-| POST | `/api/plate-events` | 번호판 인식 이벤트 기록 | JWT |
-| GET | `/api/companies` | 회사 목록 조회 | JWT (SUPER_ADMIN) |
+| PUT | `/api/fatigue/thresholds/{key}` | 임계값 수정 (key 기준) | JWT (SUPER_ADMIN) |
 | POST | `/api/ocr/recognize` (AI) | 번호판 이미지 인식 | 없음(내부) |
 
 ---
@@ -452,7 +476,7 @@ vehicle ──< drive_log >── driver
 drive_log ──< gps_data        (CASCADE DELETE)
 drive_log ──< rest_event      (CASCADE DELETE)
 drive_log ──< fatigue_event   (CASCADE DELETE)
-drive_log ──< plate_event     (번호판 인식 이벤트)
+vehicle ──< plate_event       (번호판 관측 이벤트, vehicle_id nullable)
 
 fatigue_threshold
   (독립 테이블 — key/value 설정값)
