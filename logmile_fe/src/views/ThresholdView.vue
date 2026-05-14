@@ -1,20 +1,64 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { thresholds } from '@/data/mockData'
+import { ref, computed, onMounted } from 'vue'
+import { thresholdApi } from '@/api/thresholdApi'
+import { useAuthStore } from '@/stores/authStore'
+
+const authStore = useAuthStore()
+const isSuperAdmin = computed(() => authStore.isSuperAdmin)
 
 const groups = [
   { id:'continuous', title:'연속 운행',       unit:'분', tone:'danger', desc:'무휴식 연속 운행 시간 (4단계 가산점)' },
   { id:'daily',      title:'일일 누적 운행',   unit:'분', tone:'warn',   desc:'당일 누적 운행 시간 (3단계 가산점)' },
   { id:'night',      title:'야간 운행',        unit:'분', tone:'warn',   desc:'22:00 ~ 06:00 누적 (3단계 가산점)' },
-  { id:'rest',       title:'휴식 기준 / 보정', unit:'',   tone:'ok',     desc:'유효 / 충분 / 누락 휴식 가중치 (7건)' },
-  { id:'level',      title:'등급 컷오프',      unit:'점', tone:'accent', desc:'NORMAL / CAUTION / DANGER 경계 (4건)' },
+  { id:'rest',       title:'휴식 기준 / 보정', unit:'',   tone:'ok',     desc:'유효 / 충분 / 누락 휴식 가중치' },
+  { id:'level',      title:'등급 컷오프',      unit:'점', tone:'accent', desc:'NORMAL / CAUTION / DANGER 경계' },
 ]
 
-const list    = ref(thresholds.map(t => ({ ...t })))
+function keyToGroup(key) {
+  const k = (key || '').toUpperCase()
+  if (k.includes('CONTINUOUS')) return 'continuous'
+  if (k.includes('DAILY'))      return 'daily'
+  if (k.includes('NIGHT'))      return 'night'
+  if (k.includes('LEVEL') || k.includes('THRESHOLD') || k.includes('CAUTION') || k.includes('DANGER') || k.includes('NORMAL')) return 'level'
+  return 'rest'
+}
+
+function keyToLabel(key) {
+  return (key || '').replace(/_/g, ' ').toLowerCase()
+}
+
+const list    = ref([])
+const loading = ref(true)
+const error   = ref(null)
 const editing = ref(null)
 const draft   = ref(0)
-const savedAt = ref('2026.04.21 14:08')
-const savedBy = '시스템 관리자 (admin@logmile.com)'
+const savedAt = ref('—')
+const savedBy = '시스템 관리자 (super@logmile.io)'
+
+async function fetchData() {
+  loading.value = true
+  error.value   = null
+  try {
+    const res = await thresholdApi.getAll()
+    list.value = res.data.map(t => ({
+      id:          t.id,
+      key:         t.thresholdKey,
+      label:       keyToLabel(t.thresholdKey),
+      group:       keyToGroup(t.thresholdKey),
+      value:       t.thresholdValue,
+      description: t.description ?? '—',
+      updatedAt:   t.updatedAt ? t.updatedAt.slice(0, 16).replace('T', ' ') : '—',
+    }))
+    const latest = list.value.reduce((a, b) => (a.updatedAt > b.updatedAt ? a : b), list.value[0])
+    savedAt.value = latest?.updatedAt ?? '—'
+  } catch (e) {
+    error.value = '임계값을 불러오는 중 오류가 발생했습니다.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchData)
 
 const grouped = computed(() => {
   const map = {}
@@ -27,9 +71,16 @@ const toneMap = { danger:'var(--danger)', warn:'var(--warn)', ok:'var(--ok)', ac
 
 function startEdit(t) { editing.value = t.key; draft.value = t.value }
 function cancelEdit()  { editing.value = null }
-function commitEdit(t) { t.value = draft.value; editing.value = null; savedAt.value = '방금' }
-function deltaText(t) { return t.delta === 0 ? '—' : (t.delta > 0 ? '+' : '') + t.delta + '점' }
-function deltaColor(t) { return t.delta > 0 ? 'var(--danger)' : t.delta < 0 ? 'var(--ok)' : 'var(--text-3)' }
+async function commitEdit(t) {
+  try {
+    await thresholdApi.update(t.id, draft.value)
+    t.value = draft.value
+    editing.value = null
+    savedAt.value = new Date().toLocaleString('ko-KR').slice(0, 16)
+  } catch (e) {
+    alert('저장 중 오류가 발생했습니다.')
+  }
+}
 
 const simSteps = [
   {label:'시작',      val:0,  tag:'NORMAL'},
@@ -49,8 +100,11 @@ function tagColor(tag) {
 <template>
   <div class="view">
     <div class="breadcrumb mono">
-      ADMIN / FATIGUE_THRESHOLD · 시드 {{ list.length }}건 · 최종 저장 {{ savedAt }}
+      ADMIN / FATIGUE_THRESHOLD · {{ list.length }}건 · 최종 저장 {{ savedAt }}
     </div>
+
+    <div v-if="loading" class="state-row mono">임계값 로드 중...</div>
+    <div v-if="error" class="state-row" style="color:var(--danger)">{{ error }}</div>
 
     <div class="page-header">
       <div>
@@ -65,7 +119,7 @@ function tagColor(tag) {
       <div class="hdr-actions">
         <span class="mono" style="font-size:11px;color:var(--text-4);white-space:nowrap">{{ savedBy }}</span>
         <button class="btn btn-ghost">변경 이력</button>
-        <button class="btn btn-primary" @click="savedAt = '방금'">정책 저장</button>
+        <button class="btn btn-primary" @click="fetchData">새로고침</button>
       </div>
     </div>
 
@@ -91,7 +145,7 @@ function tagColor(tag) {
     </div>
 
     <!-- 임계값 그룹 -->
-    <div v-for="g in groups" :key="g.id" class="card group-card">
+    <div v-if="!loading && !error" v-for="g in groups" :key="g.id" class="card group-card">
       <div class="group-hdr">
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="g-accent" :style="{ background: toneMap[g.tone] }" />
@@ -105,11 +159,10 @@ function tagColor(tag) {
       <table class="tbl">
         <thead>
           <tr>
-            <th style="width:32%">KEY</th>
-            <th style="width:15%">VALUE</th>
-            <th style="width:13%">SCORE_DELTA</th>
+            <th style="width:36%">KEY</th>
+            <th style="width:18%">VALUE</th>
             <th>DESCRIPTION</th>
-            <th style="width:10%;text-align:right">UPDATED</th>
+            <th style="width:12%;text-align:right">UPDATED</th>
           </tr>
         </thead>
         <tbody>
@@ -129,11 +182,8 @@ function tagColor(tag) {
               <template v-else>
                 <span class="mono" style="font-size:14px;font-weight:700;color:var(--text-1)">{{ t.value }}</span>
                 <span v-if="g.unit" style="font-size:11px;color:var(--text-4);margin-left:3px">{{ g.unit }}</span>
-                <button class="mono edit-btn" @click="startEdit(t)">편집</button>
+                <button v-if="isSuperAdmin" class="mono edit-btn" @click="startEdit(t)">편집</button>
               </template>
-            </td>
-            <td>
-              <span class="mono" style="font-size:13px;font-weight:700" :style="{ color: deltaColor(t) }">{{ deltaText(t) }}</span>
             </td>
             <td style="font-size:12px;color:var(--text-2);line-height:1.5">{{ t.description }}</td>
             <td class="mono" style="text-align:right;font-size:10.5px;color:var(--text-4)">{{ t.updatedAt }}</td>

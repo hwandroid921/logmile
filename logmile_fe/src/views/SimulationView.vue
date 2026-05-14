@@ -1,14 +1,123 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AppIcon from '@/components/common/AppIcon.vue'
-import { thresholds } from '@/data/mockData'
+import { thresholdApi } from '@/api/thresholdApi'
+import { simulationApi } from '@/api/simulationApi'
+import { vehicleApi } from '@/api/vehicleApi'
+import { driverApi } from '@/api/driverApi'
 
 /* ───────── 임계값 맵 ───────── */
-const T = {}
-thresholds.forEach(t => {
-  T[t.key] = t.value
-  T[t.key + '_DELTA'] = t.delta
+const T = ref({})
+const thresholdLoaded = ref(false)
+
+// 임계값 키를 시뮬레이터에서 쓰는 snake_upper 형태로 변환
+function normalizeKey(key) {
+  return (key || '').toUpperCase()
+}
+
+async function loadThresholds() {
+  try {
+    const res = await thresholdApi.getAll()
+    const map = {}
+    res.data.forEach(t => {
+      const k = normalizeKey(t.thresholdKey)
+      map[k] = t.thresholdValue
+    })
+    T.value = map
+    thresholdLoaded.value = true
+  } catch (e) {
+    // 임계값 로드 실패 시 기본값 사용
+    T.value = {
+      CONTINUOUS_DRIVING_90_DELTA: 10,
+      CONTINUOUS_DRIVING_120_DELTA: 25,
+      CONTINUOUS_DRIVING_180_DELTA: 45,
+      CONTINUOUS_DRIVING_240_DELTA: 65,
+      CONTINUOUS_DRIVING_90: 90,
+      CONTINUOUS_DRIVING_120: 120,
+      CONTINUOUS_DRIVING_180: 180,
+      CONTINUOUS_DRIVING_240: 240,
+      DAILY_DRIVING_360_DELTA: 10,
+      DAILY_DRIVING_480_DELTA: 25,
+      DAILY_DRIVING_600_DELTA: 40,
+      DAILY_DRIVING_360: 360,
+      DAILY_DRIVING_480: 480,
+      DAILY_DRIVING_600: 600,
+      NIGHT_DRIVING_30_DELTA: 10,
+      NIGHT_DRIVING_60_DELTA: 25,
+      NIGHT_DRIVING_120_DELTA: 40,
+      NIGHT_DRIVING_30: 30,
+      NIGHT_DRIVING_60: 60,
+      NIGHT_DRIVING_120: 120,
+      REST_VALID_MINUTES: 15,
+      REST_SUFFICIENT_MINUTES: 30,
+      REST_CORRECTION_VALID_SCORE_DELTA: -10,
+      REST_CORRECTION_SUFFICIENT_SCORE_DELTA: -20,
+    }
+    thresholdLoaded.value = true
+  }
+}
+
+/* ───────── 차량/운전자 목록 ───────── */
+const vehicles = ref([])
+const drivers  = ref([])
+const selectedVehicleId = ref(null)
+const selectedDriverId  = ref(null)
+const driveLogId = ref(null)   // 시뮬레이션 시작 후 반환
+const isRunning  = ref(false)
+const apiError   = ref(null)
+
+async function loadVehiclesDrivers() {
+  try {
+    const [vRes, dRes] = await Promise.all([vehicleApi.getAll(), driverApi.getAll()])
+    vehicles.value = vRes.data.filter(v => v.active)
+    drivers.value  = dRes.data
+    if (vehicles.value.length) selectedVehicleId.value = vehicles.value[0].id
+    if (drivers.value.length)  selectedDriverId.value  = drivers.value[0].id
+  } catch (e) {
+    // 목록 로드 실패 시 무시 (입력란으로 대체)
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([loadThresholds(), loadVehiclesDrivers()])
 })
+
+/* ───────── 시뮬레이션 시작/중지 API ───────── */
+const scenarioType = computed(() => {
+  const s = maxScore.value >= 70 ? 'C' : maxScore.value >= 40 ? 'B' : 'A'
+  return s
+})
+
+async function startSimulation() {
+  if (!selectedVehicleId.value || !selectedDriverId.value) {
+    apiError.value = '차량과 운전자를 선택해주세요.'
+    return
+  }
+  apiError.value = null
+  try {
+    const res = await simulationApi.start({
+      vehicleId:   selectedVehicleId.value,
+      driverId:    selectedDriverId.value,
+      scenarioType: scenarioType.value,
+    })
+    driveLogId.value = res.data.driveLogId
+    isRunning.value  = true
+  } catch (e) {
+    apiError.value = '시뮬레이션 시작 중 오류가 발생했습니다.'
+  }
+}
+
+async function stopSimulation() {
+  if (!driveLogId.value) return
+  apiError.value = null
+  try {
+    await simulationApi.stop(driveLogId.value)
+    isRunning.value = false
+    driveLogId.value = null
+  } catch (e) {
+    apiError.value = '시뮬레이션 중지 중 오류가 발생했습니다.'
+  }
+}
 
 /* ───────── 파라미터 ───────── */
 const startHour   = ref(4)
@@ -30,22 +139,22 @@ const entries = ref([
 const NIGHT_H = new Set([22, 23, 0, 1, 2, 3, 4, 5])
 const isNight = h => NIGHT_H.has(h % 24)
 
-const continuousSteps = [
-  { min: T.CONTINUOUS_DRIVING_240, delta: T.CONTINUOUS_DRIVING_240_DELTA },
-  { min: T.CONTINUOUS_DRIVING_180, delta: T.CONTINUOUS_DRIVING_180_DELTA },
-  { min: T.CONTINUOUS_DRIVING_120, delta: T.CONTINUOUS_DRIVING_120_DELTA },
-  { min: T.CONTINUOUS_DRIVING_90,  delta: T.CONTINUOUS_DRIVING_90_DELTA  },
-]
-const dailySteps = [
-  { min: T.DAILY_DRIVING_600, delta: T.DAILY_DRIVING_600_DELTA },
-  { min: T.DAILY_DRIVING_480, delta: T.DAILY_DRIVING_480_DELTA },
-  { min: T.DAILY_DRIVING_360, delta: T.DAILY_DRIVING_360_DELTA },
-]
-const nightSteps = [
-  { min: T.NIGHT_DRIVING_120, delta: T.NIGHT_DRIVING_120_DELTA },
-  { min: T.NIGHT_DRIVING_60,  delta: T.NIGHT_DRIVING_60_DELTA  },
-  { min: T.NIGHT_DRIVING_30,  delta: T.NIGHT_DRIVING_30_DELTA  },
-]
+const continuousSteps = computed(() => [
+  { min: T.value.CONTINUOUS_DRIVING_240 ?? 240, delta: T.value.CONTINUOUS_DRIVING_240_DELTA ?? 65 },
+  { min: T.value.CONTINUOUS_DRIVING_180 ?? 180, delta: T.value.CONTINUOUS_DRIVING_180_DELTA ?? 45 },
+  { min: T.value.CONTINUOUS_DRIVING_120 ?? 120, delta: T.value.CONTINUOUS_DRIVING_120_DELTA ?? 25 },
+  { min: T.value.CONTINUOUS_DRIVING_90  ?? 90,  delta: T.value.CONTINUOUS_DRIVING_90_DELTA  ?? 10 },
+])
+const dailySteps = computed(() => [
+  { min: T.value.DAILY_DRIVING_600 ?? 600, delta: T.value.DAILY_DRIVING_600_DELTA ?? 40 },
+  { min: T.value.DAILY_DRIVING_480 ?? 480, delta: T.value.DAILY_DRIVING_480_DELTA ?? 25 },
+  { min: T.value.DAILY_DRIVING_360 ?? 360, delta: T.value.DAILY_DRIVING_360_DELTA ?? 10 },
+])
+const nightSteps = computed(() => [
+  { min: T.value.NIGHT_DRIVING_120 ?? 120, delta: T.value.NIGHT_DRIVING_120_DELTA ?? 40 },
+  { min: T.value.NIGHT_DRIVING_60  ?? 60,  delta: T.value.NIGHT_DRIVING_60_DELTA  ?? 25 },
+  { min: T.value.NIGHT_DRIVING_30  ?? 30,  delta: T.value.NIGHT_DRIVING_30_DELTA  ?? 10 },
+])
 
 const simTrace  = ref([])
 const simEvents = ref([])
@@ -75,16 +184,18 @@ function runSim() {
       const dur = restMap.get(m)
       inRest = true; restRemaining = dur
       contMin = 0
-      if (dur >= T.REST_SUFFICIENT_MINUTES) {
-        const d = T.REST_CORRECTION_SUFFICIENT_SCORE_DELTA
+      const REST_SUFFICIENT = T.value.REST_SUFFICIENT_MINUTES ?? 30
+      const REST_VALID      = T.value.REST_VALID_MINUTES ?? 15
+      if (dur >= REST_SUFFICIENT) {
+        const d = T.value.REST_CORRECTION_SUFFICIENT_SCORE_DELTA ?? -20
         score = Math.max(0, score + d)
         events.push({ t: m, label: `충분 휴식 ${dur}분`, kind: 'rest_sufficient', delta: d })
-      } else if (dur >= T.REST_VALID_MINUTES) {
-        const d = T.REST_CORRECTION_VALID_SCORE_DELTA
+      } else if (dur >= REST_VALID) {
+        const d = T.value.REST_CORRECTION_VALID_SCORE_DELTA ?? -10
         score = Math.max(0, score + d)
         events.push({ t: m, label: `유효 휴식 ${dur}분`, kind: 'rest_valid', delta: d })
       } else {
-        events.push({ t: m, label: `무효 휴식 ${dur}분 (<15m)`, kind: 'rest_invalid', delta: 0 })
+        events.push({ t: m, label: `무효 휴식 ${dur}분 (<${REST_VALID}m)`, kind: 'rest_invalid', delta: 0 })
       }
     }
 
@@ -97,7 +208,7 @@ function runSim() {
       if (isNight(hour)) nightMin++
 
       // 연속 운행 임계값
-      for (const s of continuousSteps) {
+      for (const s of continuousSteps.value) {
         if (contMin >= s.min && !firedC.has(s.min)) {
           firedC.add(s.min); score += s.delta
           events.push({ t: m, label: `연속 ${s.min}분 초과`, kind: 'continuous', delta: s.delta })
@@ -105,7 +216,7 @@ function runSim() {
         }
       }
       // 일일 누적
-      for (const s of dailySteps) {
+      for (const s of dailySteps.value) {
         if (dailyMin >= s.min && !firedD.has(s.min)) {
           firedD.add(s.min); score += s.delta
           events.push({ t: m, label: `일일 누적 ${s.min}분 초과`, kind: 'daily', delta: s.delta })
@@ -114,7 +225,7 @@ function runSim() {
       }
       // 야간
       if (nightMode.value || isNight(hour)) {
-        for (const s of nightSteps) {
+        for (const s of nightSteps.value) {
           if (nightMin >= s.min && !firedN.has(s.min)) {
             firedN.add(s.min); score += s.delta
             events.push({ t: m, label: `야간 누적 ${s.min}분 초과`, kind: 'night', delta: s.delta })
@@ -194,9 +305,31 @@ function delEntry(i){ entries.value.splice(i, 1) }
         <h2 class="page-title">운행 시뮬레이션</h2>
         <p class="page-sub">파라미터를 조정하고 실행하면 1분 단위로 피로 점수가 어떻게 누적되는지 확인할 수 있습니다.</p>
       </div>
-      <button class="btn btn-primary run-btn" @click="runSim">
-        <AppIcon name="refresh" :size="13" />시뮬레이션 실행
-      </button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select v-model.number="selectedVehicleId" class="sel-inp mono">
+            <option v-if="!vehicles.length" :value="null">차량 없음</option>
+            <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.plateNo }}</option>
+          </select>
+          <select v-model.number="selectedDriverId" class="sel-inp mono">
+            <option v-if="!drivers.length" :value="null">운전자 없음</option>
+            <option v-for="d in drivers" :key="d.id" :value="d.id">{{ d.name }}</option>
+          </select>
+          <button class="btn btn-primary run-btn" @click="runSim">
+            <AppIcon name="refresh" :size="13" />시뮬레이션 실행
+          </button>
+          <button v-if="!isRunning" class="btn btn-ghost run-btn" @click="startSimulation" :disabled="!thresholdLoaded">
+            서버 시작
+          </button>
+          <button v-else class="btn btn-danger run-btn" @click="stopSimulation">
+            서버 중지
+          </button>
+        </div>
+        <div v-if="isRunning" class="mono" style="font-size:11px;color:var(--ok)">
+          ● 운행 중 · DriveLog #{{ driveLogId }}
+        </div>
+        <div v-if="apiError" style="font-size:11px;color:var(--danger)">{{ apiError }}</div>
+      </div>
     </div>
 
     <div class="main-grid">
@@ -256,8 +389,8 @@ function delEntry(i){ entries.value.splice(i, 1) }
               </div>
             </div>
             <div class="rest-type-hint mono"
-              :style="{ color: r.durMin >= T.REST_SUFFICIENT_MINUTES ? 'var(--ok)' : r.durMin >= T.REST_VALID_MINUTES ? '#5B8FA8' : 'var(--warn)' }">
-              {{ r.durMin >= T.REST_SUFFICIENT_MINUTES ? 'SUFFICIENT (-20pt)' : r.durMin >= T.REST_VALID_MINUTES ? 'VALID (-10pt)' : 'INVALID (보정없음)' }}
+              :style="{ color: r.durMin >= (T.REST_SUFFICIENT_MINUTES ?? 30) ? 'var(--ok)' : r.durMin >= (T.REST_VALID_MINUTES ?? 15) ? '#5B8FA8' : 'var(--warn)' }">
+              {{ r.durMin >= (T.REST_SUFFICIENT_MINUTES ?? 30) ? 'SUFFICIENT (-20pt)' : r.durMin >= (T.REST_VALID_MINUTES ?? 15) ? 'VALID (-10pt)' : 'INVALID (보정없음)' }}
             </div>
           </div>
         </div>
@@ -449,7 +582,16 @@ function delEntry(i){ entries.value.splice(i, 1) }
   width:100%; box-sizing:border-box;
 }
 .num-inp:focus { border-color:var(--accent-line); }
-.sel-inp { cursor:pointer; }
+.sel-inp {
+  padding:6px 10px; border:1px solid var(--line-2); border-radius:var(--r-md);
+  background:var(--bg-2); color:var(--text-1); font-size:12px; cursor:pointer;
+  font-family:var(--font-mono); outline:none;
+}
+.btn-danger {
+  background:var(--danger); color:#fff; border:none; border-radius:var(--r-md);
+  cursor:pointer; font-weight:600; transition:opacity .15s;
+}
+.btn-danger:hover { opacity:0.85; }
 .loc-inp  { width:100%; }
 .empty-hint { font-size:11.5px; color:var(--text-4); padding:8px 0; }
 
