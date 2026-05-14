@@ -301,8 +301,7 @@ function fbColor(val, thr) {
 </script>
 
 <template>
-  <div class="fade-up" style="padding:32px 0 0;">
-    <div class="container">
+  <div class="fade-up view">
 
       <!-- ── 페이지 헤더 ── -->
       <div class="pg-header">
@@ -870,18 +869,18 @@ function fbColor(val, thr) {
         </svg>
       </div>
 
-    </div>
   </div>
 </template>
 
 <style scoped>
 .fade-up { animation: fadeUp 0.4s ease both; }
+.view { padding:32px 32px 40px; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-.container { max-width:1320px; margin:0 auto; padding:0 32px 40px; }
+.container { padding:0; }
 
 /* Page header */
-.pg-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:28px; gap:24px; }
+.pg-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px; gap:24px; }
 .pg-title  { font-size:30px; font-weight:800; margin:0; letter-spacing:-0.022em; color:var(--text-1); }
 .pg-sub    { font-size:14px; color:var(--text-3); margin:8px 0 0; }
 
