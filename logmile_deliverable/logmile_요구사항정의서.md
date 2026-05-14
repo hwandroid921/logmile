@@ -3,11 +3,16 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 버전: v4.0
+- 버전: v5.0
 - 기준 산출물: `logmile_요구사항정의서_v4.docx`, `AGENTS.md`
-- 작성 기준일: 2026.04.28
+- 작성 기준일: 2026.05.12
 - 플랫폼: 웹 브라우저 기반 SPA
 - 주요 사용자: 관제 관리자, 시스템 관리자
+
+| 버전 | 작성일 | 변경 내용 |
+|---|---|---|
+| v4.0 | 2026.04.28 | 초기 정의 |
+| v5.0 | 2026.05.12 | §2 ROLE_SUPER_ADMIN 추가; §4.6 FR-AUTH02~04(회원가입/승인 흐름) 추가; §6 company·plate_event 테이블 추가, admin/vehicle/driver company_id·status 반영 |
 
 ## 1. 프로젝트 개요
 
@@ -19,8 +24,12 @@
 
 | 사용자 | 권한 | 주요 기능 |
 |---|---|---|
-| 관제 관리자 | ROLE_ADMIN | 대시보드 조회, 차량/운전자 관리, 운행 이력 조회, 피로도 임계값 관리 |
-| 시스템 관리자 | ROLE_ADMIN | 관리자 인증, 시스템 설정, API 문서 확인 |
+| 최상위 관리자 | ROLE_SUPER_ADMIN | 전체 업체·관리자 관리, 가입 승인, 모든 데이터 접근 (`company_id = NULL`) |
+| 업체 관리자 | ROLE_ADMIN | 소속 업체 차량/운전자 관리, 대시보드 조회, 운행 이력 조회, 피로도 임계값 관리 |
+
+- `ROLE_SUPER_ADMIN`은 회원가입 없이 시드 데이터로 초기 등록되며, 모든 업체 데이터에 접근 가능하다.
+- `ROLE_ADMIN`은 회원가입 후 `PENDING` 상태로 등록되며, `ROLE_SUPER_ADMIN` 승인 시 `ACTIVE`로 전환된다.
+- 계정 상태: `PENDING` (가입 대기) / `ACTIVE` (승인 완료) / `REJECTED` (가입 거부) / `SUSPENDED` (정지) / `INACTIVE` (비활성)
 
 ## 3. 팀원 역할
 
@@ -84,8 +93,11 @@
 |---|---|---|---|
 | FR-OCR01 | 출발 번호판 인식 | YOLO11n + EasyOCR로 번호판을 인식하고 운행 시작에 활용한다. | 환희 |
 | FR-OCR02 | 도착 번호판 인식 | 도착 차량 번호판을 재인식하고 운행 종료에 활용한다. | 환희 |
-| FR-OCR03 | 미인식 예외 처리 | OCR 신뢰도 0.85 미만 시 수동 입력 fallback을 제공한다. | 환희 |
-| FR-AUTH01 | 관리자 로그인 | JWT 기반 ROLE_ADMIN 인증을 제공한다. | 환희 |
+| FR-OCR03 | 미인식 예외 처리 | OCR 신뢰도 0.85 미만 시 `is_manual_required = TRUE`로 설정하고 수동 입력 fallback을 제공한다. | 환희 |
+| FR-AUTH01 | 관리자 로그인 | JWT 기반 인증을 제공한다 (`ROLE_ADMIN` / `ROLE_SUPER_ADMIN`). | 환희 |
+| FR-AUTH02 | 관리자 회원가입 | 업체 관리자가 이메일·비밀번호·업체 정보로 회원가입하며, 상태는 `PENDING`으로 등록된다. | 환희 |
+| FR-AUTH03 | 가입 승인 대기 | `PENDING` 상태의 관리자는 로그인은 가능하나 보호된 기능에 접근할 수 없다. | 환희 |
+| FR-AUTH04 | 최상위 관리자 승인 | `ROLE_SUPER_ADMIN`이 `PENDING` 관리자를 `ACTIVE` 또는 `REJECTED`로 변경한다. | 환희 |
 
 ## 5. 피로도 점수 기준
 
@@ -116,10 +128,12 @@
 
 | 테이블 | 주요 컬럼 |
 |---|---|
-| `admin` | `id`, `email`, `password`, `name`, `phone`, `role` |
-| `driver` | `id`, `name`, `phone`, `license_type`, `vehicle_id` |
-| `vehicle` | `id`, `plate_no`, `type`, `driver_id`, `is_active` |
-| `drive_log` | `id`, `vehicle_id`, `driver_id`, `started_at`, `ended_at`, `scenario_type`, `status`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level` |
+| `company` | `id`, `name`, `address`, `phone`, `is_active`, `created_at` |
+| `admin` | `id`, `company_id`, `email`, `password`, `name`, `phone`, `role`, `status`, `created_at` |
+| `driver` | `id`, `company_id`, `name`, `phone`, `license_type`, `vehicle_id`, `created_at` |
+| `vehicle` | `id`, `company_id`, `plate_no`, `type`, `driver_id`, `is_active`, `created_at` |
+| `drive_log` | `id`, `company_id`, `vehicle_id`, `driver_id`, `started_at`, `ended_at`, `scenario_type`, `status`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level`, `created_at` |
+| `plate_event` | `id`, `vehicle_id`, `plate_no`, `event_type`, `location_type`, `source_type`, `observed_at`, `confidence`, `is_manual_required`, `created_at` |
 | `gps_data` | `id`, `drive_log_id`, `latitude`, `longitude`, `speed_kmh`, `recorded_at` |
 | `rest_event` | `id`, `drive_log_id`, `rest_started_at`, `rest_ended_at`, `rest_minutes`, `rest_type` |
 | `fatigue_event` | `id`, `drive_log_id`, `fatigue_score`, `fatigue_level`, `continuous_driving_minutes`, `daily_total_driving_minutes`, `night_driving_minutes`, `rest_count`, `rest_violation_count`, `reason`, `occurred_at` |
