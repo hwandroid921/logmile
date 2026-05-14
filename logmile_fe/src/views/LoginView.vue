@@ -34,14 +34,20 @@ async function submit() {
   errorMsg.value = ''
   try {
     const res = await authApi.login(email.value, password.value)
-    const { accessToken, name, role: r } = res.data
-    authStore.setAuth(accessToken, name, r)
+    const { accessToken, name, role: r, status: s, companyId: cId } = res.data
+    authStore.setAuth(accessToken, name, r, s, cId)
     router.push({ name: r === 'ROLE_SUPER_ADMIN' ? 'superHome' : 'dashboard' })
   } catch (e) {
     const status = e.response?.status
+    const msg = e.response?.data?.message || ''
     if (status === 401) errorMsg.value = '이메일 또는 패스워드가 올바르지 않습니다.'
-    else if (status === 403) errorMsg.value = '접근이 제한된 계정입니다.'
-    else errorMsg.value = '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    else if (status === 403 && msg.includes('승인 대기')) {
+      router.push({ name: 'pending' })
+    } else if (status === 403) {
+      errorMsg.value = msg || '접근이 제한된 계정입니다.'
+    } else {
+      errorMsg.value = '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }
   } finally {
     loading.value = false
   }
