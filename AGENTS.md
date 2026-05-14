@@ -57,4 +57,4 @@
 - 한글 깨짐 또는 SQL 문법 오류를 판단하기 전에는 `Get-Content -Encoding UTF8` 등으로 재확인하고, 깨진 출력만 근거로 오류를 보고하지 않는다.
 - git 커밋은 사용자가 명시적으로 커밋을 지시한 경우에만 수행하며, 작업 완료 후 자동으로 커밋하지 않는다.
 - git 커밋 메시지는 기존 커밋 이력(`git log`)의 형식과 스타일을 기반으로 작성한다.
-- git 커밋 시 작성자는 항상 `hwan`으로 고정하며, Co-Authored-By 등 Agent(Claude)를 contributor로 추가하지 않는다.
+- Co-Authored-By 등 Agent(Claude)를 contributor로 추가하지 않는다.

@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +33,27 @@ public class CompanyController {
 	@PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
 	public ResponseEntity<List<CompanyResponse>> findAll() {
 		return ResponseEntity.ok(companyService.findAll());
+	}
+
+	@Operation(summary = "업체 상세 조회 (SUPER_ADMIN 전용)", description = "업체 ID로 상세 정보를 조회합니다.")
+	@GetMapping("/{companyId}")
+	@PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<CompanyResponse> findById(@PathVariable Long companyId) {
+		return ResponseEntity.ok(companyService.findById(companyId));
+	}
+
+	@Operation(summary = "업체 비활성화 (SUPER_ADMIN 전용)", description = "업체를 비활성 상태로 변경합니다.")
+	@PatchMapping("/{companyId}/deactivate")
+	@PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<CompanyResponse> deactivate(@PathVariable Long companyId) {
+		return ResponseEntity.ok(companyService.deactivate(companyId));
+	}
+
+	@Operation(summary = "업체 활성화 (SUPER_ADMIN 전용)", description = "업체를 활성 상태로 변경합니다.")
+	@PatchMapping("/{companyId}/activate")
+	@PreAuthorize("hasAuthority('ROLE_SUPER_ADMIN')")
+	public ResponseEntity<CompanyResponse> activate(@PathVariable Long companyId) {
+		return ResponseEntity.ok(companyService.activate(companyId));
 	}
 
 	@Operation(summary = "내 소속 업체 조회", description = "로그인한 관리자의 소속 업체 정보를 조회합니다.")

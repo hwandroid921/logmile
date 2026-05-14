@@ -50,6 +50,10 @@ public class Company {
 		this.active = false;
 	}
 
+	public void activate() {
+		this.active = true;
+	}
+
 	@PrePersist
 	void prePersist() {
 		if (createdAt == null) {

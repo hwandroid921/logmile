@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "DriveHistory", description = "운행 이력 조회 API")
 @RestController
-@RequestMapping("/api/drive-history")
+@RequestMapping({"/api/drive-history", "/api/drive-logs"})
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
 public class DriveHistoryController {

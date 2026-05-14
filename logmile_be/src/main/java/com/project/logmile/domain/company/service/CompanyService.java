@@ -46,4 +46,18 @@ public class CompanyService {
 		return companyRepository.findById(id)
 			.orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 	}
+
+	@Transactional
+	public CompanyResponse deactivate(Long id) {
+		Company company = getEntityById(id);
+		company.deactivate();
+		return CompanyResponse.from(company);
+	}
+
+	@Transactional
+	public CompanyResponse activate(Long id) {
+		Company company = getEntityById(id);
+		company.activate();
+		return CompanyResponse.from(company);
+	}
 }

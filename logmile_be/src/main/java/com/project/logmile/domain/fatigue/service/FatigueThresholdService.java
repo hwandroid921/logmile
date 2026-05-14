@@ -48,4 +48,15 @@ public class FatigueThresholdService {
 		threshold.updateValue(request.thresholdValue(), request.description());
 		return ThresholdResponse.from(threshold);
 	}
+
+	/**
+	 * 임계값 수정 (key 기준)
+	 */
+	@Transactional
+	public ThresholdResponse updateByKey(String key, ThresholdUpdateRequest request) {
+		FatigueThreshold threshold = fatigueThresholdRepository.findByThresholdKey(key)
+			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_INPUT));
+		threshold.updateValue(request.thresholdValue(), request.description());
+		return ThresholdResponse.from(threshold);
+	}
 }

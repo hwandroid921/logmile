@@ -1,273 +1,232 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { days, driveLogs, vehicles } from '@/data/mockData'
+import { computed, onMounted, ref } from 'vue'
+import { fatigueStatsApi } from '@/api/fatigueStatsApi'
 
 const range = ref('14d')
+const stats = ref([])
+const loading = ref(false)
+const error = ref('')
 
-const rangeMap = { '7d': 7, '14d': 14, '30d': 14 } // mock has 14 days max
-const slicedDays = computed(() => {
-  const n = rangeMap[range.value] ?? 14
-  return days.slice(-n)
+const rangeMap = { '7d': 7, '14d': 14, '30d': 30 }
+
+const statDays = computed(() => stats.value.map((row) => {
+  const score = Math.round(Number(row.averageFatigueScore ?? 0))
+
+  return {
+    date: row.date,
+    label: formatDate(row.date),
+    avgScore: score,
+    danger: Number(row.dangerEventCount ?? 0),
+    restMiss: Number(row.restViolationCount ?? 0),
+    driveMinutes: Number(row.totalDrivingMinutes ?? 0),
+    nightMinutes: Number(row.nightDrivingMinutes ?? 0),
+    driveLogCount: Number(row.driveLogCount ?? 0),
+  }
+}))
+
+const avgScore = computed(() => {
+  if (!statDays.value.length) return 0
+
+  const total = statDays.value.reduce((sum, day) => sum + day.avgScore, 0)
+  return Math.round(total / statDays.value.length)
 })
 
-const avgScore    = computed(() => Math.round(slicedDays.value.reduce((s,d) => s + d.avgScore, 0) / slicedDays.value.length))
-const dangerTotal = computed(() => slicedDays.value.reduce((s,d) => s + d.danger, 0))
-const missingTotal= computed(() => slicedDays.value.reduce((s,d) => s + d.restMiss, 0))
-const totalDriveH = computed(() => {
-  const totalMin = slicedDays.value.reduce((s,d) => s + d.driveHours, 0)
-  return Math.round(totalMin / 60)
-})
-const totalNightH = computed(() => {
-  const totalMin = slicedDays.value.reduce((s,d) => s + d.nightHours, 0)
-  return Math.round(totalMin / 60)
-})
+const dangerTotal = computed(() => statDays.value.reduce((sum, day) => sum + day.danger, 0))
+const missingTotal = computed(() => statDays.value.reduce((sum, day) => sum + day.restMiss, 0))
+const totalDriveMin = computed(() => statDays.value.reduce((sum, day) => sum + day.driveMinutes, 0))
+const totalNightMin = computed(() => statDays.value.reduce((sum, day) => sum + day.nightMinutes, 0))
+const totalDriveLogs = computed(() => statDays.value.reduce((sum, day) => sum + day.driveLogCount, 0))
+const totalDriveH = computed(() => Math.round(totalDriveMin.value / 60))
+const totalNightH = computed(() => Math.round(totalNightMin.value / 60))
+const maxScore = computed(() => Math.max(...statDays.value.map((day) => day.avgScore), 1))
+const maxDriveMinutes = computed(() => Math.max(...statDays.value.map((day) => day.driveMinutes), 1))
+const maxEventCount = computed(() => Math.max(
+  ...statDays.value.map((day) => Math.max(day.danger, day.restMiss)),
+  1,
+))
 
-const maxScore = computed(() => Math.max(...slicedDays.value.map(d => d.avgScore), 1))
+function setRange(nextRange) {
+  if (range.value === nextRange) return
 
-// 시나리오 분포
-const scenarioA = computed(() => driveLogs.filter(l => l.scenario === 'A').length)
-const scenarioB = computed(() => driveLogs.filter(l => l.scenario === 'B').length)
-const scenarioC = computed(() => driveLogs.filter(l => l.scenario === 'C').length)
-const scenarioTotal = computed(() => driveLogs.length)
+  range.value = nextRange
+  fetchStats()
+}
 
-// 휴식 분포 (vehicles의 restValid/restSuff/restInvalid/restMiss 합산)
-const restSuff    = computed(() => vehicles.reduce((s,v) => s + v.restSuff,    0))
-const restValid   = computed(() => vehicles.reduce((s,v) => s + v.restValid,   0))
-const restInvalid = computed(() => vehicles.reduce((s,v) => s + v.restInvalid, 0))
-const restMiss    = computed(() => vehicles.reduce((s,v) => s + v.restMiss,    0))
-const restTotal   = computed(() => restSuff.value + restValid.value + restInvalid.value + restMiss.value)
+async function fetchStats() {
+  loading.value = true
+  error.value = ''
 
-function restPct(v) { return restTotal.value ? Math.round(v / restTotal.value * 100) : 0 }
+  try {
+    const days = rangeMap[range.value] ?? 14
+    const { data } = await fatigueStatsApi.getStats({ days })
+    stats.value = Array.isArray(data) ? data : []
+  } catch (err) {
+    stats.value = []
+    error.value = err?.response?.data?.message || '피로도 통계 데이터를 불러오지 못했습니다.'
+  } finally {
+    loading.value = false
+  }
+}
 
-// 시간대별 평균 점수 (mock: 24h)
-const hourlyScores = [
-  0, 0, 12, 28, 38, 42, 35, 30, 25, 22, 28, 34,
-  40, 38, 33, 29, 32, 36, 44, 52, 61, 58, 42, 18,
-]
-const maxHourly = Math.max(...hourlyScores, 1)
+function formatDate(value) {
+  if (!value) return '-'
 
-// 운행 상태 분포
-const statusRunning   = computed(() => driveLogs.filter(l => l.status === 'RUNNING').length)
-const statusCompleted = computed(() => driveLogs.filter(l => l.status === 'COMPLETED').length)
-const statusStopped   = computed(() => driveLogs.filter(l => l.status === 'STOPPED').length)
+  const [, month, day] = String(value).split('-')
+  return month && day ? `${month}/${day}` : value
+}
 
-function scoreColor(s) {
-  if (s >= 70) return 'var(--danger)'
-  if (s >= 40) return 'var(--warn)'
+function scoreColor(score) {
+  if (score >= 70) return 'var(--danger)'
+  if (score >= 40) return 'var(--warn)'
   return 'var(--ok)'
 }
+
+function scoreLevel(score) {
+  if (score >= 70) return 'DANGER 수준'
+  if (score >= 40) return 'CAUTION 수준'
+  return '정상 범위'
+}
+
+function pct(value, max) {
+  return max ? Math.round((value / max) * 100) : 0
+}
+
+onMounted(fetchStats)
 </script>
 
 <template>
   <div class="view">
     <div class="breadcrumb mono">
-      ADMIN / FATIGUE_STATS · RANGE {{ range.toUpperCase() }} · 한라물류센터 · 차량 {{ vehicles.length }}
+      ADMIN / FATIGUE_STATS · API /api/fatigue/stats · RANGE {{ range.toUpperCase() }}
     </div>
 
     <div class="page-header">
       <div>
         <h2 class="page-title">통계 · {{ range }} 리포트</h2>
-        <p class="page-sub">피로도 점수 누적 데이터 기반 운행 통계 — {{ slicedDays.length }}일 집계</p>
+        <p class="page-sub">피로도 점수 누적 데이터 기반 운행 통계 — {{ statDays.length }}일 집계</p>
       </div>
       <div class="range-btns">
-        <button v-for="r in ['7d','14d','30d']" :key="r"
-          class="range-btn mono" :class="{ active: range===r }"
-          @click="range=r">{{ r }}</button>
+        <button
+          v-for="r in ['7d','14d','30d']"
+          :key="r"
+          class="range-btn mono"
+          :class="{ active: range === r }"
+          :disabled="loading"
+          @click="setRange(r)"
+        >
+          {{ r }}
+        </button>
       </div>
     </div>
 
-    <!-- KPI 카드 -->
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <div class="kpi-label mono">AVG SCORE · {{ range }}</div>
-        <div class="kpi-val" :style="{ color: scoreColor(avgScore) }">{{ avgScore }}</div>
-        <div class="kpi-sub">{{ avgScore >= 70 ? 'DANGER 수준' : avgScore >= 40 ? 'CAUTION 수준' : '정상 범위' }}</div>
-        <div class="kpi-bar-wrap">
-          <div class="kpi-bar-fill" :style="{ width: avgScore+'%', background: scoreColor(avgScore) }" />
-        </div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label mono">DANGER 발생 (≥70점)</div>
-        <div class="kpi-val" style="color:var(--danger)">{{ dangerTotal }}</div>
-        <div class="kpi-sub">차량×일 기준 {{ slicedDays.length }}일 누적</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label mono">휴식 누락 이벤트</div>
-        <div class="kpi-val" style="color:var(--warn)">{{ missingTotal }}</div>
-        <div class="kpi-sub">필요 시점 미실시 횟수</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label mono">총 운행 / 야간</div>
-        <div class="kpi-val">{{ totalDriveH }}<span class="kpi-unit">h</span></div>
-        <div class="kpi-sub">야간 {{ totalNightH }}h 포함</div>
-      </div>
+    <div v-if="error" class="notice error-box">
+      {{ error }}
     </div>
 
-    <!-- 일별 평균 점수 -->
-    <div class="card chart-card">
-      <div class="card-hdr">
-        <div class="card-title">일별 평균 피로 점수</div>
-        <span class="mono" style="font-size:11px;color:var(--text-4)">{{ slicedDays.length }}일 · 전 차량 평균</span>
-      </div>
-      <div class="bar-chart">
-        <div v-for="d in slicedDays" :key="d.date" class="bar-col">
-          <div class="bar-wrap">
-            <div class="bar-fill"
-              :style="{ height: (d.avgScore / maxScore * 100)+'%', background: scoreColor(d.avgScore) }"
-              :title="d.avgScore+'점'" />
+    <div v-if="loading" class="card state-card">
+      피로도 통계 데이터를 불러오는 중입니다.
+    </div>
+
+    <div v-else-if="!statDays.length" class="card state-card">
+      표시할 피로도 통계 데이터가 없습니다.
+    </div>
+
+    <template v-else>
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label mono">AVG SCORE · {{ range }}</div>
+          <div class="kpi-val" :style="{ color: scoreColor(avgScore) }">{{ avgScore }}</div>
+          <div class="kpi-sub">{{ scoreLevel(avgScore) }}</div>
+          <div class="kpi-bar-wrap">
+            <div class="kpi-bar-fill" :style="{ width: avgScore + '%', background: scoreColor(avgScore) }" />
           </div>
-          <div class="bar-label mono">{{ d.date }}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label mono">DANGER 발생</div>
+          <div class="kpi-val" style="color:var(--danger)">{{ dangerTotal }}</div>
+          <div class="kpi-sub">일별 위험 이벤트 누적</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label mono">휴식 위반</div>
+          <div class="kpi-val" style="color:var(--warn)">{{ missingTotal }}</div>
+          <div class="kpi-sub">휴식 판단 위반 누적</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label mono">총 운행 / 야간</div>
+          <div class="kpi-val">{{ totalDriveH }}<span class="kpi-unit">h</span></div>
+          <div class="kpi-sub">야간 {{ totalNightH }}h · 운행 {{ totalDriveLogs }}건</div>
         </div>
       </div>
-      <div class="bar-legend">
-        <span class="legend-dot" style="background:var(--ok)" /><span class="legend-txt">NORMAL</span>
-        <span class="legend-dot" style="background:var(--warn)" /><span class="legend-txt">CAUTION</span>
-        <span class="legend-dot" style="background:var(--danger)" /><span class="legend-txt">DANGER</span>
-      </div>
-    </div>
 
-    <div class="two-col">
-      <!-- 시나리오 분포 -->
-      <div class="card dist-card">
+      <div class="card chart-card">
         <div class="card-hdr">
-          <div class="card-title">시나리오 분포</div>
-          <span class="mono" style="font-size:11px;color:var(--text-4)">{{ scenarioTotal }}건</span>
+          <div class="card-title">일별 평균 피로 점수</div>
+          <span class="mono card-meta">{{ statDays.length }}일 · 전체 운행 평균</span>
         </div>
-        <div class="dist-list">
-          <div class="dist-item">
-            <div class="dist-top">
-              <span class="mono dist-lbl" style="color:var(--ok)">SCENARIO A</span>
-              <span class="mono dist-pct">{{ scenarioA }} / {{ scenarioTotal }}</span>
+        <div class="bar-chart">
+          <div v-for="day in statDays" :key="day.date" class="bar-col">
+            <div class="bar-wrap">
+              <div
+                class="bar-fill"
+                :style="{ height: pct(day.avgScore, maxScore) + '%', background: scoreColor(day.avgScore) }"
+                :title="day.avgScore + '점'"
+              />
             </div>
-            <div class="dist-bar-wrap">
-              <div class="dist-bar-fill" :style="{ width: (scenarioA/scenarioTotal*100)+'%', background:'var(--ok)' }" />
-            </div>
-            <div class="dist-note">정상 운행 · 피로 무위험</div>
+            <div class="bar-label mono">{{ day.label }}</div>
           </div>
-          <div class="dist-item">
-            <div class="dist-top">
-              <span class="mono dist-lbl" style="color:var(--warn)">SCENARIO B</span>
-              <span class="mono dist-pct">{{ scenarioB }} / {{ scenarioTotal }}</span>
-            </div>
-            <div class="dist-bar-wrap">
-              <div class="dist-bar-fill" :style="{ width: (scenarioB/scenarioTotal*100)+'%', background:'var(--warn)' }" />
-            </div>
-            <div class="dist-note">주의 수준 · 휴식 권고</div>
-          </div>
-          <div class="dist-item">
-            <div class="dist-top">
-              <span class="mono dist-lbl" style="color:var(--danger)">SCENARIO C</span>
-              <span class="mono dist-pct">{{ scenarioC }} / {{ scenarioTotal }}</span>
-            </div>
-            <div class="dist-bar-wrap">
-              <div class="dist-bar-fill" :style="{ width: (scenarioC/scenarioTotal*100)+'%', background:'var(--danger)' }" />
-            </div>
-            <div class="dist-note">위험 수준 · 전화 권고</div>
-          </div>
+        </div>
+        <div class="bar-legend">
+          <span class="legend-dot" style="background:var(--ok)" /><span class="legend-txt">NORMAL</span>
+          <span class="legend-dot" style="background:var(--warn)" /><span class="legend-txt">CAUTION</span>
+          <span class="legend-dot" style="background:var(--danger)" /><span class="legend-txt">DANGER</span>
         </div>
       </div>
 
-      <!-- 휴식 4단계 분포 -->
-      <div class="card dist-card">
-        <div class="card-hdr">
-          <div class="card-title">휴식 유형 분포</div>
-          <span class="mono" style="font-size:11px;color:var(--text-4)">{{ restTotal }}건</span>
-        </div>
-        <div class="dist-list">
-          <div class="dist-item">
-            <div class="dist-top">
-              <span class="mono dist-lbl" style="color:var(--ok)">SUFFICIENT</span>
-              <span class="mono dist-pct">{{ restSuff }}건 · {{ restPct(restSuff) }}%</span>
-            </div>
-            <div class="dist-bar-wrap">
-              <div class="dist-bar-fill" :style="{ width: restPct(restSuff)+'%', background:'var(--ok)' }" />
-            </div>
-            <div class="dist-note">충분 휴식 (≥30분) · -20점 보정</div>
+      <div class="two-col">
+        <div class="card chart-card">
+          <div class="card-hdr">
+            <div class="card-title">일별 운행 시간</div>
+            <span class="mono card-meta">총 {{ totalDriveH }}h</span>
           </div>
-          <div class="dist-item">
-            <div class="dist-top">
-              <span class="mono dist-lbl" style="color:#5B8FA8">VALID</span>
-              <span class="mono dist-pct">{{ restValid }}건 · {{ restPct(restValid) }}%</span>
+          <div class="dist-list">
+            <div v-for="day in statDays" :key="day.date" class="dist-item">
+              <div class="dist-top">
+                <span class="mono dist-lbl">{{ day.label }}</span>
+                <span class="mono dist-pct">{{ Math.round(day.driveMinutes / 60) }}h · 야간 {{ Math.round(day.nightMinutes / 60) }}h</span>
+              </div>
+              <div class="dist-bar-wrap">
+                <div class="dist-bar-fill" :style="{ width: pct(day.driveMinutes, maxDriveMinutes) + '%', background:'var(--accent)' }" />
+              </div>
             </div>
-            <div class="dist-bar-wrap">
-              <div class="dist-bar-fill" :style="{ width: restPct(restValid)+'%', background:'#5B8FA8' }" />
-            </div>
-            <div class="dist-note">유효 휴식 (15~30분) · -10점 보정</div>
-          </div>
-          <div class="dist-item">
-            <div class="dist-top">
-              <span class="mono dist-lbl" style="color:var(--warn)">INVALID</span>
-              <span class="mono dist-pct">{{ restInvalid }}건 · {{ restPct(restInvalid) }}%</span>
-            </div>
-            <div class="dist-bar-wrap">
-              <div class="dist-bar-fill" :style="{ width: restPct(restInvalid)+'%', background:'var(--warn)' }" />
-            </div>
-            <div class="dist-note">불충분 휴식 (&lt;15분) · 보정 없음</div>
-          </div>
-          <div class="dist-item">
-            <div class="dist-top">
-              <span class="mono dist-lbl" style="color:var(--danger)">MISSING</span>
-              <span class="mono dist-pct">{{ restMiss }}건 · {{ restPct(restMiss) }}%</span>
-            </div>
-            <div class="dist-bar-wrap">
-              <div class="dist-bar-fill" :style="{ width: restPct(restMiss)+'%', background:'var(--danger)' }" />
-            </div>
-            <div class="dist-note">휴식 누락 · +10~+25점 가산</div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- 시간대별 평균 점수 -->
-    <div class="card chart-card">
-      <div class="card-hdr">
-        <div class="card-title">시간대별 평균 피로 점수</div>
-        <span class="mono" style="font-size:11px;color:var(--text-4)">00:00 ~ 23:00 · 전 운행 평균</span>
-      </div>
-      <div class="hour-chart">
-        <div v-for="(sc, h) in hourlyScores" :key="h" class="hour-col">
-          <div class="hour-bar-wrap">
-            <div class="hour-bar-fill"
-              :style="{ height: (sc / maxHourly * 100)+'%', background: scoreColor(sc) }" />
+        <div class="card chart-card">
+          <div class="card-hdr">
+            <div class="card-title">휴식 위반 / 위험 이벤트</div>
+            <span class="mono card-meta">{{ missingTotal + dangerTotal }}건</span>
           </div>
-          <div class="hour-label mono">{{ String(h).padStart(2,'0') }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 운행 상태 분포 -->
-    <div class="card">
-      <div class="card-hdr">
-        <div class="card-title">운행 상태 분포</div>
-        <span class="mono" style="font-size:11px;color:var(--text-4)">최근 {{ driveLogs.length }}건 기준</span>
-      </div>
-      <div class="status-row">
-        <div class="status-card">
-          <div class="status-dot" style="background:var(--accent)" />
-          <div class="mono status-lbl">RUNNING</div>
-          <div class="status-num mono" style="color:var(--accent)">{{ statusRunning }}</div>
-          <div class="status-bar-wrap">
-            <div class="status-bar-fill" :style="{ width: (statusRunning/driveLogs.length*100)+'%', background:'var(--accent)' }" />
+          <div class="event-list">
+            <div v-for="day in statDays" :key="day.date" class="event-row">
+              <div class="event-date mono">{{ day.label }}</div>
+              <div class="event-bars">
+                <div class="event-track">
+                  <div class="event-fill warn" :style="{ width: pct(day.restMiss, maxEventCount) + '%' }" />
+                </div>
+                <div class="event-track">
+                  <div class="event-fill danger" :style="{ width: pct(day.danger, maxEventCount) + '%' }" />
+                </div>
+              </div>
+              <div class="event-count mono">{{ day.restMiss }} / {{ day.danger }}</div>
+            </div>
           </div>
-        </div>
-        <div class="status-card">
-          <div class="status-dot" style="background:var(--ok)" />
-          <div class="mono status-lbl">COMPLETED</div>
-          <div class="status-num mono" style="color:var(--ok)">{{ statusCompleted }}</div>
-          <div class="status-bar-wrap">
-            <div class="status-bar-fill" :style="{ width: (statusCompleted/driveLogs.length*100)+'%', background:'var(--ok)' }" />
-          </div>
-        </div>
-        <div class="status-card">
-          <div class="status-dot" style="background:var(--warn)" />
-          <div class="mono status-lbl">STOPPED</div>
-          <div class="status-num mono" style="color:var(--warn)">{{ statusStopped }}</div>
-          <div class="status-bar-wrap">
-            <div class="status-bar-fill" :style="{ width: (statusStopped/driveLogs.length*100)+'%', background:'var(--warn)' }" />
+          <div class="bar-legend">
+            <span class="legend-dot" style="background:var(--warn)" /><span class="legend-txt">REST VIOLATION</span>
+            <span class="legend-dot" style="background:var(--danger)" /><span class="legend-txt">DANGER EVENT</span>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -284,8 +243,19 @@ function scoreColor(s) {
   background:none; border:1px solid var(--line-2); color:var(--text-3); cursor:pointer; transition:all .12s;
 }
 .range-btn.active { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:700; }
+.range-btn:disabled { opacity:.45; cursor:wait; }
 
-/* KPI */
+.notice {
+  border-radius:var(--r-md); font-size:12px; padding:12px 14px;
+}
+.error-box {
+  border:1px solid rgba(214,69,69,.32); background:rgba(214,69,69,.08); color:var(--danger);
+}
+.state-card {
+  min-height:180px; display:flex; align-items:center; justify-content:center;
+  color:var(--text-3); font-size:13px;
+}
+
 .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 .kpi-card {
   background:var(--bg-2); border:1px solid var(--line-1); border-radius:var(--r-md);
@@ -298,56 +268,52 @@ function scoreColor(s) {
 .kpi-bar-wrap { height:3px; background:var(--bg-3); border-radius:2px; overflow:hidden; margin-top:8px; }
 .kpi-bar-fill { height:100%; border-radius:2px; transition:width .4s; }
 
-/* 차트 카드 */
 .card-hdr   { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
 .card-title { font-size:14px; font-weight:700; color:var(--text-1); }
+.card-meta  { font-size:11px; color:var(--text-4); }
 .chart-card { padding:20px; }
 
-/* 일별 바차트 */
 .bar-chart {
   display:flex; align-items:flex-end; gap:4px; height:120px; padding-bottom:24px;
   border-bottom:1px solid var(--line-1);
 }
-.bar-col   { flex:1; display:flex; flex-direction:column; align-items:center; height:100%; }
+.bar-col   { flex:1; display:flex; flex-direction:column; align-items:center; height:100%; min-width:0; }
 .bar-wrap  { flex:1; width:100%; display:flex; align-items:flex-end; }
 .bar-fill  { width:100%; border-radius:2px 2px 0 0; transition:height .4s; min-height:2px; }
 .bar-label { font-size:9px; color:var(--text-4); margin-top:5px; white-space:nowrap; }
 
-.bar-legend { display:flex; align-items:center; gap:14px; margin-top:10px; }
+.bar-legend { display:flex; align-items:center; gap:14px; margin-top:10px; flex-wrap:wrap; }
 .legend-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
 .legend-txt { font-size:11px; color:var(--text-3); }
 
-/* 2컬럼 */
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.dist-card { padding:20px; }
-.dist-list { display:flex; flex-direction:column; gap:16px; }
+.dist-list { display:flex; flex-direction:column; gap:14px; }
 .dist-item { display:flex; flex-direction:column; gap:6px; }
-.dist-top  { display:flex; align-items:center; justify-content:space-between; }
-.dist-lbl  { font-size:11px; font-weight:700; letter-spacing:0.04em; }
-.dist-pct  { font-size:11px; color:var(--text-3); }
+.dist-top  { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.dist-lbl  { font-size:11px; font-weight:700; letter-spacing:0.04em; color:var(--text-3); }
+.dist-pct  { font-size:11px; color:var(--text-3); white-space:nowrap; }
 .dist-bar-wrap { height:6px; background:var(--bg-3); border-radius:3px; overflow:hidden; }
 .dist-bar-fill { height:100%; border-radius:3px; transition:width .4s; }
-.dist-note { font-size:10.5px; color:var(--text-4); }
 
-/* 시간대 */
-.hour-chart {
-  display:flex; align-items:flex-end; gap:2px; height:100px; padding-bottom:20px;
-  border-bottom:1px solid var(--line-1);
-}
-.hour-col     { flex:1; display:flex; flex-direction:column; align-items:center; height:100%; }
-.hour-bar-wrap { flex:1; width:100%; display:flex; align-items:flex-end; }
-.hour-bar-fill { width:100%; border-radius:1px 1px 0 0; transition:height .4s; min-height:1px; }
-.hour-label    { font-size:8px; color:var(--text-4); margin-top:4px; }
+.event-list { display:flex; flex-direction:column; gap:12px; }
+.event-row { display:grid; grid-template-columns:44px 1fr 54px; align-items:center; gap:10px; }
+.event-date { font-size:11px; color:var(--text-4); }
+.event-bars { display:flex; flex-direction:column; gap:4px; }
+.event-track { height:5px; border-radius:3px; overflow:hidden; background:var(--bg-3); }
+.event-fill { height:100%; border-radius:3px; transition:width .4s; }
+.event-fill.warn { background:var(--warn); }
+.event-fill.danger { background:var(--danger); }
+.event-count { font-size:11px; color:var(--text-3); text-align:right; }
 
-/* 상태 분포 */
-.status-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-.status-card {
-  background:var(--bg-2); border:1px solid var(--line-1); border-radius:var(--r-md);
-  padding:16px; display:flex; flex-direction:column; gap:6px;
+@media (max-width: 1024px) {
+  .kpi-row { grid-template-columns:repeat(2,1fr); }
+  .two-col { grid-template-columns:1fr; }
 }
-.status-dot  { width:8px; height:8px; border-radius:50%; }
-.status-lbl  { font-size:10px; letter-spacing:0.07em; color:var(--text-4); }
-.status-num  { font-size:28px; font-weight:800; letter-spacing:-0.02em; }
-.status-bar-wrap { height:4px; background:var(--bg-3); border-radius:2px; overflow:hidden; }
-.status-bar-fill { height:100%; border-radius:2px; transition:width .4s; }
+
+@media (max-width: 720px) {
+  .view { padding:20px 16px 28px; }
+  .page-header { flex-direction:column; }
+  .kpi-row { grid-template-columns:1fr; }
+  .bar-chart { gap:2px; }
+}
 </style>
