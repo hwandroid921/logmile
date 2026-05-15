@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Logmile — Design Tokens</title>
+<style>
+:root {
+  --slate-900: #515F7A; --slate-700: #747F95; --slate-500: #979EAE;
+  --slate-300: #B8BFC9; --slate-100: #DCDFE4; --slate-50: #E6E9EE;
+  --ink: #1F2630; --ink-2: #3B4453; --ink-3: #5A6371;
+  --bg-0: #DEE2E8; --bg-1: #F1F3F6; --bg-2: #E6E9EE; --bg-3: #D4D9E0;
+  --line-1: #C9CFD8; --line-2: #BCC3CD;
+  --text-1: #1F2630; --text-2: #3B4453; --text-3: #5A6371; --text-4: #8A93A1;
+  --accent: #515F7A; --accent-hover: #1F2630;
+  --accent-soft: rgba(81,95,122,0.10); --accent-line: rgba(81,95,122,0.28);
+  --ok: #5E8A6F; --ok-soft: rgba(94,138,111,0.12);
+  --warn: #C58A3A; --warn-soft: rgba(197,138,58,0.12);
+  --danger: #B5544A; --danger-soft: rgba(181,84,74,0.12);
+  --info: #747F95; --info-soft: rgba(116,127,149,0.14);
+  --font-sans: "Pretendard Variable","Pretendard","Noto Sans KR",-apple-system,sans-serif;
+  --font-mono: "JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
+  --r-sm: 4px; --r-md: 8px; --r-lg: 14px; --r-xl: 20px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-0); color: var(--text-1);
+  font-family: var(--font-sans); font-size: 13px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 6px; }
+
+/* ── HEADER ── */
+.doc-header {
+  background: linear-gradient(135deg, #1A2230 0%, #2C3851 55%, #515F7A 100%);
+  padding: 40px 48px 36px;
+  position: relative; overflow: hidden;
+}
+.doc-header-deco {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.06); pointer-events: none;
+}
+.doc-header-inner { position: relative; z-index: 1; }
+.doc-badge {
+  display: inline-block; font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.65); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px;
+}
+.doc-title { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 6px; }
+.doc-sub { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.45); }
+
+/* ── LAYOUT ── */
+.doc-body { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
+
+/* ── SECTION ── */
+.tok-section { margin-bottom: 56px; }
+.tok-section-title {
+  font-size: 15px; font-weight: 800; color: var(--text-1);
+  letter-spacing: -0.01em; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.tok-section-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-4); margin-bottom: 20px; }
+.tok-section-title::before {
+  content: ''; display: block; width: 3px; height: 16px;
+  background: var(--accent); border-radius: 2px;
+}
+
+/* ── TOKEN TABLE ── */
+.tok-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--bg-1); border: 1px solid var(--line-2);
+  border-radius: var(--r-lg); overflow: hidden;
+}
+.tok-table thead tr {
+  background: var(--bg-3); border-bottom: 1px solid var(--line-1);
+}
+.tok-table th {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-4); font-weight: 600;
+  padding: 10px 16px; text-align: left;
+}
+.tok-table td {
+  padding: 10px 16px; border-bottom: 1px solid var(--line-1);
+  vertical-align: middle; font-size: 12.5px;
+}
+.tok-table tr:last-child td { border-bottom: none; }
+.tok-table tr:hover td { background: rgba(81,95,122,0.04); }
+
+.tok-name {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--accent); font-weight: 600; white-space: nowrap;
+}
+.tok-value {
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3);
+  display: flex; align-items: center; gap: 8px; white-space: nowrap;
+}
+.tok-swatch {
+  width: 20px; height: 20px; border-radius: var(--r-sm);
+  border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+  display: inline-block;
+}
+.tok-usage { font-size: 12px; color: var(--text-3); }
+.tok-category {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-4); padding: 2px 7px;
+  background: var(--bg-3); border-radius: var(--r-sm); border: 1px solid var(--line-1);
+  white-space: nowrap;
+}
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--line-1); margin: 32px 0; }
+
+/* ── USAGE NOTE ── */
+.usage-note {
+  background: var(--accent-soft); border: 1px solid var(--accent-line);
+  border-radius: var(--r-md); padding: 12px 16px; margin-bottom: 20px;
+  font-size: 12px; color: var(--text-2); display: flex; gap: 10px;
+}
+.usage-note-icon { font-size: 14px; flex-shrink: 0; }
+
+/* ── COPY BUTTON ── */
+.copy-btn {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.06em;
+  color: var(--text-4); background: var(--bg-3); border: 1px solid var(--line-2);
+  border-radius: var(--r-sm); padding: 2px 8px; cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.copy-btn:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+
+/* ── COMPOUND TOKENS ── */
+.compound-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.compound-item {
+  background: var(--bg-1); border: 1px solid var(--line-2);
+  border-radius: var(--r-md); padding: 16px;
+}
+.compound-item-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+.compound-item-desc { font-size: 11.5px; color: var(--text-3); line-height: 1.6; }
+.compound-item-tokens { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+.compound-item-token { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-4); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="doc-header-deco" style="width:500px;height:500px;bottom:-200px;right:-100px;"></div>
+  <div class="doc-header-deco" style="width:250px;height:250px;top:-80px;left:55%;"></div>
+  <div class="doc-header-inner">
+    <div class="doc-badge">DESIGN TOKENS REFERENCE</div>
+    <div class="doc-title">Logmile Design Tokens</div>
+    <div class="doc-sub">tokens.css · main.css · 변수명 · 값 · 용도 전체 정리 · v1.0.0</div>
+  </div>
+</div>
+
+<div class="doc-body">
+
+  <!-- ── 1. BRAND PALETTE ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Brand Slate Palette</div>
+    <div class="tok-section-sub">--slate-* · --ink-* · 브랜드 기반 5톤 슬레이트 팔레트</div>
+    <table class="tok-table">
+      <thead>
+        <tr>
+          <th>Token</th><th>Value</th><th>Category</th><th>용도</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tok-name">--ink</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#1F2630;"></span>#1F2630</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">최어두운 텍스트, 브랜드 딥 다크</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--ink-2</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#3B4453;"></span>#3B4453</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">보조 어두운 텍스트</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--ink-3</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#5A6371;"></span>#5A6371</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">3차 텍스트, 약한 강조</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--slate-900</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#515F7A;"></span>#515F7A</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">Primary accent, 버튼 배경, 핵심 색상</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--slate-700</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#747F95;"></span>#747F95</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">Secondary accent, info 색상</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--slate-500</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#979EAE;"></span>#979EAE</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">스크롤바 hover, 중간 회색</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--slate-300</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#B8BFC9;"></span>#B8BFC9</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">스크롤바 기본, line-3, 연한 경계선</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--slate-100</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#DCDFE4;border:1px solid #ccc;"></span>#DCDFE4</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">배경 레이어용 밝은 슬레이트</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--slate-50</span></td>
+          <td><span class="tok-value"><span class="tok-swatch" style="background:#E6E9EE;border:1px solid #ccc;"></span>#E6E9EE</span></td>
+          <td><span class="tok-category">Brand</span></td>
+          <td class="tok-usage">서브 배경, bg-2와 동일</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 2. SURFACES ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Surface Tokens</div>
+    <div class="tok-section-sub">--bg-* · --line-* · 배경 계층 및 경계선</div>
+    <div class="usage-note">
+      <span class="usage-note-icon">💡</span>
+      <span>Surface 계층 구조: bg-0(앱 배경, 가장 어두움) → bg-1(카드/사이드바, 가장 밝음). 숫자가 작을수록 어두운 구조입니다.</span>
+    </div>
+    <table class="tok-table">
+      <thead><tr><th>Token</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">--bg-0</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#DEE2E8;border:1px solid #ccc;"></span>#DEE2E8</span></td><td><span class="tok-category">Surface</span></td><td class="tok-usage">앱 최상위 배경 (html, body), 인풋 배경</td></tr>
+        <tr><td><span class="tok-name">--bg-1</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#F1F3F6;border:1px solid #ccc;"></span>#F1F3F6</span></td><td><span class="tok-category">Surface</span></td><td class="tok-usage">카드(.card), 사이드바, 폼 패널, 가장 밝은 배경</td></tr>
+        <tr><td><span class="tok-name">--bg-2</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#E6E9EE;border:1px solid #ccc;"></span>#E6E9EE</span></td><td><span class="tok-category">Surface</span></td><td class="tok-usage">seed-box, 서브 섹션 배경</td></tr>
+        <tr><td><span class="tok-name">--bg-3</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#D4D9E0;border:1px solid #ccc;"></span>#D4D9E0</span></td><td><span class="tok-category">Surface</span></td><td class="tok-usage">호버 배경, role-tabs 배경, user-chip</td></tr>
+        <tr><td><span class="tok-name">--bg-4</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#C9CFD8;border:1px solid #ccc;"></span>#C9CFD8</span></td><td><span class="tok-category">Surface</span></td><td class="tok-usage">강조 배경, 구분 영역</td></tr>
+        <tr><td><span class="tok-name">--bg-5</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#BCC3CD;border:1px solid #ccc;"></span>#BCC3CD</span></td><td><span class="tok-category">Surface</span></td><td class="tok-usage">딥 배경, 강한 구분</td></tr>
+        <tr><td><span class="tok-name">--line-1</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#C9CFD8;border:1px solid #ccc;"></span>#C9CFD8</span></td><td><span class="tok-category">Border</span></td><td class="tok-usage">주요 경계선, 사이드바·탑바 구분선</td></tr>
+        <tr><td><span class="tok-name">--line-2</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#BCC3CD;border:1px solid #ccc;"></span>#BCC3CD</span></td><td><span class="tok-category">Border</span></td><td class="tok-usage">카드 테두리, 인풋 테두리</td></tr>
+        <tr><td><span class="tok-name">--line-3</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#B8BFC9;border:1px solid #ccc;"></span>var(--slate-300)</span></td><td><span class="tok-category">Border</span></td><td class="tok-usage">버튼 hover 테두리</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 3. TEXT ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Text Tokens</div>
+    <div class="tok-section-sub">--text-* · 텍스트 계층 색상</div>
+    <table class="tok-table">
+      <thead><tr><th>Token</th><th>Value (참조)</th><th>Hex</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">--text-1</span></td><td><span class="tok-value">var(--ink)</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#1F2630;"></span>#1F2630</span></td><td class="tok-usage">기본 텍스트, 제목, 최고 강조</td></tr>
+        <tr><td><span class="tok-name">--text-2</span></td><td><span class="tok-value">var(--ink-2)</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#3B4453;"></span>#3B4453</span></td><td class="tok-usage">보조 텍스트, 카드 내용, user-name</td></tr>
+        <tr><td><span class="tok-name">--text-3</span></td><td><span class="tok-value">var(--ink-3)</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#5A6371;"></span>#5A6371</span></td><td class="tok-usage">3차 텍스트, nav-item 기본, ghost 버튼</td></tr>
+        <tr><td><span class="tok-name">--text-4</span></td><td><span class="tok-value">—</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#8A93A1;"></span>#8A93A1</span></td><td class="tok-usage">플레이스홀더, 캡션, nav-section 라벨, footer</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 4. ACCENT ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Accent Tokens</div>
+    <div class="tok-section-sub">--accent-* · 브랜드 강조색 파생 토큰</div>
+    <table class="tok-table">
+      <thead><tr><th>Token</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">--accent</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#515F7A;"></span>var(--slate-900) · #515F7A</span></td><td><span class="tok-category">Accent</span></td><td class="tok-usage">Primary 버튼 배경, active nav, 링크, 브랜드 색</td></tr>
+        <tr><td><span class="tok-name">--accent-hover</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#1F2630;"></span>var(--ink) · #1F2630</span></td><td><span class="tok-category">Accent</span></td><td class="tok-usage">버튼 hover 상태, 더 어두운 accent</td></tr>
+        <tr><td><span class="tok-name">--accent-soft</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:rgba(81,95,122,0.1);border:1px solid #ccc;"></span>rgba(81,95,122,0.10)</span></td><td><span class="tok-category">Accent</span></td><td class="tok-usage">active nav 배경, chip-brand/info 배경, btn-login 배경</td></tr>
+        <tr><td><span class="tok-name">--accent-line</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:rgba(81,95,122,0.28);border:1px solid #ccc;"></span>rgba(81,95,122,0.28)</span></td><td><span class="tok-category">Accent</span></td><td class="tok-usage">active nav 테두리, focus 링, chip 테두리</td></tr>
+        <tr><td><span class="tok-name">--accent-ink</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#FFFFFF;border:1px solid #ccc;"></span>#FFFFFF</span></td><td><span class="tok-category">Accent</span></td><td class="tok-usage">accent 배경 위 텍스트 (Primary 버튼 글자색)</td></tr>
+        <tr><td><span class="tok-name">--accent-2</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#747F95;"></span>var(--slate-700) · #747F95</span></td><td><span class="tok-category">Accent</span></td><td class="tok-usage">보조 강조, secondary action</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 5. STATUS ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Status Tokens</div>
+    <div class="tok-section-sub">--ok / --warn / --danger / --info · 피로도 상태 색상 시스템</div>
+    <div class="usage-note">
+      <span class="usage-note-icon">⚠️</span>
+      <span>각 상태 색상은 <strong>solid(강조)</strong>와 <strong>soft(배경)</strong> 쌍으로 구성됩니다. 텍스트·도트는 solid, 배경은 soft, 테두리는 solid에 0.25 alpha를 적용하세요.</span>
+    </div>
+    <table class="tok-table">
+      <thead><tr><th>Token</th><th>Value</th><th>Hex</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">--ok</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#5E8A6F;"></span>#5E8A6F</span></td><td><span class="tok-value">solid</span></td><td class="tok-usage">NORMAL 상태 텍스트, dot, chip-ok 글자색</td></tr>
+        <tr><td><span class="tok-name">--ok-soft</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:rgba(94,138,111,0.12);border:1px solid #ccc;"></span>rgba(94,138,111,0.12)</span></td><td><span class="tok-value">soft</span></td><td class="tok-usage">chip-ok 배경, dot ring, alert 배경, pulse-ring</td></tr>
+        <tr><td><span class="tok-name">--warn</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#C58A3A;"></span>#C58A3A</span></td><td><span class="tok-value">solid</span></td><td class="tok-usage">CAUTION 상태 텍스트, dot, chip-warn 글자색</td></tr>
+        <tr><td><span class="tok-name">--warn-soft</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:rgba(197,138,58,0.12);border:1px solid #ccc;"></span>rgba(197,138,58,0.12)</span></td><td><span class="tok-value">soft</span></td><td class="tok-usage">chip-warn 배경, dot ring, alert 배경</td></tr>
+        <tr><td><span class="tok-name">--danger</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#B5544A;"></span>#B5544A</span></td><td><span class="tok-value">solid</span></td><td class="tok-usage">DANGER 상태 텍스트, err-msg, chip-danger, logout hover</td></tr>
+        <tr><td><span class="tok-name">--danger-soft</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:rgba(181,84,74,0.12);border:1px solid #ccc;"></span>rgba(181,84,74,0.12)</span></td><td><span class="tok-value">soft</span></td><td class="tok-usage">err-msg 배경, chip-danger 배경, alert 배경</td></tr>
+        <tr><td><span class="tok-name">--info</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#747F95;"></span>var(--slate-700)</span></td><td><span class="tok-value">solid</span></td><td class="tok-usage">info 상태 텍스트, chip-info 글자색</td></tr>
+        <tr><td><span class="tok-name">--info-soft</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:rgba(116,127,149,0.14);border:1px solid #ccc;"></span>rgba(116,127,149,0.14)</span></td><td><span class="tok-value">soft</span></td><td class="tok-usage">chip-info 배경, info alert 배경</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 6. TYPOGRAPHY ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Typography Tokens</div>
+    <div class="tok-section-sub">--font-* · 폰트 패밀리 및 타입 스케일</div>
+    <table class="tok-table">
+      <thead><tr><th>Token / Role</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">--font-sans</span></td><td><span class="tok-value" style="white-space:normal;">"Pretendard Variable", "Pretendard", "Noto Sans KR", -apple-system, …</span></td><td><span class="tok-category">Font</span></td><td class="tok-usage">기본 폰트 · UI 전체 (body, button, nav)</td></tr>
+        <tr><td><span class="tok-name">--font-mono</span></td><td><span class="tok-value">"JetBrains Mono", "SF Mono", ui-monospace, …</span></td><td><span class="tok-category">Font</span></td><td class="tok-usage">숫자/코드/라벨 · KPI값, chip, label-sm, 인풋, nav-section</td></tr>
+        <tr><td><span class="tok-name">brand-title</span></td><td><span class="tok-value">32px · weight 800 · ls -0.02em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">로그인 브랜드 패널 제목</td></tr>
+        <tr><td><span class="tok-name">section-title</span></td><td><span class="tok-value">22px · weight 800 · ls -0.02em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">페이지 섹션 제목</td></tr>
+        <tr><td><span class="tok-name">form-title</span></td><td><span class="tok-value">22px · weight 700 · ls -0.01em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">폼 제목 (로그인)</td></tr>
+        <tr><td><span class="tok-name">body-default</span></td><td><span class="tok-value">14px · weight 400 · lh 1.55</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">html, body 기본 텍스트</td></tr>
+        <tr><td><span class="tok-name">nav-item</span></td><td><span class="tok-value">13px · weight 500</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">사이드바 메뉴, 탑바 nav</td></tr>
+        <tr><td><span class="tok-name">nav-item-topbar</span></td><td><span class="tok-value">13.5px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">탑바 nav 아이템</td></tr>
+        <tr><td><span class="tok-name">button-default</span></td><td><span class="tok-value">13px · weight 500</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">.btn 기본 크기</td></tr>
+        <tr><td><span class="tok-name">button-lg</span></td><td><span class="tok-value">14px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">submit 버튼, 로그인 버튼</td></tr>
+        <tr><td><span class="tok-name">chip-text (mono)</span></td><td><span class="tok-value">11px · weight 600 · ls 0.02em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">.chip 내부 텍스트</td></tr>
+        <tr><td><span class="tok-name">kpi-value (mono)</span></td><td><span class="tok-value">28px · weight 800 · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">대시보드 KPI 숫자</td></tr>
+        <tr><td><span class="tok-name">.label-sm (mono)</span></td><td><span class="tok-value">10.5px · weight 600 · uppercase · ls 0.14em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">섹션 레이블, 카테고리 태그</td></tr>
+        <tr><td><span class="tok-name">nav-section (mono)</span></td><td><span class="tok-value">9–9.5px · uppercase · ls 0.14em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">사이드바 섹션 (MONITOR, MANAGE, CONFIG)</td></tr>
+        <tr><td><span class="tok-name">field-label</span></td><td><span class="tok-value">10.5px · weight 600 · uppercase · ls 0.08em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">폼 필드 레이블</td></tr>
+        <tr><td><span class="tok-name">caption</span></td><td><span class="tok-value">12px · weight 400</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">서브 텍스트, 폼 설명</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 7. RADIUS ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Border Radius Tokens</div>
+    <div class="tok-section-sub">--r-* · 모서리 반경 시스템</div>
+    <table class="tok-table">
+      <thead><tr><th>Token</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">--r-sm</span></td><td><span class="tok-value">4px</span></td><td><span class="tok-category">Radius</span></td><td class="tok-usage">topbar-env 배지, role-tab 내부, btn 기본(btn-sm)</td></tr>
+        <tr><td><span class="tok-name">--r-md</span></td><td><span class="tok-value">8px</span></td><td><span class="tok-category">Radius</span></td><td class="tok-usage">버튼(btn-primary/ghost), 카드(.card), nav-item, 인풋, role-tabs</td></tr>
+        <tr><td><span class="tok-name">--r-lg</span></td><td><span class="tok-value">14px</span></td><td><span class="tok-category">Radius</span></td><td class="tok-usage">큰 카드, KPI 카드, preview-box, brand-demo</td></tr>
+        <tr><td><span class="tok-name">--r-xl</span></td><td><span class="tok-value">20px</span></td><td><span class="tok-category">Radius</span></td><td class="tok-usage">모달, 브랜드 패널, hero 영역</td></tr>
+        <tr><td><span class="tok-name">pill (999px)</span></td><td><span class="tok-value">border-radius: 999px</span></td><td><span class="tok-category">Radius</span></td><td class="tok-usage">.chip, .user-chip, .hero-badge, status dot ring</td></tr>
+        <tr><td><span class="tok-name">circle (50%)</span></td><td><span class="tok-value">border-radius: 50%</span></td><td><span class="tok-category">Radius</span></td><td class="tok-usage">.dot, .user-avatar, brand-deco 원형 요소</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 8. SHADOW ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Shadow Tokens</div>
+    <div class="tok-section-sub">--shadow-* · 깊이 표현 그림자</div>
+    <table class="tok-table">
+      <thead><tr><th>Token</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="tok-name">--shadow-1</span></td>
+          <td><span class="tok-value" style="white-space:normal;font-size:10.5px;">0 1px 0 rgba(255,255,255,0.6) inset,<br/>0 1px 2px rgba(31,38,48,0.06)</span></td>
+          <td><span class="tok-category">Shadow</span></td>
+          <td class="tok-usage">기본 카드 (.card), subtle 깊이감</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--shadow-2</span></td>
+          <td><span class="tok-value" style="white-space:normal;font-size:10.5px;">0 1px 0 rgba(255,255,255,0.7) inset,<br/>0 8px 30px rgba(81,95,122,0.10)</span></td>
+          <td><span class="tok-category">Shadow</span></td>
+          <td class="tok-usage">떠있는 카드 (.card-elev), 강조 카드</td>
+        </tr>
+        <tr>
+          <td><span class="tok-name">--shadow-3</span></td>
+          <td><span class="tok-value" style="white-space:normal;font-size:10.5px;">0 24px 60px rgba(81,95,122,0.18)</span></td>
+          <td><span class="tok-category">Shadow</span></td>
+          <td class="tok-usage">모달, 플로팅 패널, 최상단 레이어</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 9. LAYOUT ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Layout Tokens</div>
+    <div class="tok-section-sub">--topbar-height · 레이아웃 상수 · AppLayout = AppTopbar + main (사이드바 없음)</div>
+    <table class="tok-table">
+      <thead><tr><th>Token</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">--topbar-height</span></td><td><span class="tok-value">64px</span></td><td><span class="tok-category">Layout</span></td><td class="tok-usage">AppTopbar 고정 높이 (sticky top) · 실제 레이아웃에서 유일한 네비게이션</td></tr>
+        <tr><td><span class="tok-name">--sidebar-width</span></td><td><span class="tok-value">220px <span style="color:var(--text-4);font-size:10px;">(미사용)</span></span></td><td><span class="tok-category">Layout</span></td><td class="tok-usage">tokens.css에 정의돼 있으나 AppLayout에서 사용 안 함 (AppSidebar.vue 미사용)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 10. ANIMATION ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Animation Tokens</div>
+    <div class="tok-section-sub">@keyframes · 사용 패턴</div>
+    <table class="tok-table">
+      <thead><tr><th>Name</th><th>Duration / Easing</th><th>Category</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tok-name">blink-soft</span></td><td><span class="tok-value">2s · infinite · ease</span></td><td><span class="tok-category">Animation</span></td><td class="tok-usage">SYSTEM ONLINE dot, 실시간 상태 표시 (.blink 클래스)</td></tr>
+        <tr><td><span class="tok-name">spin</span></td><td><span class="tok-value">1s · linear · infinite</span></td><td><span class="tok-category">Animation</span></td><td class="tok-usage">로딩 스피너 (to transform: rotate 360deg)</td></tr>
+        <tr><td><span class="tok-name">pulse-ring</span></td><td><span class="tok-value">1.8s · infinite · ease</span></td><td><span class="tok-category">Animation</span></td><td class="tok-usage">상태 강조 ring, ok 색상 (0→8px box-shadow)</td></tr>
+        <tr><td><span class="tok-name">fadeUp</span></td><td><span class="tok-value">0.35s · ease · both</span></td><td><span class="tok-category">Animation</span></td><td class="tok-usage">페이지/카드 진입 (.fade-up 클래스, translateY 8px→0)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 11. COMPOUND PATTERNS ── -->
+  <div class="tok-section">
+    <div class="tok-section-title">Compound Patterns</div>
+    <div class="tok-section-sub">자주 쓰이는 토큰 조합 패턴</div>
+    <div class="compound-grid">
+      <div class="compound-item">
+        <div class="compound-item-title">Active Nav Item</div>
+        <div class="compound-item-desc">사이드바·탑바에서 현재 페이지를 나타내는 패턴</div>
+        <div class="compound-item-tokens">
+          <span class="compound-item-token">bg: --accent-soft</span>
+          <span class="compound-item-token">border: 1px solid --accent-line</span>
+          <span class="compound-item-token">color: --accent</span>
+          <span class="compound-item-token">border-radius: --r-md</span>
+        </div>
+      </div>
+      <div class="compound-item">
+        <div class="compound-item-title">Status Chip (DANGER)</div>
+        <div class="compound-item-desc">피로도 위험 상태를 나타내는 chip 조합</div>
+        <div class="compound-item-tokens">
+          <span class="compound-item-token">bg: --danger-soft</span>
+          <span class="compound-item-token">color: --danger</span>
+          <span class="compound-item-token">border: 1px solid rgba(181,84,74,0.25)</span>
+          <span class="compound-item-token">font: --font-mono · 11px</span>
+        </div>
+      </div>
+      <div class="compound-item">
+        <div class="compound-item-title">Form Input</div>
+        <div class="compound-item-desc">인풋 필드의 기본 + focus 상태</div>
+        <div class="compound-item-tokens">
+          <span class="compound-item-token">bg: --bg-0</span>
+          <span class="compound-item-token">border: 1px solid --line-2</span>
+          <span class="compound-item-token">focus border: --accent-line</span>
+          <span class="compound-item-token">border-radius: --r-md</span>
+        </div>
+      </div>
+      <div class="compound-item">
+        <div class="compound-item-title">Topbar (유일한 네비게이션)</div>
+        <div class="compound-item-desc">AppLayout = AppTopbar + main. 사이드바 없이 탑바만 사용</div>
+        <div class="compound-item-tokens">
+          <span class="compound-item-token">bg: rgba(#F1F3F6, 0.92)</span>
+          <span class="compound-item-token">backdrop-filter: blur(10px)</span>
+          <span class="compound-item-token">border-bottom: 1px solid --line-1</span>
+          <span class="compound-item-token">height: --topbar-height (64px)</span>
+        </div>
+      </div>
+      <div class="compound-item">
+        <div class="compound-item-title">Brand Dark Panel</div>
+        <div class="compound-item-desc">로그인 좌측 다크 패널 그라디언트</div>
+        <div class="compound-item-tokens">
+          <span class="compound-item-token">bg: linear-gradient(135deg, #1A2230 0%, #2C3851 55%, --slate-900 100%)</span>
+          <span class="compound-item-token">deco: rgba(255,255,255,0.06) circles</span>
+        </div>
+      </div>
+      <div class="compound-item">
+        <div class="compound-item-title">Error State</div>
+        <div class="compound-item-desc">폼 오류 상태 인풋 + 메시지 조합</div>
+        <div class="compound-item-tokens">
+          <span class="compound-item-token">input border: --danger</span>
+          <span class="compound-item-token">input bg: --danger-soft</span>
+          <span class="compound-item-token">msg color: --danger</span>
+          <span class="compound-item-token">msg bg: --danger-soft</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
