@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import '@/composables/useTheme' // 앱 시작 시 저장된 테마 즉시 적용
 
 const route = useRoute()
 

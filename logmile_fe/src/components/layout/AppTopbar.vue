@@ -2,8 +2,11 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { useTheme } from '@/composables/useTheme'
 import AppLogo from './AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+
+const { isDark, toggle: toggleTheme } = useTheme()
 
 const route     = useRoute()
 const router    = useRouter()
@@ -85,6 +88,13 @@ function logout() {
 
       <!-- 우측 -->
       <div class="topbar-right">
+        <!-- 다크모드 토글 -->
+        <button class="theme-toggle icon-btn" :title="isDark ? '라이트 모드로 전환' : '다크 모드로 전환'" @click="toggleTheme">
+          <span class="theme-icon">{{ isDark ? '☀︎' : '☽' }}</span>
+        </button>
+
+        <div class="divider" />
+
         <!-- 비로그인: 로그인 버튼만 -->
         <template v-if="!isLoggedIn">
           <router-link :to="{ name: 'login' }" class="btn-login">
@@ -127,7 +137,7 @@ function logout() {
   top: 0;
   z-index: 50;
   height: var(--topbar-height);
-  background: rgba(241, 243, 246, 0.92);
+  background: var(--topbar-bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line-1);
   flex-shrink: 0;
@@ -270,6 +280,10 @@ function logout() {
   transition: background 0.15s;
 }
 .btn-login:hover { background: var(--accent); color: var(--accent-ink); }
+
+/* 다크모드 토글 */
+.theme-toggle { font-size: 15px; width: 32px; height: 32px; }
+.theme-icon { line-height: 1; display: flex; align-items: center; justify-content: center; }
 
 /* 점 & 애니메이션 */
 .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
