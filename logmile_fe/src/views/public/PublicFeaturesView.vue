@@ -1,8 +1,16 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 
-const router = useRouter()
+const showModal   = ref(false)
+const modalTarget = ref(null)
+
+const demoPath = (f) =>
+  f.num === '01' ? '/demo/dashboard' :
+  f.num === '02' ? '/demo/simulation' : '/demo/thresholds'
+
+function openDemo(f) { modalTarget.value = f; showModal.value = true }
+function closeDemo()  { showModal.value = false }
 
 const features = [
   {
@@ -85,14 +93,14 @@ const features = [
               <span v-for="t in f.tags" :key="t" class="chip chip-mute mono">{{ t }}</span>
             </div>
             <div style="margin-top:28px;">
-              <button class="btn-demo" @click="router.push({ name: f.name })">
+              <button class="btn-demo" @click="openDemo(f)">
                 {{ f.title }} 데모 열기 →
               </button>
             </div>
           </div>
 
           <!-- 미리보기 카드 -->
-          <div class="feature-preview card" @click="router.push({ name: f.name })">
+          <div class="feature-preview card" @click="openDemo(f)">
             <!-- 가짜 브라우저바 -->
             <div class="preview-bar">
               <div style="display:flex;gap:5px;">
@@ -133,10 +141,43 @@ const features = [
     </div>
 
   </div>
+
+  <!-- ══ 데모 모달 ══ -->
+  <Teleport to="body">
+    <div v-if="showModal" class="modal-backdrop" @click.self="closeDemo">
+      <div class="demo-modal">
+
+        <!-- 모달 헤더 -->
+        <div class="demo-modal-bar">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;gap:5px;">
+              <span class="dot-btn" style="background:#FF5F57;" @click="closeDemo" />
+              <span class="dot-btn" style="background:#FEBC2E;" />
+              <span class="dot-btn" style="background:#28C840;" />
+            </div>
+            <span class="mono" style="font-size:11px;color:var(--text-4);">
+              logmile / demo / {{ modalTarget?.title }}
+            </span>
+          </div>
+          <button class="close-btn" @click="closeDemo">✕</button>
+        </div>
+
+        <!-- iframe 데모 -->
+        <iframe
+          v-if="modalTarget"
+          :src="demoPath(modalTarget)"
+          class="demo-frame"
+          frameborder="0"
+          allowfullscreen
+        />
+
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
-.page-inner    { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+.page-inner    { max-width: 1280px; margin: 0 auto; padding: 0 28px; }
 .section-pad   { padding: 80px 0; }
 .section-alt   { background: var(--bg-0); }
 .section-border { border-bottom: 1px solid var(--line-1); }
@@ -230,4 +271,38 @@ const features = [
 
 .fade-up { animation: fade-up 0.4s ease both; }
 @keyframes fade-up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── 데모 모달 ── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: fade-up 0.2s ease both;
+}
+.demo-modal {
+  width: 92vw; height: 90vh; max-width: 1400px;
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.demo-modal-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--line-1);
+  flex-shrink: 0;
+}
+.close-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-3); font-size: 15px; padding: 2px 6px;
+  border-radius: var(--r-sm); transition: color .12s, background .12s;
+}
+.close-btn:hover { color: var(--text-1); background: var(--bg-4); }
+.demo-frame {
+  flex: 1; width: 100%; border: none;
+}
 </style>

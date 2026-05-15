@@ -66,7 +66,58 @@
   --shadow-2: 0 1px 0 rgba(255,255,255,0.7) inset, 0 8px 30px rgba(81,95,122,0.10);
   --shadow-3: 0 24px 60px rgba(81,95,122,0.18);
 
+  /* topbar */
+  --topbar-bg: rgba(241, 243, 246, 0.92);
+
   /* layout */
   --sidebar-width: 220px;
   --topbar-height: 64px;
+}
+
+/* ── Dark Mode ────────────────────────────────────────────── */
+[data-theme="dark"] {
+  /* surfaces */
+  --bg-0: #13161C;
+  --bg-1: #1A1E26;
+  --bg-2: #1F2330;
+  --bg-3: #252B38;
+  --bg-4: #2C3342;
+  --bg-5: #32394A;
+
+  /* lines */
+  --line-1: rgba(255, 255, 255, 0.07);
+  --line-2: rgba(255, 255, 255, 0.11);
+  --line-3: rgba(255, 255, 255, 0.16);
+
+  /* text */
+  --text-1: #E2E6EE;
+  --text-2: #B4BCCC;
+  --text-3: #7A8499;
+  --text-4: #4E5769;
+
+  /* primary accent (다크에서 더 밝게) */
+  --accent: #8599BD;
+  --accent-hover: #A0B2D0;
+  --accent-soft: rgba(133, 153, 189, 0.15);
+  --accent-line: rgba(133, 153, 189, 0.28);
+  --accent-ink: #FFFFFF;
+  --accent-2: #7A8EAD;
+
+  /* status — 다크에서 약간 밝게 */
+  --ok:          #6B9E80;
+  --ok-soft:     rgba(107, 158, 128, 0.18);
+  --warn:        #D4963F;
+  --warn-soft:   rgba(212, 150, 63, 0.18);
+  --danger:      #C4635A;
+  --danger-soft: rgba(196, 99, 90, 0.18);
+  --info:        #8599BD;
+  --info-soft:   rgba(133, 153, 189, 0.14);
+
+  /* shadows */
+  --shadow-1: 0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-2: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 30px rgba(0,0,0,0.35);
+  --shadow-3: 0 24px 60px rgba(0,0,0,0.5);
+
+  /* topbar */
+  --topbar-bg: rgba(26, 30, 38, 0.92);
 }

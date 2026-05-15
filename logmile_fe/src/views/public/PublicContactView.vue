@@ -19,8 +19,8 @@ const team = [
 ]
 
 const contactItems = [
-  { icon: 'info',   label: '교육기관', value: '에스트래픽 스마트 모빌리티 DX Academy' },
-  { icon: 'list',   label: '과정',     value: '국비 선도기업 훈련과정 · 1기 3조' },
+  { icon: 'info',   label: '교육기관', value: 'MBC 컴퓨터 아카데미 부평점' },
+  { icon: 'list',   label: '과정',     value: '에스트래픽 스마트 모빌리티 DX Academy 3기 3조' },
   { icon: 'bell',   label: '문의',     value: '게시판을 통해 문의해주세요' },
 ]
 </script>
@@ -36,7 +36,7 @@ const contactItems = [
           만드는 사람들
         </h1>
         <p style="font-size:15px;color:var(--text-2);line-height:1.75;margin:24px 0 0;max-width:640px;">
-          에스트래픽 스마트 모빌리티 DX Academy 국비 훈련과정에서
+          MBC 컴퓨터 아카데미 부평점 · 에스트래픽 스마트 모빌리티 DX Academy 3기 3조에서
           logmile을 함께 만들고 있는 팀을 소개합니다.
         </p>
       </div>
@@ -102,7 +102,7 @@ const contactItems = [
 </template>
 
 <style scoped>
-.page-inner   { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+.page-inner   { max-width: 1280px; margin: 0 auto; padding: 0 28px; }
 .section-pad  { padding: 80px 0; }
 .section-border { border-bottom: 1px solid var(--line-1); }
 .mono         { font-family: var(--font-mono); }

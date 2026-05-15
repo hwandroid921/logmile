@@ -134,6 +134,12 @@ const router = createRouter({
       component: () => import('@/views/FatigueStatsView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/board-manage',
+      name: 'boardManage',
+      component: () => import('@/views/BoardManageView.vue'),
+      meta: { requiresAuth: true, requiresSuper: true },
+    },
   ],
 })
 

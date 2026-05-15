@@ -2,8 +2,11 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { useTheme } from '@/composables/useTheme'
 import AppLogo from './AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+
+const { isDark, toggle: toggleTheme } = useTheme()
 
 const route     = useRoute()
 const router    = useRouter()
@@ -15,10 +18,10 @@ const isLoggedIn   = computed(() => authStore.isLoggedIn)
 
 // 비로그인 공개 메뉴
 const publicNavItems = [
-  { name: 'publicIntro',    label: '소개' },
-  { name: 'publicFeatures', label: '기능' },
-  { name: 'publicBoard',    label: '게시판' },
-  { name: 'publicContact',  label: '팀 소개' },
+  { name: 'publicIntro',    label: 'Project Intro' },
+  { name: 'publicFeatures', label: 'Features' },
+  { name: 'publicBoard',    label: 'Board' },
+  { name: 'publicContact',  label: 'Contact US' },
 ]
 
 // 관리자 메뉴
@@ -37,6 +40,7 @@ const superNavItems = [
   { name: 'superHome',     label: '대시보드' },
   { name: 'superApproval', label: '가입 승인' },
   { name: 'superCompany',  label: '업체 관리' },
+  { name: 'boardManage',   label: '문의 관리' },
 ]
 
 const navItems = computed(() => {
@@ -50,7 +54,7 @@ function isActive(name) {
 
 function logout() {
   authStore.clearAuth()
-  router.push({ name: 'login' })
+  router.push({ name: 'publicHome' })
 }
 </script>
 
@@ -85,8 +89,18 @@ function logout() {
 
       <!-- 우측 -->
       <div class="topbar-right">
-        <!-- 비로그인: 로그인 버튼만 -->
+        <!-- 다크모드 토글 -->
+        <button class="theme-toggle icon-btn" :title="isDark ? '라이트 모드로 전환' : '다크 모드로 전환'" @click="toggleTheme">
+          <span class="theme-icon">{{ isDark ? '☀︎' : '☽' }}</span>
+        </button>
+
+        <div class="divider" />
+
+        <!-- 비로그인: 업체등록 + 로그인 -->
         <template v-if="!isLoggedIn">
+          <router-link :to="{ name: 'signup' }" class="btn-signup">
+            업체 등록
+          </router-link>
           <router-link :to="{ name: 'login' }" class="btn-login">
             <AppIcon name="user" :size="13" />
             관리자 로그인
@@ -127,21 +141,20 @@ function logout() {
   top: 0;
   z-index: 50;
   height: var(--topbar-height);
-  background: rgba(241, 243, 246, 0.92);
+  background: var(--topbar-bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line-1);
   flex-shrink: 0;
 }
 
 .topbar-inner {
-  max-width: 1440px;
+  max-width: 1920px;
   margin: 0 auto;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  gap: 24px;
+  padding: 0 48px;
 }
 
 /* 로고 영역 */
@@ -172,7 +185,7 @@ function logout() {
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 50px;
   flex: 1;
   justify-content: center;
 }
@@ -270,6 +283,25 @@ function logout() {
   transition: background 0.15s;
 }
 .btn-login:hover { background: var(--accent); color: var(--accent-ink); }
+
+.btn-signup {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.btn-signup:hover { background: var(--bg-3); border-color: var(--line-3); color: var(--text-1); }
+
+/* 다크모드 토글 */
+.theme-toggle { font-size: 15px; width: 32px; height: 32px; }
+.theme-icon { line-height: 1; display: flex; align-items: center; justify-content: center; }
 
 /* 점 & 애니메이션 */
 .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
