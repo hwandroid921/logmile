@@ -3,6 +3,7 @@ package com.project.logmile.domain.drivelog.dto;
 import com.project.logmile.common.enums.ScenarioType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Schema(description = "시뮬레이션 시작 요청")
 public record SimulationStartRequest(
@@ -26,5 +27,8 @@ public record SimulationStartRequest(
 	Double ocrConfidence,
 
 	@Schema(description = "수동 입력 여부", example = "false")
-	Boolean manualInput
+	Boolean manualInput,
+
+	@Schema(description = "시연용 직접 입력 시작 시각", nullable = true)
+	LocalDateTime startedAt
 ) {}
