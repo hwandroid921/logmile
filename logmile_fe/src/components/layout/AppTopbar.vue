@@ -18,10 +18,10 @@ const isLoggedIn   = computed(() => authStore.isLoggedIn)
 
 // 비로그인 공개 메뉴
 const publicNavItems = [
-  { name: 'publicIntro',    label: '소개' },
-  { name: 'publicFeatures', label: '기능' },
-  { name: 'publicBoard',    label: '게시판' },
-  { name: 'publicContact',  label: '팀 소개' },
+  { name: 'publicIntro',    label: 'Project Intro' },
+  { name: 'publicFeatures', label: 'Features' },
+  { name: 'publicBoard',    label: 'Board' },
+  { name: 'publicContact',  label: 'Contact US' },
 ]
 
 // 관리자 메뉴
@@ -59,7 +59,7 @@ function logout() {
 
 <template>
   <header class="topbar">
-    <div class="topbar-inner">
+    <div class="topbar-inner" :class="{ 'is-public': !isLoggedIn }">
       <!-- 로고 -->
       <div class="topbar-left">
         <router-link
@@ -74,7 +74,7 @@ function logout() {
       </div>
 
       <!-- 가운데 네비게이션 -->
-      <nav class="topbar-nav">
+      <nav class="topbar-nav" :class="{ 'is-public': !isLoggedIn }">
         <router-link
           v-for="item in navItems"
           :key="item.name"
@@ -152,6 +152,7 @@ function logout() {
   justify-content: space-between;
   padding: 0 24px;
 }
+.topbar-inner.is-public { padding: 0 48px; }
 
 /* 로고 영역 */
 .topbar-left {
@@ -185,6 +186,7 @@ function logout() {
   flex: 1;
   justify-content: center;
 }
+.topbar-nav.is-public { gap: 50px; }
 
 .nav-item {
   padding: 7px 13px;
