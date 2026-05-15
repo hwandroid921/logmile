@@ -83,6 +83,38 @@ public class FatigueScoreService {
 		return saved;
 	}
 
+	@Transactional
+	public FatigueEvent calculateManual(DriveLog driveLog,
+		int continuousMinutes, int dailyMinutes, int nightMinutes,
+		int restCount, int violationCount, String manualReason,
+		LocalDateTime occurredAt) {
+		occurredAt = occurredAt != null ? occurredAt : LocalDateTime.now();
+		Optional<RestEvent> lastRest = restEventRepository
+			.findTopByDriveLogIdAndRestTypeInOrderByRestEndedAtDesc(
+				driveLog.getId(), List.of(RestType.VALID, RestType.SUFFICIENT));
+
+		int score = 0;
+		score += continuousScore(continuousMinutes);
+		score += dailyScore(dailyMinutes);
+		score += nightScore(nightMinutes);
+		score += violationScore(violationCount);
+		score -= correctionScore(lastRest.map(RestEvent::getRestType).orElse(null));
+		score = Math.max(0, score);
+
+		FatigueLevel level = toLevel(score);
+		String reason = manualReason != null && !manualReason.isBlank()
+			? manualReason
+			: buildReason(continuousMinutes, dailyMinutes, nightMinutes,
+				violationCount, lastRest.map(RestEvent::getRestType).orElse(null));
+
+		FatigueEvent event = FatigueEvent.create(driveLog, score, level,
+			continuousMinutes, dailyMinutes, nightMinutes,
+			restCount, violationCount, reason, occurredAt);
+		FatigueEvent saved = fatigueEventRepository.save(event);
+		driveLog.updateMaxFatigue(score, level);
+		return saved;
+	}
+
 	// ── 연속 운행 계산 ─────────────────────────────────────────────
 	private int calcContinuousDriving(Long driveLogId, LocalDateTime startedAt,
 		LocalDateTime now) {

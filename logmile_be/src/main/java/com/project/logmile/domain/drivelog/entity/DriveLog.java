@@ -89,12 +89,12 @@ public class DriveLog {
 
 	public static DriveLog create(Company company, Vehicle vehicle, Driver driver,
 		ScenarioType scenarioType, String recognizedPlateNo,
-		Double ocrConfidence, Boolean manualInput) {
+		Double ocrConfidence, Boolean manualInput, LocalDateTime startedAt) {
 		DriveLog d           = new DriveLog();
 		d.company            = company;
 		d.vehicle            = vehicle;
 		d.driver             = driver;
-		d.startedAt          = java.time.LocalDateTime.now();
+		d.startedAt          = startedAt != null ? startedAt : LocalDateTime.now();
 		d.scenarioType       = scenarioType;
 		d.status             = DriveLogStatus.RUNNING;
 		d.recognizedPlateNo  = recognizedPlateNo;
@@ -106,8 +106,15 @@ public class DriveLog {
 	public void complete(Integer totalDrivingMinutes, Integer nightDrivingMinutes,
 		Integer totalRestCount, Integer maxFatigueScore,
 		com.project.logmile.common.enums.FatigueLevel maxFatigueLevel) {
+		completeAt(LocalDateTime.now(), totalDrivingMinutes, nightDrivingMinutes,
+			totalRestCount, maxFatigueScore, maxFatigueLevel);
+	}
+
+	public void completeAt(LocalDateTime endedAt, Integer totalDrivingMinutes, Integer nightDrivingMinutes,
+		Integer totalRestCount, Integer maxFatigueScore,
+		com.project.logmile.common.enums.FatigueLevel maxFatigueLevel) {
 		this.status               = DriveLogStatus.COMPLETED;
-		this.endedAt              = java.time.LocalDateTime.now();
+		this.endedAt              = endedAt != null ? endedAt : LocalDateTime.now();
 		this.totalDrivingMinutes  = totalDrivingMinutes;
 		this.nightDrivingMinutes  = nightDrivingMinutes;
 		this.totalRestCount       = totalRestCount;
