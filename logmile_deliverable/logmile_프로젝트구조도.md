@@ -1,9 +1,9 @@
 # logmile 프로젝트 전체 구조도
 
 - 프로젝트명: `logmile`
-- 버전: v5.1
-- 작성 기준일: 2026.05.14
-- 변경 내용: 실제 프로젝트 파일 기준 재검증, BE API alias 및 FE API 연동 상태 반영, Company 멀티테넌시 및 PlateEvent 구조 보정
+- 버전: v5.2
+- 작성 기준일: 2026.05.15
+- 변경 내용: 실제 프로젝트 파일 기준 재검증, BE API alias 및 FE API 연동 상태 반영, Company 멀티테넌시 및 PlateEvent 구조 보정, 시연용 A/B/C 직접 입력 시뮬레이션 흐름 반영
 
 ---
 
@@ -264,6 +264,16 @@ logmile_sim/
 | B (주의) | 120~180분 | 15분 유효 1~2회 | 30분 내외 | 주의 (40~69) |
 | C (위험) | 240분 이상 | 누락 2회 이상 | 2시간 이상 | 위험 (70+) |
 
+**시연용 A/B/C 직접 입력 기준:**
+
+| 시나리오 | 페이지 프리셋 | 직접 입력/표시 이벤트 | 저장 기준 |
+|---|---|---|---|
+| A | 정상 운행 | 운행 시작, 중간 CCTV 관측, 30분 이상 휴식, 운행 종료 | 기존 `drive_log`, `plate_event`, `rest_event`, `fatigue_event` |
+| B | 주의 운행 | 야간 일부, 15분 미만 휴식, 휴식 누락 1회, 운행 종료 | 기존 `drive_log`, `plate_event`, `rest_event`, `fatigue_event` |
+| C | 위험 운행 | 장시간 연속 운행, 야간 2시간 이상, 무효 휴식, 휴식 누락 2회 이상 | 기존 `drive_log`, `plate_event`, `rest_event`, `fatigue_event` |
+
+시연용 입력은 실제 구조를 변경하지 않고 자동 감지 결과를 대체하는 값이다. 위치 분류는 기존 `HIGHWAY_GATE`, `REST_AREA`, `CCTV`만 사용하며 항만, 허브, 차고지, 물류센터 등 세부 명칭은 화면 표시 또는 메모성 정보로 관리한다.
+
 **GPS 데이터 전송 형식:**
 ```json
 {
@@ -318,7 +328,7 @@ logmile_fe/
     │   ├── SuperCompanyView.vue      # 회사 목록 관리
     │   │   ── Admin 전용 (/) ──────────────────────────────
     │   ├── DashboardView.vue         # FR-A01~A06
-    │   ├── SimulationView.vue        # FR-B01, B04
+    │   ├── SimulationView.vue        # FR-B01~B07 — A/B/C 프리셋, 이벤트 로그, start/stop
     │   ├── VehicleView.vue           # FR-C01
     │   ├── DriverView.vue            # FR-C02
     │   ├── ThresholdView.vue         # FR-C03
@@ -357,7 +367,7 @@ logmile_fe/
 | FatigueStatsView | API 연동 | `/api/fatigue/stats` |
 | driveHistoryApi / thresholdApi | API 모듈 경로 정합 | BE alias 기준 `/api/drive-logs`, `/api/fatigue/thresholds` 사용 가능 |
 | DashboardView / DriveHistoryView / DriveHistoryDetailView / VehicleView / DriverView / ThresholdView | mock 기반 화면 유지 | 실제 API 모듈은 존재하나 화면 단위 연결은 후속 작업 |
-| SimulationView | mock/API 혼재 | start/stop API 모듈은 정합, 화면 상태와 GPS 시뮬레이터 통합 검증 필요 |
+| SimulationView | mock/API 혼재 | start/stop API 모듈은 정합, A/B/C 프리셋과 시연용 이벤트 직접 입력은 후속 API 반영 필요 |
 
 ---
 
@@ -416,6 +426,8 @@ services:
 | PATCH | `/api/simulation/{driveLogId}/stop` | 시뮬레이션 중지 | JWT (ADMIN) |
 | POST | `/api/gps` | GPS 데이터 수신 + 피로도 재계산 | JWT |
 | POST | `/api/simulation/plate-events` | 번호판 관측 이벤트 저장 | JWT |
+| POST | `/api/simulation/rest-events` | 시연용 휴식 이벤트 직접 등록 (예정) | JWT (ADMIN) |
+| POST | `/api/simulation/fatigue-events` | 시연용 피로도 이벤트 직접 등록 또는 재계산 (예정) | JWT (ADMIN) |
 | GET | `/api/dashboard/summary` | 통계 요약 카드 데이터 | JWT (ADMIN/SUPER_ADMIN) |
 | GET | `/api/dashboard/vehicles` | 차량별 현재 피로도 상태 | JWT (ADMIN/SUPER_ADMIN) |
 | GET | `/api/drive-history`, `/api/drive-logs` | 운행 이력 목록 | JWT (ADMIN/SUPER_ADMIN) |
@@ -452,6 +464,26 @@ FatigueEvent 저장
     ↓
 대시보드 polling (5초) → 최신 FatigueEvent 반환
 ```
+
+**시연용 직접 입력 흐름:**
+
+```text
+SimulationView에서 A/B/C 프리셋 선택
+    ↓
+운행 시작 시간, 차량, 운전자, 번호판 입력
+    ↓
+drive_log 생성 + 번호판 관측 이벤트 기록
+    ↓
+입출차/휴식/운행 시간 이벤트 직접 추가
+    ↓
+기존 rest_event / fatigue_event / plate_event 구조에 반영
+    ↓
+운행 종료 시간 입력
+    ↓
+운행 이력, 대시보드, 통계에서 결과 확인
+```
+
+이 흐름은 실제 자동 감지 기능을 대체하는 운영 기능이 아니라, 외부 GPS 단말기와 CCTV가 없는 시연 환경에서 동일한 데이터 결과를 재현하기 위한 보조 흐름이다.
 
 ---
 

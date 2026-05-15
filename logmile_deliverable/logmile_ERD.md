@@ -3,10 +3,10 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 문서 버전: `v1.6`
+- 문서 버전: `v1.7`
 - 기준 문서: `logmile_DB설계서.md`
 - 참조 원본: `docx/logmile_ERD.docx`
-- 작성 기준일: `2026.05.14`
+- 작성 기준일: `2026.05.15`
 - 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
 - 비고: 이 문서는 ERD 내용을 Markdown 기준으로 정리한 문서이며, 다이어그램 이미지는 보관용 docx를 참조한다.
 
@@ -77,6 +77,19 @@
 | 운행 상태 | `RUNNING / COMPLETED / STOPPED` |
 | 관리자 계층 | `ROLE_SUPER_ADMIN`(최상위, `company_id=NULL`) / `ROLE_ADMIN`(업체 관리자) |
 | 1:1 배정 | `vehicle.driver_id UNIQUE` + `driver.vehicle_id UNIQUE` |
+
+### 3.5 시연용 시뮬레이션 반영 기준
+
+시연용 A/B/C 프리셋과 직접 입력 이벤트는 별도 엔티티를 추가하지 않고 기존 관계를 그대로 사용한다.
+
+| 시연 데이터 | 기존 엔티티 | 비고 |
+|---|---|---|
+| 운행 시작/종료 | `drive_log` | 시작/종료 시각과 요약값을 운행 기록에 반영 |
+| 번호판 인식/입출차 | `plate_event` | 기존 `ENTRY/EXIT`, `HIGHWAY_GATE/REST_AREA/CCTV` enum만 사용 |
+| 휴식 확인 | `rest_event` | 직접 입력된 휴식 시간으로 `VALID/SUFFICIENT/INVALID` 판정 |
+| 피로도 결과 | `fatigue_event` | 연속/일일/야간 운행 시간과 휴식 정보를 근거로 저장 |
+
+항만, 허브, 차고지, 물류센터 등 세부 장소명은 enum 확장 대상이 아니며, 화면 표시 또는 메모성 설명으로 관리한다.
 
 ## 4. 물리 ERD
 

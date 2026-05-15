@@ -3,12 +3,12 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 버전: v5.1
+- 버전: v5.2
 - 기준 산출물: `logmile_infra/db/init.sql` v5.0, `logmile_infra/db/seed.sql` v5.0, 실제 JPA Entity
-- 작성 기준일: 2026.05.14
+- 작성 기준일: 2026.05.15
 - DBMS: PostgreSQL 16
 - 담당: 백경서
-- 변경 기준: `company` 기반 멀티테넌시, `plate_event`, 관리자 상태/권한, 실제 시드 데이터 반영
+- 변경 기준: `company` 기반 멀티테넌시, `plate_event`, 관리자 상태/권한, 실제 시드 데이터, 시연용 시뮬레이션 직접 입력 흐름 반영
 
 ---
 
@@ -23,6 +23,7 @@
 | 시드 규모 | 업체 10개, 관리자 31명, 차량 50대, 운전자 50명, 피로도 임계값 21건 |
 | 권한 | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` |
 | 관리자 상태 | `PENDING`, `ACTIVE`, `INACTIVE`, `REJECTED`, `SUSPENDED` |
+| 시연용 입력 기준 | 별도 테이블/enum 확장 없이 기존 `drive_log`, `gps_data`, `rest_event`, `fatigue_event`, `plate_event` 구조에 반영 |
 
 ## 1. 논리적 설계
 
@@ -210,6 +211,20 @@ erDiagram
 | 운행 상태 | RUNNING (진행 중) / COMPLETED (정상 종료) / STOPPED (중지) |
 | 번호판 이벤트 | `event_type = ENTRY/EXIT`, `location_type = HIGHWAY_GATE/REST_AREA/CCTV`, `source_type = OCR/SIMULATOR/MANUAL/DUMMY` |
 | 업체 데이터 격리 | 업체 관리자는 JWT의 `companyId` 기준으로 차량/운전자/운행 이력을 필터링 |
+
+### 1.5 시연용 시뮬레이션 데이터 반영 원칙
+
+시연용 시뮬레이션은 실제 운영 구조를 변경하지 않고, 실제 환경에서 자동 수집되는 번호판 인식, GPS 수신, CCTV 관측 데이터를 직접 입력으로 재현한다.
+
+| 시연 입력 | 반영 테이블 | 반영 기준 |
+|---|---|---|
+| 운행 시작 시각, 차량, 운전자, 번호판 | `drive_log` | `started_at`, `vehicle_id`, `driver_id`, `recognized_plate_no`, `ocr_confidence`, `is_manual_input` |
+| 운행 종료 시각 | `drive_log` | `ended_at`, `status`, `total_driving_minutes`, `night_driving_minutes`, `total_rest_count`, `max_fatigue_score`, `max_fatigue_level` |
+| 입출차/관측 이벤트 | `plate_event` | `ENTRY/EXIT`, `HIGHWAY_GATE/REST_AREA/CCTV`, `OCR/SIMULATOR/MANUAL/DUMMY` 기존 enum만 사용 |
+| 휴식 확인 | `rest_event` | 입력된 휴식 시작/종료 시각으로 `VALID`, `SUFFICIENT`, `INVALID` 판정 |
+| 피로도 판단 결과 | `fatigue_event` | 입력 또는 프리셋 기반 연속/일일/야간 운행 시간과 휴식 정보를 근거로 저장 |
+
+항만, 허브, 차고지, 물류센터 등 세부 장소명은 별도 enum으로 확장하지 않고 화면 표시 또는 메모성 정보로 관리한다. DB enum은 기존 값을 유지한다.
 
 ---
 
