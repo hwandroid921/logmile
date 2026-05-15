@@ -102,7 +102,7 @@ const contactItems = [
 </template>
 
 <style scoped>
-.page-inner   { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+.page-inner   { max-width: 1440px; margin: 0 auto; padding: 0 28px; }
 .section-pad  { padding: 80px 0; }
 .section-border { border-bottom: 1px solid var(--line-1); }
 .mono         { font-family: var(--font-mono); }
