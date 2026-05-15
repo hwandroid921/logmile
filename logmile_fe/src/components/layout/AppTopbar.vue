@@ -95,8 +95,11 @@ function logout() {
 
         <div class="divider" />
 
-        <!-- 비로그인: 로그인 버튼만 -->
+        <!-- 비로그인: 업체등록 + 로그인 -->
         <template v-if="!isLoggedIn">
+          <router-link :to="{ name: 'signup' }" class="btn-signup">
+            업체 등록
+          </router-link>
           <router-link :to="{ name: 'login' }" class="btn-login">
             <AppIcon name="user" :size="13" />
             관리자 로그인
@@ -281,6 +284,21 @@ function logout() {
   transition: background 0.15s;
 }
 .btn-login:hover { background: var(--accent); color: var(--accent-ink); }
+
+.btn-signup {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.btn-signup:hover { background: var(--bg-3); border-color: var(--line-3); color: var(--text-1); }
 
 /* 다크모드 토글 */
 .theme-toggle { font-size: 15px; width: 32px; height: 32px; }
