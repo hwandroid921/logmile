@@ -3,12 +3,12 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 문서 버전: `v1.6`
+- 문서 버전: `v1.7`
 - 기준 문서: `logmile_DB설계서.md`
 - 참조 원본: `docx/logmile_테이블정의서.docx`
-- 작성 기준일: `2026.05.14`
+- 작성 기준일: `2026.05.15`
 - 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
-- 비고: `logmile_infra/db/init.sql` v5.0 기준으로 실제 테이블명을 보정한 Markdown 원본 문서다.
+- 비고: `logmile_infra/db/init.sql` v5.0 기준으로 실제 테이블명을 보정한 Markdown 원본 문서다. 시연용 시뮬레이션 입력도 별도 테이블/enum 확장 없이 아래 기존 테이블에 반영한다.
 
 ## 1. 목차
 
@@ -22,6 +22,17 @@
 8. `rest_event`
 9. `fatigue_event`
 10. `fatigue_threshold`
+
+## 1.1 시연용 시뮬레이션 입력 반영 기준
+
+| 입력 구분 | 반영 테이블 | 처리 기준 |
+|---|---|---|
+| 운행 시작/종료 직접 지정 | `drive_log` | 기존 컬럼의 `started_at`, `ended_at`, `status`, 운행 요약값 사용 |
+| 번호판 인식/입출차 직접 입력 | `plate_event` | `ENTRY/EXIT`, `HIGHWAY_GATE/REST_AREA/CCTV`, `OCR/SIMULATOR/MANUAL/DUMMY` 기존 enum 사용 |
+| 휴식 위치/시간 직접 입력 | `rest_event` | 휴식 시간에 따라 `VALID`, `SUFFICIENT`, `INVALID` 저장 |
+| 연속/일일/야간 운행 시간 입력 | `fatigue_event` | 점수, 등급, 판단 근거를 기존 컬럼에 저장 |
+
+항만, 허브, 차고지, 물류센터 등 세부 위치명은 enum으로 확장하지 않는다. 시연 화면의 표시값 또는 메모성 설명으로 관리한다.
 
 ## 2. company (운수 업체)
 
