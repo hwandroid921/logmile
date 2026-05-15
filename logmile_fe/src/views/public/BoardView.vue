@@ -1,16 +1,12 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+import { useBoardStore } from '@/stores/boardStore'
 
+const boardStore = useBoardStore()
 const categories = ['일반 문의', '기술 문의', '피드백', '기타']
 
-const posts = ref([
-  { id: 5, name: '김**', category: '기술 문의', subject: '번호판 인식 정확도가 낮습니다',    content: '야간 CCTV 환경에서 OCR 인식률이 떨어지는 것 같습니다. 개선 예정이 있나요?',     date: '2026.05.10', status: '답변 완료' },
-  { id: 4, name: '박**', category: '피드백',    subject: '피로도 점수 기준이 궁금합니다',    content: '0~100점 기준에서 40점이 주의 기준인데 어떻게 산정되었는지 자료가 있을까요?',   date: '2026.05.09', status: '답변 완료' },
-  { id: 3, name: '이**', category: '일반 문의', subject: '소스코드를 공유해주실 수 있나요?', content: '프로젝트 레포지토리 링크가 있으면 공유해 주시면 감사하겠습니다.',               date: '2026.05.07', status: '검토 중' },
-  { id: 2, name: '최**', category: '기술 문의', subject: 'API 응답 포맷 문서가 있나요?',     content: 'Spring Boot REST API의 응답 포맷이나 Swagger 문서 위치를 알고 싶습니다.',     date: '2026.05.05', status: '답변 완료' },
-  { id: 1, name: '정**', category: '피드백',    subject: '대시보드 UI가 깔끔합니다',         content: '디자인이 전체적으로 세련되고 가독성이 좋습니다. 좋은 프로젝트 완성하세요!',    date: '2026.05.01', status: '확인' },
-])
+const posts = computed(() => boardStore.posts)
 
 // 필터
 const filterCat = ref('전체')
@@ -51,11 +47,10 @@ function submit() {
   const err = validate()
   if (err) { errorMsg.value = err; return }
   errorMsg.value = ''
-  posts.value.unshift({
-    id: Date.now(), name: form.name, category: form.category,
+  boardStore.addPost({
+    name: form.name, email: form.email, category: form.category,
     subject: form.subject, content: form.content,
-    date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
-    status: '접수',
+    date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '.').replace(/\.$/, ''),
   })
   Object.assign(form, { name: '', email: '', category: '일반 문의', subject: '', content: '' })
   closeWrite()
@@ -142,6 +137,14 @@ function submit() {
             <button class="icon-close" @click="selected = null"><AppIcon name="x" :size="16" /></button>
           </div>
           <div style="padding:20px;font-size:14px;color:var(--text-2);line-height:1.75;white-space:pre-wrap;">{{ selected.content }}</div>
+          <!-- 관리자 답변 -->
+          <div v-if="selected.reply" class="reply-section">
+            <div class="reply-label">
+              <AppIcon name="arrow" :size="12" /> 관리자 답변
+              <span class="mono" style="margin-left:auto;font-size:10.5px;color:var(--text-4);">{{ selected.replyDate }}</span>
+            </div>
+            <div style="font-size:13.5px;color:var(--text-2);line-height:1.75;white-space:pre-wrap;">{{ selected.reply }}</div>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -269,6 +272,20 @@ function submit() {
 .btn-submit:hover { background: var(--accent-hover); }
 .btn-cancel { display: inline-flex; align-items: center; padding: 9px 16px; background: transparent; border: 1px solid var(--line-2); border-radius: var(--r-md); font-size: 13px; font-weight: 500; color: var(--text-3); cursor: pointer; transition: background 0.15s; }
 .btn-cancel:hover { background: var(--bg-3); }
+
+/* 관리자 답변 */
+.reply-section {
+  margin: 0 20px 20px;
+  padding: 14px 16px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-md);
+}
+.reply-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  margin-bottom: 8px; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+}
 
 .fade-up { animation: fade-up 0.4s ease both; }
 @keyframes fade-up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }

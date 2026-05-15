@@ -40,6 +40,7 @@ const superNavItems = [
   { name: 'superHome',     label: '대시보드' },
   { name: 'superApproval', label: '가입 승인' },
   { name: 'superCompany',  label: '업체 관리' },
+  { name: 'boardManage',   label: '문의 관리' },
 ]
 
 const navItems = computed(() => {
@@ -53,13 +54,13 @@ function isActive(name) {
 
 function logout() {
   authStore.clearAuth()
-  router.push({ name: 'login' })
+  router.push({ name: 'publicHome' })
 }
 </script>
 
 <template>
   <header class="topbar">
-    <div class="topbar-inner" :class="{ 'is-public': !isLoggedIn }">
+    <div class="topbar-inner">
       <!-- 로고 -->
       <div class="topbar-left">
         <router-link
@@ -74,7 +75,7 @@ function logout() {
       </div>
 
       <!-- 가운데 네비게이션 -->
-      <nav class="topbar-nav" :class="{ 'is-public': !isLoggedIn }">
+      <nav class="topbar-nav">
         <router-link
           v-for="item in navItems"
           :key="item.name"
@@ -153,9 +154,8 @@ function logout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 48px;
 }
-.topbar-inner.is-public { padding: 0 48px; }
 
 /* 로고 영역 */
 .topbar-left {
@@ -185,11 +185,10 @@ function logout() {
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 50px;
   flex: 1;
   justify-content: center;
 }
-.topbar-nav.is-public { gap: 50px; }
 
 .nav-item {
   padding: 7px 13px;
