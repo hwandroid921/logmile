@@ -144,14 +144,13 @@ function logout() {
 }
 
 .topbar-inner {
-  max-width: 1440px;
+  max-width: 1920px;
   margin: 0 auto;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  gap: 24px;
 }
 
 /* 로고 영역 */
