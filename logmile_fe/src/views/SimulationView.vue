@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { thresholdApi } from '@/api/thresholdApi'
 import { simulationApi } from '@/api/simulationApi'
+import { ocrApi } from '@/api/ocrApi'
 import { vehicleApi } from '@/api/vehicleApi'
 import { driverApi } from '@/api/driverApi'
 
@@ -65,6 +66,8 @@ const selectedDriverId  = ref(null)
 const driveLogId = ref(null)   // 시뮬레이션 시작 후 반환
 const isRunning  = ref(false)
 const apiError   = ref(null)
+const apiInfo    = ref(null)
+const savingEvents = ref(false)
 
 async function loadVehiclesDrivers() {
   try {
@@ -80,46 +83,12 @@ async function loadVehiclesDrivers() {
 
 onMounted(async () => {
   await Promise.all([loadThresholds(), loadVehiclesDrivers()])
+  applyScenarioPreset('A')
 })
-
-/* ───────── 시뮬레이션 시작/중지 API ───────── */
-const scenarioType = computed(() => {
-  const s = maxScore.value >= 70 ? 'C' : maxScore.value >= 40 ? 'B' : 'A'
-  return s
-})
-
-async function startSimulation() {
-  if (!selectedVehicleId.value || !selectedDriverId.value) {
-    apiError.value = '차량과 운전자를 선택해주세요.'
-    return
-  }
-  apiError.value = null
-  try {
-    const res = await simulationApi.start({
-      vehicleId:   selectedVehicleId.value,
-      driverId:    selectedDriverId.value,
-      scenarioType: scenarioType.value,
-    })
-    driveLogId.value = res.data.driveLogId
-    isRunning.value  = true
-  } catch (e) {
-    apiError.value = '시뮬레이션 시작 중 오류가 발생했습니다.'
-  }
-}
-
-async function stopSimulation() {
-  if (!driveLogId.value) return
-  apiError.value = null
-  try {
-    await simulationApi.stop(driveLogId.value)
-    isRunning.value = false
-    driveLogId.value = null
-  } catch (e) {
-    apiError.value = '시뮬레이션 중지 중 오류가 발생했습니다.'
-  }
-}
 
 /* ───────── 파라미터 ───────── */
+const simulationMode = ref('SCENARIO')
+const selectedScenario = ref('A')
 const startHour   = ref(4)
 const durationMin = ref(360)
 const nightMode   = ref(false)
@@ -130,10 +99,71 @@ const rests = ref([
 ])
 
 const entries = ref([
-  { atMin: 0,   kind: 'DEPARTURE',    plate: '경기 80바 1024', location: '한라물류 차고지', ocrConf: 0.99 },
-  { atMin: 180, kind: 'HIGHWAY_CCTV', plate: '경기 80바 1024', location: '경부고속 안성IC', ocrConf: 0.95 },
-  { atMin: 360, kind: 'ARRIVAL',      plate: '경기 80바 1024', location: '수원 물류센터',   ocrConf: 0.98 },
+  { atMin: 0,   kind: 'DEPARTURE',    plate: '경기 80바 1024', location: '한라물류 차고지', ocrConf: 0.99, detectionConfidence: 0.99, sourceType: 'SIMULATOR', manualRequired: false },
+  { atMin: 180, kind: 'HIGHWAY_CCTV', plate: '경기 80바 1024', location: '경부고속 안성IC', ocrConf: 0.95, detectionConfidence: 0.95, sourceType: 'SIMULATOR', manualRequired: false },
+  { atMin: 360, kind: 'ARRIVAL',      plate: '경기 80바 1024', location: '수원 물류센터',   ocrConf: 0.98, detectionConfidence: 0.98, sourceType: 'SIMULATOR', manualRequired: false },
 ])
+
+const scenarioPresets = {
+  A: {
+    startHour: 9,
+    durationMin: 160,
+    nightMode: false,
+    rests: [{ atMin: 90, durMin: 35 }],
+    entries: [
+      { atMin: 0, kind: 'DEPARTURE', plate: '경기 80바 1026', location: '한라물류 차고지', ocrConf: 0.99 },
+      { atMin: 160, kind: 'ARRIVAL', plate: '경기 80바 1026', location: '수원 물류센터', ocrConf: 0.98 },
+    ],
+  },
+  B: {
+    startHour: 6,
+    durationMin: 390,
+    nightMode: false,
+    rests: [{ atMin: 180, durMin: 20 }],
+    entries: [
+      { atMin: 0, kind: 'DEPARTURE', plate: '경기 80바 1025', location: '인천항 3게이트', ocrConf: 0.96 },
+      { atMin: 150, kind: 'HIGHWAY_CCTV', plate: '경기 80바 1025', location: '서해안고속 서산IC', ocrConf: 0.94 },
+      { atMin: 390, kind: 'ARRIVAL', plate: '경기 80바 1025', location: '대전 허브 터미널', ocrConf: 0.95 },
+    ],
+  },
+  C: {
+    startHour: 3,
+    durationMin: 620,
+    nightMode: true,
+    rests: [{ atMin: 260, durMin: 10 }],
+    entries: [
+      { atMin: 0, kind: 'DEPARTURE', plate: '경기 80바 1024', location: '한라물류 차고지', ocrConf: 0.97 },
+      { atMin: 210, kind: 'HIGHWAY_CCTV', plate: '경기 80바 1024', location: '경부고속 안성IC', ocrConf: 0.93 },
+      { atMin: 330, kind: 'REST_AREA_CCTV', plate: '경기 80바 1024', location: '안성휴게소', ocrConf: 0.9 },
+      { atMin: 620, kind: 'ARRIVAL', plate: '경기 80바 1024', location: '부산항 물류센터', ocrConf: 0.94 },
+    ],
+  },
+}
+
+function normalizeEntry(entry) {
+  return {
+    ...entry,
+    detectionConfidence: entry.detectionConfidence ?? entry.ocrConf ?? 0.95,
+    sourceType: entry.sourceType ?? 'SIMULATOR',
+    manualRequired: entry.manualRequired ?? false,
+    ocrLoading: false,
+    ocrError: null,
+    ocrResult: null,
+    imageFile: null,
+  }
+}
+
+function applyScenarioPreset(scenario = selectedScenario.value) {
+  const preset = scenarioPresets[scenario]
+  if (!preset) return
+  selectedScenario.value = scenario
+  startHour.value = preset.startHour
+  durationMin.value = preset.durationMin
+  nightMode.value = preset.nightMode
+  rests.value = preset.rests.map(r => ({ ...r }))
+  entries.value = preset.entries.map(normalizeEntry)
+  runSim()
+}
 
 /* ───────── 시뮬레이션 엔진 ───────── */
 const NIGHT_H = new Set([22, 23, 0, 1, 2, 3, 4, 5])
@@ -288,9 +318,220 @@ function deltaLabel(d) {
   return d > 0 ? `+${d}pt` : `${d}pt`
 }
 
+const autoScenarioType = computed(() => {
+  if (maxScore.value >= 70) return 'C'
+  if (maxScore.value >= 40) return 'B'
+  return 'A'
+})
+const scenarioType = computed(() => simulationMode.value === 'SCENARIO' ? selectedScenario.value : autoScenarioType.value)
+
+function toLocalDateTime(atMin = 0) {
+  const d = new Date()
+  d.setHours(startHour.value, 0, 0, 0)
+  d.setMinutes(d.getMinutes() + Number(atMin || 0))
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`
+}
+
+function mapPlateEventType(kind) {
+  return kind === 'ARRIVAL' ? 'EXIT' : 'ENTRY'
+}
+
+function mapPlateLocationType(kind) {
+  if (kind === 'HIGHWAY_CCTV') return 'HIGHWAY_GATE'
+  if (kind === 'REST_AREA_CCTV') return 'REST_AREA'
+  return 'CCTV'
+}
+
+function validRestCount() {
+  const validMinutes = T.value.REST_VALID_MINUTES ?? 15
+  return rests.value.filter(r => Number(r.durMin || 0) >= validMinutes).length
+}
+
+function restViolationCount() {
+  return Math.max(0, Math.floor(Number(durationMin.value || 0) / 120) - validRestCount())
+}
+
+function isRestMinute(minute) {
+  return rests.value.some(r => {
+    const start = Number(r.atMin || 0)
+    const end = start + Number(r.durMin || 0)
+    return minute >= start && minute < end
+  })
+}
+
+function drivingMinutes() {
+  let count = 0
+  for (let m = 0; m <= durationMin.value; m++) {
+    if (!isRestMinute(m)) count++
+  }
+  return count
+}
+
+function maxContinuousDrivingMinutes() {
+  let current = 0
+  let max = 0
+  for (let m = 0; m <= durationMin.value; m++) {
+    if (isRestMinute(m)) {
+      current = 0
+    } else {
+      current++
+      max = Math.max(max, current)
+    }
+  }
+  return max
+}
+
+function nightDrivingMinutes() {
+  let count = 0
+  for (let m = 0; m <= durationMin.value; m++) {
+    const hour = Math.floor((startHour.value * 60 + m) / 60) % 24
+    if (!isRestMinute(m) && (nightMode.value || isNight(hour))) count++
+  }
+  return count
+}
+
+function primaryEntry() {
+  return entries.value[0] ?? null
+}
+
+async function startSimulation() {
+  const entry = primaryEntry()
+  if (!selectedVehicleId.value || !selectedDriverId.value) {
+    apiError.value = '차량과 운전자를 선택해주세요.'
+    return
+  }
+  if (!entry?.plate) {
+    apiError.value = '시작 번호판을 입력하거나 OCR로 인식해주세요.'
+    return
+  }
+  apiError.value = null
+  apiInfo.value = null
+  try {
+    const res = await simulationApi.start({
+      vehicleId: selectedVehicleId.value,
+      driverId: selectedDriverId.value,
+      scenarioType: scenarioType.value,
+      recognizedPlateNo: entry.plate,
+      ocrConfidence: entry.ocrConf,
+      manualInput: entry.sourceType === 'MANUAL' || !!entry.manualRequired,
+      startedAt: toLocalDateTime(0),
+    })
+    driveLogId.value = res.data.driveLogId
+    isRunning.value = true
+    apiInfo.value = `DriveLog #${driveLogId.value} 운행 시작`
+  } catch (e) {
+    apiError.value = '시뮬레이션 시작 중 오류가 발생했습니다.'
+  }
+}
+
+async function applySimulationEvents() {
+  if (!driveLogId.value) {
+    apiError.value = '먼저 서버 시뮬레이션을 시작해주세요.'
+    return
+  }
+  savingEvents.value = true
+  apiError.value = null
+  apiInfo.value = null
+  try {
+    for (const entry of entries.value) {
+      await simulationApi.createPlateEvent({
+        plateNo: entry.plate,
+        eventType: mapPlateEventType(entry.kind),
+        locationType: mapPlateLocationType(entry.kind),
+        sourceType: entry.sourceType ?? 'SIMULATOR',
+        observedAt: toLocalDateTime(entry.atMin),
+        confidence: entry.ocrConf,
+        detectionConfidence: entry.detectionConfidence ?? entry.ocrConf,
+        isManualRequired: !!entry.manualRequired,
+        memo: entry.location,
+      })
+    }
+
+    for (const rest of rests.value) {
+      await simulationApi.createRestEvent({
+        driveLogId: driveLogId.value,
+        restStartedAt: toLocalDateTime(rest.atMin),
+        restEndedAt: toLocalDateTime(Number(rest.atMin || 0) + Number(rest.durMin || 0)),
+      })
+    }
+
+    await simulationApi.createFatigueEvent({
+      driveLogId: driveLogId.value,
+      continuousDrivingMinutes: maxContinuousDrivingMinutes(),
+      dailyTotalDrivingMinutes: drivingMinutes(),
+      nightDrivingMinutes: nightDrivingMinutes(),
+      restCount: validRestCount(),
+      restViolationCount: restViolationCount(),
+      occurredAt: toLocalDateTime(durationMin.value),
+      reason: `시연용 ${scenarioType.value} 시나리오 피로도 입력`,
+    })
+
+    apiInfo.value = '번호판/휴식/피로도 이벤트가 서버에 반영되었습니다.'
+  } catch (e) {
+    apiError.value = '시뮬레이션 이벤트 저장 중 오류가 발생했습니다.'
+  } finally {
+    savingEvents.value = false
+  }
+}
+
+async function stopSimulation() {
+  if (!driveLogId.value) return
+  apiError.value = null
+  apiInfo.value = null
+  try {
+    await simulationApi.stop(driveLogId.value, {
+      endedAt: toLocalDateTime(durationMin.value),
+    })
+    isRunning.value = false
+    driveLogId.value = null
+    apiInfo.value = '시뮬레이션 운행이 종료되었습니다.'
+  } catch (e) {
+    apiError.value = '시뮬레이션 중지 중 오류가 발생했습니다.'
+  }
+}
+
+function onPlateImageChange(index, event) {
+  const entry = entries.value[index]
+  if (!entry) return
+  entry.imageFile = event.target.files?.[0] ?? null
+  entry.ocrResult = null
+  entry.ocrError = null
+}
+
+async function recognizePlate(index) {
+  const entry = entries.value[index]
+  if (!entry?.imageFile) {
+    entry.ocrError = '번호판 이미지를 선택해주세요.'
+    return
+  }
+  entry.ocrLoading = true
+  entry.ocrError = null
+  try {
+    const res = await ocrApi.recognize(entry.imageFile)
+    const result = res.data
+    entry.ocrResult = result
+    entry.plate = result.plate_no || entry.plate
+    entry.ocrConf = result.confidence ?? entry.ocrConf
+    entry.detectionConfidence = result.detection_confidence ?? entry.ocrConf
+    entry.manualRequired = !!result.is_manual_required
+    entry.sourceType = result.is_manual_required ? 'MANUAL' : 'OCR'
+    runSim()
+  } catch (e) {
+    entry.ocrError = '번호판 인식 중 오류가 발생했습니다.'
+  } finally {
+    entry.ocrLoading = false
+  }
+}
+
 function addRest()  { rests.value.push({ atMin: 60, durMin: 20 }) }
 function delRest(i) { rests.value.splice(i, 1) }
-function addEntry() { entries.value.push({ atMin: 0, kind: 'HIGHWAY_CCTV', plate: '경기 80바 1024', location: '', ocrConf: 0.95 }) }
+function addEntry() { entries.value.push(normalizeEntry({ atMin: 0, kind: 'HIGHWAY_CCTV', plate: '경기 80바 1024', location: '', ocrConf: 0.95 })) }
 function delEntry(i){ entries.value.splice(i, 1) }
 </script>
 
@@ -303,7 +544,7 @@ function delEntry(i){ entries.value.splice(i, 1) }
     <div class="page-header">
       <div>
         <h2 class="page-title">운행 시뮬레이션</h2>
-        <p class="page-sub">파라미터를 조정하고 실행하면 1분 단위로 피로 점수가 어떻게 누적되는지 확인할 수 있습니다.</p>
+        <p class="page-sub">A/B/C 프리셋 또는 직접 입력으로 번호판, 휴식, 피로도 이벤트를 구성하고 실제 API 흐름에 반영합니다.</p>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
         <div style="display:flex;gap:8px;align-items:center;">
@@ -321,7 +562,10 @@ function delEntry(i){ entries.value.splice(i, 1) }
           <button v-if="!isRunning" class="btn btn-ghost run-btn" @click="startSimulation" :disabled="!thresholdLoaded">
             서버 시작
           </button>
-          <button v-else class="btn btn-danger run-btn" @click="stopSimulation">
+          <button v-if="isRunning" class="btn btn-ghost run-btn" @click="applySimulationEvents" :disabled="savingEvents">
+            {{ savingEvents ? '반영 중' : '이벤트 반영' }}
+          </button>
+          <button v-if="isRunning" class="btn btn-danger run-btn" @click="stopSimulation">
             서버 중지
           </button>
         </div>
@@ -329,6 +573,7 @@ function delEntry(i){ entries.value.splice(i, 1) }
           ● 운행 중 · DriveLog #{{ driveLogId }}
         </div>
         <div v-if="apiError" style="font-size:11px;color:var(--danger)">{{ apiError }}</div>
+        <div v-if="apiInfo" style="font-size:11px;color:var(--ok)">{{ apiInfo }}</div>
       </div>
     </div>
 
@@ -338,6 +583,22 @@ function delEntry(i){ entries.value.splice(i, 1) }
         <!-- 기본 설정 -->
         <div class="card param-card">
           <div class="param-title">기본 파라미터</div>
+
+          <div class="mode-tabs">
+            <button class="mode-btn mono" :class="{ active: simulationMode === 'SCENARIO' }" @click="simulationMode = 'SCENARIO'; applyScenarioPreset(selectedScenario)">
+              A/B/C
+            </button>
+            <button class="mode-btn mono" :class="{ active: simulationMode === 'MANUAL' }" @click="simulationMode = 'MANUAL'">
+              직접 입력
+            </button>
+          </div>
+
+          <div v-if="simulationMode === 'SCENARIO'" class="scenario-grid">
+            <button v-for="s in ['A','B','C']" :key="s" class="scenario-btn mono"
+              :class="{ active: selectedScenario === s }" @click="applyScenarioPreset(s)">
+              {{ s }}
+            </button>
+          </div>
 
           <div class="param-row">
             <label class="param-lbl mono">START_HOUR</label>
@@ -422,6 +683,10 @@ function delEntry(i){ entries.value.splice(i, 1) }
                 </select>
               </div>
               <div class="input-group" style="grid-column:1/-1">
+                <span class="input-lbl mono">PLATE</span>
+                <input v-model="e.plate" type="text" class="num-inp mono loc-inp" placeholder="번호판" />
+              </div>
+              <div class="input-group" style="grid-column:1/-1">
                 <span class="input-lbl mono">LOCATION</span>
                 <input v-model="e.location" type="text" class="num-inp mono loc-inp" placeholder="위치" />
               </div>
@@ -429,6 +694,26 @@ function delEntry(i){ entries.value.splice(i, 1) }
                 <span class="input-lbl mono">OCR_CONF</span>
                 <input v-model.number="e.ocrConf" type="number" min="0" max="1" step="0.01" class="num-inp mono" />
               </div>
+              <div class="input-group">
+                <span class="input-lbl mono">SOURCE</span>
+                <select v-model="e.sourceType" class="num-inp mono sel-inp">
+                  <option>OCR</option>
+                  <option>SIMULATOR</option>
+                  <option>MANUAL</option>
+                  <option>DUMMY</option>
+                </select>
+              </div>
+              <div class="input-group" style="grid-column:1/-1">
+                <span class="input-lbl mono">PLATE IMAGE</span>
+                <input type="file" accept="image/*" class="num-inp mono" @change="onPlateImageChange(i, $event)" />
+              </div>
+              <button class="add-btn mono" type="button" @click="recognizePlate(i)" :disabled="e.ocrLoading">
+                {{ e.ocrLoading ? 'OCR 처리 중' : 'FastAPI OCR' }}
+              </button>
+              <div v-if="e.ocrResult" class="ocr-result mono">
+                {{ e.ocrResult.plate_no || '수동 입력 필요' }} · {{ Math.round((e.ocrResult.confidence || 0) * 100) }}%
+              </div>
+              <div v-if="e.ocrError" class="ocr-error">{{ e.ocrError }}</div>
             </div>
           </div>
         </div>
@@ -537,6 +822,15 @@ function delEntry(i){ entries.value.splice(i, 1) }
 .param-ctrl { display:flex; align-items:center; gap:10px; }
 .slider     { flex:1; accent-color:var(--accent); cursor:pointer; }
 .param-val  { font-size:12px; font-weight:700; color:var(--text-1); min-width:52px; text-align:right; }
+.mode-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.mode-btn, .scenario-btn {
+  padding:7px 8px; border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--bg-1); color:var(--text-3); cursor:pointer; font-size:11px; font-weight:700;
+}
+.mode-btn.active, .scenario-btn.active {
+  color:var(--accent); background:var(--accent-soft); border-color:var(--accent-line);
+}
+.scenario-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
 
 /* 토글 */
 .toggle { display:flex; align-items:center; gap:8px; cursor:pointer; }
@@ -594,6 +888,8 @@ function delEntry(i){ entries.value.splice(i, 1) }
 .btn-danger:hover { opacity:0.85; }
 .loc-inp  { width:100%; }
 .empty-hint { font-size:11.5px; color:var(--text-4); padding:8px 0; }
+.ocr-result { grid-column:1/-1; font-size:10.5px; color:var(--ok); }
+.ocr-error  { grid-column:1/-1; font-size:11px; color:var(--danger); }
 
 /* 결과 */
 .result-col { display:flex; flex-direction:column; gap:12px; }
