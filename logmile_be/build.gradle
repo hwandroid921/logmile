@@ -40,3 +40,20 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// ── 로컬 개발용 .env 자동 로드 ──────────────────────────────
+// IntelliJ Run / ./gradlew bootRun 양쪽 모두 환경변수를 주입한다.
+tasks.named('bootRun') {
+	def envFile = rootProject.file('.env')
+	if (envFile.exists()) {
+		envFile.readLines().each { line ->
+			line = line.trim()
+			if (!line.startsWith('#') && line.contains('=')) {
+				def idx   = line.indexOf('=')
+				def key   = line.substring(0, idx).trim()
+				def value = line.substring(idx + 1).trim()
+				environment key, value
+			}
+		}
+	}
+}
