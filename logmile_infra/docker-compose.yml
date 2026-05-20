@@ -1,6 +1,6 @@
 # ============================================================
 # logmile - Docker Compose 서비스 구성
-# 실행 전 .env.example → .env 복사 후 값 설정 필요
+# 실행 전 루트 또는 logmile_infra/.env.example -> .env 복사 후 값 설정 필요
 # ============================================================
 
 services:
@@ -37,12 +37,12 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/logmile}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:4173,http://localhost:80,http://localhost}
     ports:
       - "${BE_PORT:-8080}:8080"
 
@@ -54,10 +54,11 @@ services:
     container_name: logmile-ai
     restart: unless-stopped
     environment:
-      AI_HOST: 0.0.0.0
+      AI_HOST: ${AI_HOST:-0.0.0.0}
       AI_PORT: ${AI_PORT:-8000}
       OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.85}
       YOLO_MODEL_PATH: ${YOLO_MODEL_PATH:-app/model/yolo11n.pt}
+      DEBUG: ${DEBUG:-false}
     ports:
       - "${AI_PORT:-8000}:8000"
     volumes:
@@ -70,6 +71,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+        VITE_AI_BASE_URL: ${VITE_AI_BASE_URL:-http://localhost:8000}
     container_name: logmile-frontend
     restart: unless-stopped
     depends_on:
@@ -87,7 +89,17 @@ services:
     profiles:
       - simulator
     environment:
-      BE_API_URL: http://backend:8080
+      BE_API_URL: ${BE_API_URL:-http://backend:8080}
+      GPS_ENDPOINT: ${GPS_ENDPOINT:-/api/gps}
+      PLATE_EVENT_ENDPOINT: ${PLATE_EVENT_ENDPOINT:-/api/simulation/plate-events}
+      AI_BASE_URL: ${AI_BASE_URL:-http://ai:8000}
+      OCR_ENDPOINT: ${OCR_ENDPOINT:-/api/ocr/recognize}
+      API_TOKEN: ${API_TOKEN:-}
+      DEFAULT_DRIVE_LOG_ID: ${DEFAULT_DRIVE_LOG_ID:-1}
+      DEFAULT_START_LATITUDE: ${DEFAULT_START_LATITUDE:-37.5665}
+      DEFAULT_START_LONGITUDE: ${DEFAULT_START_LONGITUDE:-126.9780}
+      DEFAULT_INTERVAL_SECONDS: ${DEFAULT_INTERVAL_SECONDS:-5}
+      DEFAULT_SCENARIO: ${DEFAULT_SCENARIO:-A}
 
 volumes:
   postgres_data:
