@@ -6,12 +6,13 @@ const ocrClient = axios.create({
 })
 
 export const ocrApi = {
-  recognize(file) {
+  recognize(file, config = {}) {
     const formData = new FormData()
     formData.append('file', file)
 
     return ocrClient.post('/api/ocr/recognize', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      ...config,
     })
   },
 }

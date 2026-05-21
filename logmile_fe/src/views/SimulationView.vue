@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { useSimulationStore } from '@/stores/simulationStore'
@@ -33,13 +33,16 @@ async function loadVehiclesDrivers() {
 function autoSelectDriverFromVehicle() {
   const v = vehicles.value.find(x => x.id === vehicleId.value)
   if (!v) return
-  // driverId 우선 매칭 (vehicle.driverId 있으면), 없으면 plateNo 매칭, 그래도 없으면 첫 운전자
+  // driverId 우선 매칭 (vehicle.driverId 있으면), 없으면 vehicleId 매칭
   const matched =
     (v.driverId && drivers.value.find(d => d.id === v.driverId)) ||
     drivers.value.find(d => d.vehicleId === v.id) ||
     null
   if (matched) sim.selectDriver(matched)
-  else if (drivers.value.length) sim.selectDriver(drivers.value[0])
+  else {
+    driverId.value = null
+    driverName.value = ''
+  }
 }
 
 function pickVehicleById(id) {
@@ -53,18 +56,33 @@ const ocrFile = ref(null)
 const ocrLoading = ref(false)
 const ocrError = ref(null)
 const ocrResult = ref(null)
+const ocrPreviewUrl = ref('')
+const ocrAbortController = ref(null)
+const recognizedPlateNo = computed(() => ocrResult.value?.plate_no || '')
+const ocrPreviewLabel = computed(() => {
+  if (!ocrResult.value) return ''
+  return recognizedPlateNo.value || '수동 확인 필요'
+})
 
 function onPhoto(e) {
+  if (ocrLoading.value) return
+  if (ocrPreviewUrl.value) URL.revokeObjectURL(ocrPreviewUrl.value)
   ocrFile.value = e.target.files?.[0] ?? null
+  ocrPreviewUrl.value = ocrFile.value ? URL.createObjectURL(ocrFile.value) : ''
   ocrResult.value = null
   ocrError.value = null
+}
+
+function cancelRecognize() {
+  ocrAbortController.value?.abort()
 }
 
 async function recognizePhoto() {
   if (!ocrFile.value) { ocrError.value = '사진을 먼저 선택해주세요.'; return }
   ocrLoading.value = true; ocrError.value = null
+  ocrAbortController.value = new AbortController()
   try {
-    const res = await ocrApi.recognize(ocrFile.value)
+    const res = await ocrApi.recognize(ocrFile.value, { signal: ocrAbortController.value.signal })
     const r = res.data
     ocrResult.value = r
     ocrConfidence.value = r.confidence ?? 0.95
@@ -81,9 +99,14 @@ async function recognizePhoto() {
       ocrError.value = `인식된 번호판 [${r.plate_no}] 와 매칭되는 차량이 없습니다.`
     }
   } catch (e) {
-    ocrError.value = '번호판 인식 실패'
+    if (e.name === 'CanceledError' || e.code === 'ERR_CANCELED') {
+      ocrError.value = '번호판 인식을 취소했습니다.'
+    } else {
+      ocrError.value = '번호판 인식 실패'
+    }
   } finally {
     ocrLoading.value = false
+    ocrAbortController.value = null
   }
 }
 
@@ -293,18 +316,21 @@ onMounted(async () => {
     const v = vehicles.value.find(x => x.id === vehicleId.value)
     if (v) sim.selectVehicle(v)
   }
-  // 운전자 자동 매칭 (vehicle 있는데 driver 없으면)
-  if (vehicleId.value && !driverId.value) autoSelectDriverFromVehicle()
+  // hydrate 된 운전자 값도 현재 차량 기준으로 다시 검증한다.
+  if (vehicleId.value) autoSelectDriverFromVehicle()
   // 기본 차량/운전자 (둘 다 비어있을 때만)
   if (!vehicleId.value && vehicles.value.length) pickVehicleById(vehicles.value[0].id)
 
   if (!startedAtInput.value) startedAtInput.value = nowLocalDt()
   fillEventFormDefaults()
 })
+onBeforeUnmount(() => {
+  if (ocrPreviewUrl.value) URL.revokeObjectURL(ocrPreviewUrl.value)
+})
 
 // vehicles 가 늦게 도착한 경우 driver 자동 매칭 재시도
 watch(vehicles, () => {
-  if (vehicleId.value && !driverId.value) autoSelectDriverFromVehicle()
+  if (vehicleId.value) autoSelectDriverFromVehicle()
 })
 </script>
 
@@ -369,12 +395,12 @@ watch(vehicles, () => {
           </div>
           <div class="mode-tabs">
             <button class="mode-btn mono" :class="{ active: mode === 'MANUAL' }"
-                    :disabled="isRunning"
+                    :disabled="isRunning || ocrLoading"
                     @click="sim.setMode('MANUAL')">
               직접 입력
             </button>
             <button class="mode-btn mono" :class="{ active: mode === 'SCENARIO' }"
-                    :disabled="isRunning"
+                    :disabled="isRunning || ocrLoading"
                     @click="sim.setMode('SCENARIO')">
               시나리오 선택
             </button>
@@ -383,7 +409,7 @@ watch(vehicles, () => {
             <button v-for="s in ['A','B','C']" :key="s"
                     class="scenario-btn mono"
                     :class="{ active: scenarioType === s }"
-                    :disabled="isRunning"
+                    :disabled="isRunning || ocrLoading"
                     @click="sim.setScenario(s)">
               {{ s }}
             </button>
@@ -399,11 +425,11 @@ watch(vehicles, () => {
           </div>
           <div class="pick-tabs">
             <button class="pick-btn mono" :class="{ active: vehiclePickMode === 'LIST' }"
-                    :disabled="isRunning" @click="vehiclePickMode = 'LIST'">
+                    :disabled="isRunning || ocrLoading" @click="vehiclePickMode = 'LIST'">
               기존 차량
             </button>
             <button class="pick-btn mono" :class="{ active: vehiclePickMode === 'PHOTO' }"
-                    :disabled="isRunning" @click="vehiclePickMode = 'PHOTO'">
+                    :disabled="isRunning || ocrLoading" @click="vehiclePickMode = 'PHOTO'">
               사진 등록 (OCR)
             </button>
           </div>
@@ -411,7 +437,7 @@ watch(vehicles, () => {
           <div v-if="vehiclePickMode === 'LIST'" class="form-row">
             <label class="form-lbl mono">VEHICLE</label>
             <select :value="vehicleId" @change="e => pickVehicleById(Number(e.target.value))"
-                    class="sel-inp mono" :disabled="isRunning">
+                    class="sel-inp mono" :disabled="isRunning || ocrLoading">
               <option v-if="!vehicles.length" :value="null">차량 없음</option>
               <option v-for="v in vehicles" :key="v.id" :value="v.id">{{ v.plateNo }}</option>
             </select>
@@ -419,16 +445,39 @@ watch(vehicles, () => {
 
           <div v-else class="form-row">
             <label class="form-lbl mono">PHOTO</label>
-            <input type="file" accept="image/*" class="txt-inp mono" :disabled="isRunning" @change="onPhoto" />
+            <input type="file" accept="image/*" class="txt-inp mono" :disabled="isRunning || ocrLoading" @change="onPhoto" />
             <div class="ocr-row">
               <button class="btn btn-ghost ocr-btn" :disabled="!ocrFile || ocrLoading || isRunning" @click="recognizePhoto">
                 <AppIcon name="camera" :size="13" />
                 {{ ocrLoading ? '인식 중…' : '번호판 인식' }}
               </button>
+              <button v-if="ocrLoading" class="btn btn-ghost ocr-btn cancel" @click="cancelRecognize">
+                취소
+              </button>
               <div v-if="ocrResult" class="ocr-result mono">
-                <b>{{ ocrResult.plate_no || '인식 실패' }}</b>
+                <b>{{ recognizedPlateNo || '인식 실패' }}</b>
                 <span>· {{ Math.round((ocrResult.confidence || 0) * 100) }}%</span>
               </div>
+            </div>
+            <div v-if="ocrPreviewUrl" class="ocr-preview">
+              <img :src="ocrPreviewUrl" alt="선택한 차량 번호판 사진 미리보기" />
+              <div v-if="ocrResult" class="ocr-preview-label mono" :class="{ warn: !recognizedPlateNo }">
+                <span class="ocr-label-title">인식 라벨</span>
+                <strong>{{ ocrPreviewLabel }}</strong>
+                <span class="ocr-label-meta">
+                  OCR {{ Math.round((ocrResult.confidence || 0) * 100) }}%
+                  <template v-if="ocrResult.detection_confidence !== null && ocrResult.detection_confidence !== undefined">
+                    · DET {{ Math.round(ocrResult.detection_confidence * 100) }}%
+                  </template>
+                </span>
+              </div>
+            </div>
+            <div v-if="ocrResult" class="recognized-plate">
+              <span class="recognized-lbl mono">인식한 차량 번호</span>
+              <span class="recognized-num mono">{{ recognizedPlateNo || '인식 실패' }}</span>
+              <span class="recognized-meta mono">
+                OCR {{ Math.round((ocrResult.confidence || 0) * 100) }}%
+              </span>
             </div>
             <div v-if="ocrError" class="ocr-error mono">{{ ocrError }}</div>
           </div>
@@ -456,9 +505,9 @@ watch(vehicles, () => {
           <div v-if="!isRunning" class="form-row">
             <label class="form-lbl mono">
               STARTED_AT
-              <button class="reset-mini mono" @click="startedAtInput = nowLocalDt()">↻ 지금</button>
+              <button class="reset-mini mono" :disabled="ocrLoading" @click="startedAtInput = nowLocalDt()">↻ 지금</button>
             </label>
-            <input type="datetime-local" v-model="startedAtInput" class="txt-inp mono" />
+            <input type="datetime-local" v-model="startedAtInput" class="txt-inp mono" :disabled="ocrLoading" />
             <div class="form-hint mono">비워두면 시작 클릭 시각이 그대로 기록됩니다.</div>
           </div>
 
@@ -480,7 +529,7 @@ watch(vehicles, () => {
           <div class="control-actions">
             <button v-if="!isRunning"
                     class="btn btn-primary"
-                    :disabled="submitting.start || !vehicleId || !driverId"
+                    :disabled="submitting.start || !vehicleId || !driverId || ocrLoading"
                     @click="doStart">
               <AppIcon name="play" :size="13" />
               {{ submitting.start ? '시작 중…' : '운행 시작' }}
@@ -799,8 +848,35 @@ watch(vehicles, () => {
 /* OCR */
 .ocr-row { display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap; }
 .ocr-btn { font-size:11.5px; padding:6px 12px; }
+.ocr-btn.cancel { color:var(--danger); border-color:rgba(181,84,74,.35); }
 .ocr-result { font-size:11.5px; color:var(--ok); display:flex; gap:6px; }
 .ocr-error  { font-size:11px; color:var(--danger); margin-top:2px; }
+.ocr-preview {
+  margin-top:8px; border:1px solid var(--line-1); border-radius:var(--r-md);
+  background:var(--bg-2); overflow:hidden; aspect-ratio:16 / 9;
+  display:flex; align-items:center; justify-content:center; position:relative;
+}
+.ocr-preview img {
+  width:100%; height:100%; object-fit:contain; display:block;
+}
+.ocr-preview-label {
+  position:absolute; left:12px; bottom:12px; max-width:calc(100% - 24px);
+  padding:8px 10px; border-radius:var(--r-md);
+  background:rgba(18,24,22,.88); border:1px solid rgba(255,255,255,.18);
+  color:#fff; display:grid; gap:2px; box-shadow:0 10px 24px rgba(0,0,0,.22);
+}
+.ocr-preview-label.warn { border-color:rgba(197,138,58,.7); }
+.ocr-label-title { font-size:9px; color:rgba(255,255,255,.68); letter-spacing:0.06em; }
+.ocr-preview-label strong { font-size:18px; line-height:1.05; letter-spacing:0; }
+.ocr-label-meta { font-size:10px; color:rgba(255,255,255,.72); }
+.recognized-plate {
+  margin-top:8px; padding:10px 12px; border-radius:var(--r-md);
+  border:1px solid var(--accent-line); background:var(--accent-soft);
+  display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:center;
+}
+.recognized-lbl { font-size:9.5px; letter-spacing:0.06em; color:var(--text-3); }
+.recognized-num { font-size:18px; font-weight:800; color:var(--accent); letter-spacing:0; }
+.recognized-meta { grid-column:1 / -1; font-size:10.5px; color:var(--text-4); }
 
 .picked-card {
   background:var(--bg-2); border:1px solid var(--line-1); border-radius:var(--r-md);

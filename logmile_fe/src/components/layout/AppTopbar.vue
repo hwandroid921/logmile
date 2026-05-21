@@ -32,7 +32,7 @@ const adminNavItems = [
   { name: 'drivers',      label: '운전자 관리' },
   { name: 'driveHistory', label: '운행 이력' },
   { name: 'thresholds',   label: '임계값 설정' },
-  { name: 'stats',        label: '피로도 통계' },
+  { name: 'stats',        label: '통계' },
 ]
 
 // 최상위 관리자 메뉴

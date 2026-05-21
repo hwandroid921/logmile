@@ -159,6 +159,8 @@ export const useSimulationStore = defineStore('simulation', () => {
     if (!v) return
     vehicleId.value = v.id ?? null
     vehiclePlateNo.value = v.plateNo ?? ''
+    driverId.value = null
+    driverName.value = ''
   }
   function selectDriver(d) {
     if (!d) return

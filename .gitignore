@@ -78,3 +78,6 @@ logmile_ai/dataset/*.zip
 logmile_ai/dataset/*.tar
 logmile_ai/dataset/*.tar.gz
 logmile_ai/dataset/*.7z
+
+# ── Simulation real plate image data (local only) ───────────
+logmile_sim/plate/
