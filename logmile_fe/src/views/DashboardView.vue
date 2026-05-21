@@ -1,29 +1,27 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { dashboardApi } from '@/api/dashboardApi'
 
+const route = useRoute()
 const router = useRouter()
 
-/* ─── Korea map dot grid ─── */
-const mapDots = Array.from({ length: 20 }, (_, r) =>
-  Array.from({ length: 20 }, (_, c) => ({ cx: 30 + c * 30, cy: 20 + r * 28 }))
-).flat()
-
-/* ─── 시드 데이터 ─── */
+/* ─── 시드 데이터 (lat/lng 추가) ─── */
 const SEED_VEHICLES = [
-  { id:1,  plate:'경기 80바 1024', driver:'김민수', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:'DL-2026-0438', pos:{x:280,y:170} },
-  { id:2,  plate:'경기 80바 1025', driver:'박정호', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:'DL-2026-0437', pos:{x:212,y:218} },
-  { id:3,  plate:'경기 80바 1026', driver:'이영준', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:'DL-2026-0436', pos:{x:300,y:230} },
-  { id:4,  plate:'경기 80바 1027', driver:'최성훈', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:'DL-2026-0435', pos:{x:328,y:162} },
-  { id:5,  plate:'경기 80바 1028', driver:'정우석', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:'DL-2026-0434', pos:{x:354,y:352} },
-  { id:6,  plate:'경기 80바 1029', driver:'강지훈', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:'DL-2026-0433', pos:{x:340,y:268} },
-  { id:7,  plate:'경기 80바 1030', driver:'한승연', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:'DL-2026-0432', pos:{x:248,y:124} },
-  { id:8,  plate:'경기 80바 1031', driver:'조영민', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:'DL-2026-0431', pos:{x:228,y:170} },
-  { id:9,  plate:'경기 80바 1032', driver:'윤태경', type:'카고 5톤',    score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, pos:{x:252,y:98} },
-  { id:10, plate:'경기 80바 1033', driver:'서동현', type:'윙바디 8톤',  score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, pos:{x:252,y:98} },
+  { id:1,  plate:'경기 80바 1024', driver:'김민수', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:'DL-2026-0438', lat:37.0078, lng:127.2714 },
+  { id:2,  plate:'경기 80바 1025', driver:'박정호', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:'DL-2026-0437', lat:36.7842, lng:126.4502 },
+  { id:3,  plate:'경기 80바 1026', driver:'이영준', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:'DL-2026-0436', lat:36.9357, lng:127.6882 },
+  { id:4,  plate:'경기 80바 1027', driver:'최성훈', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:'DL-2026-0435', lat:37.2986, lng:127.6374 },
+  { id:5,  plate:'경기 80바 1028', driver:'정우석', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:'DL-2026-0434', lat:35.1797, lng:128.1077 },
+  { id:6,  plate:'경기 80바 1029', driver:'강지훈', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:'DL-2026-0433', lat:36.3933, lng:128.1968 },
+  { id:7,  plate:'경기 80바 1030', driver:'한승연', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:'DL-2026-0432', lat:37.4875, lng:126.7657 },
+  { id:8,  plate:'경기 80바 1031', driver:'조영민', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:'DL-2026-0431', lat:36.8897, lng:126.6453 },
+  { id:9,  plate:'경기 80바 1032', driver:'윤태경', type:'카고 5톤',    score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
+  { id:10, plate:'경기 80바 1033', driver:'서동현', type:'윙바디 8톤',  score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
 ]
+
+const DEMO_RUNNING_PRESETS = SEED_VEHICLES.filter(v => v.status === 'RUNNING')
 
 /* ─── 헬퍼 ─── */
 function fbColor(val, thr) {
@@ -39,49 +37,157 @@ function fmtHM(mins) {
 }
 function levelLabel(l)    { return l === 'DANGER' ? '위험' : l === 'CAUTION' ? '주의' : '정상' }
 function levelChipCls(l)  { return l === 'DANGER' ? 'chip chip-danger' : l === 'CAUTION' ? 'chip chip-warn' : 'chip chip-ok' }
-function scColor(c)       { return c === 'C' ? 'var(--danger)' : c === 'B' ? 'var(--warn)' : 'var(--ok)' }
-function statusChipCls(s) { return s === 'RUNNING' ? 'chip chip-info' : s === 'COMPLETED' ? 'chip chip-ok' : 'chip chip-mute' }
-function statusLabel(s)   { return s === 'RUNNING' ? '운행중' : s === 'COMPLETED' ? '완료' : '대기' }
-function tlEventColor(e)  { return e === '위험 진입' ? 'var(--danger)' : e === '주의 진입' ? 'var(--warn)' : 'var(--accent)' }
 function evColor(k)       { return k === 'danger' ? 'var(--danger)' : k === 'warn' ? 'var(--warn)' : 'var(--accent)' }
+function startedAtLabel(dt, fallback = '—') { return dt ? String(dt).slice(11, 16) : fallback }
+function mapVColor(v)     { return v.level === 'DANGER' ? '#B5544A' : v.level === 'CAUTION' ? '#C58A3A' : '#515F7A' }
+
+function buildRuntimeVehicle(apiVehicle, index) {
+  const preset = DEMO_RUNNING_PRESETS[index % DEMO_RUNNING_PRESETS.length] || DEMO_RUNNING_PRESETS[0]
+  const score = apiVehicle.fatigueScore ?? preset.score
+  const level = apiVehicle.fatigueLevel ?? preset.level
+  const contMin = level === 'DANGER' ? Math.max(240, 180 + score * 2) :
+    level === 'CAUTION' ? Math.max(120, 90 + score * 2) :
+    Math.max(30, score * 3)
+  const dailyMin = Math.max(contMin, contMin + 120 + index * 18)
+  const nightMin = level === 'DANGER' ? Math.max(30, Math.round(contMin * 0.35)) :
+    level === 'CAUTION' ? Math.round(contMin * 0.2) : Math.round(contMin * 0.08)
+
+  return {
+    ...preset,
+    id: apiVehicle.vehicleId ?? apiVehicle.driveLogId ?? preset.id,
+    plate: apiVehicle.plateNo ?? preset.plate,
+    driver: apiVehicle.driverName ?? preset.driver,
+    type: apiVehicle.vehicleType ?? preset.type,
+    score, level, status: 'RUNNING',
+    contMin, dailyMin, nightMin,
+    restValid: level === 'DANGER' ? 1 : 1 + (index % 2),
+    restSuff:  level === 'NORMAL' ? 1 : 0,
+    restInvalid: level === 'DANGER' ? 1 : 0,
+    restMiss: level === 'DANGER' ? 2 : level === 'CAUTION' ? 1 : 0,
+    startedAt: startedAtLabel(apiVehicle.startedAt, preset.startedAt),
+    driveLogId: apiVehicle.driveLogId ?? null,
+    lat: preset.lat, lng: preset.lng,
+  }
+}
 
 /* ─── State ─── */
 const now        = ref(new Date().toLocaleString('ko-KR', { hour12: false }))
 const mapTab     = ref('전체')
 const mapTabs    = ['전체', '위험', '주의', '정상']
-const vehicles   = ref(SEED_VEHICLES)
-const selectedId = ref(SEED_VEHICLES[0].id)
-const hoveredId  = ref(null)
+const vehicles   = ref([])
+const selectedId = ref(null)
+const isDemoBoard = computed(() => route.name === 'demoBoard')
+
+/* ─── Kakao Maps ─── */
+const mapContainer = ref(null)
+let kakaoMap       = null
+let kakaoOverlays  = []
+
+function makeMarkerEl(v) {
+  const c    = mapVColor(v)
+  const isSel = v.id === selectedId.value
+  const size = isSel ? 18 : 13
+  const pulse   = isSel ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${c};opacity:.55;animation:kakao-pulse 1.4s ease-out infinite;pointer-events:none"></div>` : ''
+  const tooltip = isSel ? `<div style="position:absolute;left:50%;bottom:calc(100%+6px);transform:translateX(-50%);background:#F1F3F6;border:1px solid ${c};border-radius:4px;padding:3px 7px;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#1F2630;box-shadow:0 2px 6px rgba(0,0,0,.15);pointer-events:none"><span style="color:${c}">${v.score}점</span> ${v.plate}</div>` : ''
+  const el = document.createElement('div')
+  el.style.cssText = `position:relative;width:${size*2}px;height:${size*2}px;cursor:pointer`
+  el.innerHTML = `${pulse}<div style="position:absolute;inset:0;border-radius:50%;background:${c};opacity:.18"></div><div style="position:absolute;inset:${size-6}px;border-radius:50%;background:${c};border:2px solid #F1F3F6;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>${tooltip}`
+  el.addEventListener('click', () => { selectedId.value = v.id })
+  return el
+}
+
+function renderKakaoMarkers() {
+  kakaoOverlays.forEach(o => o.setMap(null))
+  kakaoOverlays = []
+  if (!kakaoMap) return
+
+  const running  = vehicles.value.filter(v => v.status === 'RUNNING')
+  const filtered = mapTab.value === '전체' ? running
+    : running.filter(v => v.level === (mapTab.value === '위험' ? 'DANGER' : mapTab.value === '주의' ? 'CAUTION' : 'NORMAL'))
+
+  filtered.forEach(v => {
+    const overlay = new window.kakao.maps.CustomOverlay({
+      position: new window.kakao.maps.LatLng(v.lat, v.lng),
+      content:  makeMarkerEl(v),
+      yAnchor: 0.5, xAnchor: 0.5,
+      zIndex: v.id === selectedId.value ? 10 : 1,
+    })
+    overlay.setMap(kakaoMap)
+    kakaoOverlays.push(overlay)
+  })
+
+  if (selectedId.value) {
+    const sel = vehicles.value.find(v => v.id === selectedId.value)
+    if (sel) kakaoMap.panTo(new window.kakao.maps.LatLng(sel.lat, sel.lng))
+  }
+}
+
+function initKakaoMap() {
+  if (typeof window.kakao === 'undefined') return
+  window.kakao.maps.load(() => {
+    const container = mapContainer.value
+    if (!container) return
+    if (!container.offsetHeight) container.style.height = '360px'
+    kakaoMap = new window.kakao.maps.Map(container, {
+      center: new window.kakao.maps.LatLng(36.5, 127.8),
+      level: 9,
+    })
+    kakaoMap.addControl(new window.kakao.maps.ZoomControl(), window.kakao.maps.ControlPosition.RIGHT)
+    setTimeout(() => { kakaoMap.relayout(); renderKakaoMarkers() }, 100)
+  })
+}
+
+/* ─── API 로드 ─── */
+async function fetchData() {
+  if (isDemoBoard.value) {
+    vehicles.value = SEED_VEHICLES
+    if (!vehicles.value.some(v => v.id === selectedId.value)) {
+      selectedId.value = vehicles.value[0]?.id ?? null
+    }
+    return
+  }
+  try {
+    const [, vRes] = await Promise.all([dashboardApi.getSummary(), dashboardApi.getVehicles()])
+    const runtimeVehicles = Array.isArray(vRes.data)
+      ? vRes.data.map((v, index) => buildRuntimeVehicle(v, index))
+      : []
+    vehicles.value = runtimeVehicles
+    if (!vehicles.value.some(v => v.id === selectedId.value)) {
+      selectedId.value = vehicles.value[0]?.id ?? null
+    }
+  } catch {
+    vehicles.value = []
+    selectedId.value = null
+  }
+}
 
 async function refresh() {
   now.value = new Date().toLocaleString('ko-KR', { hour12: false })
   await fetchData()
 }
 
-/* ─── API 로드 ─── */
-async function fetchData() {
-  try {
-    const [, vRes] = await Promise.all([dashboardApi.getSummary(), dashboardApi.getVehicles()])
-    vehicles.value = SEED_VEHICLES.map(s => {
-      const a = vRes.data.find(v => v.plateNo === s.plate)
-      if (!a) return s
-      return {
-        ...s,
-        score:      a.fatigueScore ?? s.score,
-        level:      a.fatigueLevel ?? s.level,
-        driveLogId: a.driveLogId   ?? s.driveLogId,
-        startedAt:  a.startedAt ? String(a.startedAt).slice(11, 16) : s.startedAt,
-      }
-    })
-  } catch { /* seed 데이터 유지 */ }
-}
-
 let timer = null
-onMounted(() => { fetchData(); timer = setInterval(fetchData, 5000) })
+onMounted(async () => {
+  await fetchData()
+  await nextTick()
+  initKakaoMap()
+  timer = setInterval(fetchData, 5000)
+})
 onUnmounted(() => clearInterval(timer))
 
-/* ─── 기본 파생값 ─── */
+/* 마커 재렌더 watch */
+watch(selectedId, () => renderKakaoMarkers())
+watch(mapTab,     () => renderKakaoMarkers())
+watch(vehicles,   () => renderKakaoMarkers())
+
+/* ─── 파생값 ─── */
 const selected         = computed(() => vehicles.value.find(v => v.id === selectedId.value) || null)
+const selectedDetailId = computed(() => {
+  const raw = selected.value?.driveLogId
+  if (raw == null || raw === '') return null
+  const parsed = Number(raw)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null
+})
 const runningVehicles  = computed(() => vehicles.value.filter(v => v.status === 'RUNNING'))
 const filteredVehicles = computed(() => {
   const r = runningVehicles.value
@@ -104,7 +210,7 @@ const stdev    = computed(() => {
   return scores.value.length ? Math.sqrt(scores.value.reduce((s, x) => s + (x - avg) ** 2, 0) / scores.value.length) : 0
 })
 
-/* ─── KPI Tile 1: DistChart ─── */
+/* ─── KPI Tile 1 ─── */
 const kpiBuckets = computed(() => {
   const arr = new Array(14).fill(0)
   scores.value.forEach(s => { arr[Math.min(13, Math.floor(s / (100 / 14)))]++ })
@@ -122,7 +228,7 @@ const distBars  = computed(() => {
 })
 const meanX = computed(() => (avgScore.value / 100) * 200)
 
-/* ─── KPI Tile 2: MAX CONT DRIVE ─── */
+/* ─── KPI Tile 2 ─── */
 const maxCont      = computed(() => runningVehicles.value.reduce((m, v) => Math.max(m, v.contMin || 0), 0))
 const maxContH     = computed(() => Math.floor(maxCont.value / 60))
 const maxContM     = computed(() => maxCont.value % 60)
@@ -130,21 +236,21 @@ const contGaugePct = computed(() => Math.min(100, (maxCont.value / 300) * 100))
 const contColor    = computed(() => maxCont.value >= 180 ? 'var(--danger)' : maxCont.value >= 90 ? 'var(--warn)' : 'var(--ok)')
 const contDelta    = computed(() => maxCont.value >= 180 ? 45 : maxCont.value >= 120 ? 25 : 10)
 
-/* ─── KPI Tile 3: DANGER weekly bars ─── */
-const weeklyBase   = [1, 2, 0, 2, 3, 1]
-const weeklyFull   = computed(() => [...weeklyBase, dangerCount.value])
-const weeklyMax    = computed(() => Math.max(...weeklyFull.value, 1))
-const weeklyMean   = 1.43
-const weeklyBars   = computed(() => {
+/* ─── KPI Tile 3 ─── */
+const weeklyBase = [1, 2, 0, 2, 3, 1]
+const weeklyFull = computed(() => [...weeklyBase, dangerCount.value])
+const weeklyMax  = computed(() => Math.max(...weeklyFull.value, 1))
+const weeklyMean = 1.43
+const weeklyBars = computed(() => {
   const h = 36
   return weeklyFull.value.map((d, i) => {
     const bh = (d / weeklyMax.value) * (h - 4)
     return { x: i * (200 / 7) + 1, y: h - bh, w: (200 / 7) - 4, h: bh, today: i === 6 }
   })
 })
-const weeklyMeanY  = computed(() => 36 - (weeklyMean / weeklyMax.value) * (36 - 4))
+const weeklyMeanY = computed(() => 36 - (weeklyMean / weeklyMax.value) * (36 - 4))
 
-/* ─── KPI Tile 5: Fleet Health donut (compact) ─── */
+/* ─── KPI Tile 5 ─── */
 const DS = 78, DT = 11
 const DR_K = (DS - DT) / 2
 const DC_K = 2 * Math.PI * DR_K
@@ -166,7 +272,7 @@ const donutArcsK = computed(() => {
 })
 const avgColor = computed(() => avgScore.value >= 70 ? 'var(--danger)' : avgScore.value >= 40 ? 'var(--warn)' : 'var(--ok)')
 
-/* ─── Fleet map tab counts ─── */
+/* ─── Map tab counts ─── */
 function tabCount(t) {
   if (t === '전체') return runningCount.value
   if (t === '위험')  return dangerCount.value
@@ -174,7 +280,7 @@ function tabCount(t) {
   return normalCount.value
 }
 
-/* ─── VehicleRow helpers ─── */
+/* ─── Vehicle row helpers ─── */
 const vFactors = [
   { key: 'CONT',  max: 300, thr: [90, 180] },
   { key: 'DAILY', max: 720, thr: [360, 600] },
@@ -204,9 +310,63 @@ function vDelta(v) {
   if (d < 0) return { txt: `▼ ${d}`,  color: 'var(--ok)' }
   return { txt: '→ 0', color: 'var(--text-4)' }
 }
-function mapVColor(v) {
-  return v.level === 'DANGER' ? 'var(--danger)' : v.level === 'CAUTION' ? 'var(--warn)' : 'var(--accent)'
+
+function goToDriveHistoryDetail() {
+  if (!selectedDetailId.value) return
+  router.push({ name: 'driveHistoryDetail', params: { id: selectedDetailId.value } })
 }
+
+/* ─── Drilldown ─── */
+const drillFactors = computed(() => {
+  const v = selected.value
+  if (!v) return []
+  return [
+    { label:'연속 운행',       val:(v.contMin||0)/60,  unit:'h', max:5,  thr:[1.5,3],  cLbl:'90분 +10', dLbl:'180분 +45' },
+    { label:'일일 누적',       val:(v.dailyMin||0)/60, unit:'h', max:12, thr:[6,10],   cLbl:'6h +15',   dLbl:'10h +45' },
+    { label:'야간 (22~06시)', val:(v.nightMin||0)/60, unit:'h', max:4,  thr:[0.5,2],  cLbl:'30분 +10', dLbl:'2h +35' },
+  ]
+})
+const restEvents = computed(() => {
+  const v = selected.value
+  if (!v) return []
+  return [
+    { label:'VALID',   count:v.restValid||0,   color:'var(--ok)',     hint:'15m+ · -10' },
+    { label:'SUFF.',   count:v.restSuff||0,    color:'var(--accent)', hint:'30m+ · -20' },
+    { label:'INVALID', count:v.restInvalid||0, color:'var(--text-4)', hint:'<15m · ±0' },
+    { label:'MISSED',  count:v.restMiss||0,    color:'var(--danger)', hint:'2h+ · +10' },
+  ]
+})
+
+/* ─── Drive Timeline ─── */
+const timelinePoints = computed(() => {
+  const v = selected.value
+  if (!v) return []
+  const pts = []
+  for (let m = 0; m <= 720; m += 30) {
+    const progress = Math.min(1, m / 600)
+    let s = 5 + (v.score - 5) * progress
+    s = Math.max(2, Math.min(98, s + Math.sin(m / 45) * 3))
+    let event = null
+    if (m === 0) event = '운행 시작'
+    else if (m === 90)  event = '90분'
+    else if (m === 240) event = '4h'
+    else if (v.score >= 40 && Math.abs(s - 40) < 3 && !pts.some(p => p.event === '주의 진입')) event = '주의 진입'
+    else if (v.score >= 70 && Math.abs(s - 70) < 3 && !pts.some(p => p.event === '위험 진입')) event = '위험 진입'
+    pts.push({ t: m, score: Math.round(s), event })
+  }
+  return pts
+})
+const peakScore  = computed(() => Math.max(...timelinePoints.value.map(p => p.score), 0))
+const tlPx = t  => 30 + (t / 720) * 700
+const tlPy = s  => 10 + (1 - s / 100) * 170
+const tlScorePts  = computed(() => timelinePoints.value.map(p => `${tlPx(p.t)},${tlPy(p.score)}`).join(' '))
+const tlScoreArea = computed(() => {
+  const pts = timelinePoints.value
+  if (!pts.length) return ''
+  return `${tlPx(0)},182 ${tlScorePts.value} ${tlPx(720)},182`
+})
+const tlEvents = computed(() => timelinePoints.value.filter(p => p.event))
+function tlEventColor(e) { return e === '위험 진입' ? 'var(--danger)' : e === '주의 진입' ? 'var(--warn)' : 'var(--accent)' }
 
 /* ─── EventStream ─── */
 const liveEvents = computed(() =>
@@ -247,56 +407,6 @@ const alertList = computed(() =>
     }))
 )
 
-/* ─── VehicleDrilldown ─── */
-const timelinePoints = computed(() => {
-  const v = selected.value
-  if (!v) return []
-  const pts = []
-  for (let m = 0; m <= 720; m += 30) {
-    const progress = Math.min(1, m / 600)
-    let s = 5 + (v.score - 5) * progress
-    s = Math.max(2, Math.min(98, s + Math.sin(m / 45) * 3))
-    let event = null
-    if (m === 0) event = '운행 시작'
-    else if (m === 90)  event = '90분'
-    else if (m === 240) event = '4h'
-    else if (v.score >= 40 && Math.abs(s - 40) < 3 && !pts.some(p => p.event === '주의 진입')) event = '주의 진입'
-    else if (v.score >= 70 && Math.abs(s - 70) < 3 && !pts.some(p => p.event === '위험 진입')) event = '위험 진입'
-    pts.push({ t: m, score: Math.round(s), event })
-  }
-  return pts
-})
-const peakScore  = computed(() => Math.max(...timelinePoints.value.map(p => p.score), 0))
-const tlPx = t  => 40 + (t / 720) * 740
-const tlPy = s  => 20 + (1 - s / 100) * 180
-const tlScorePts  = computed(() => timelinePoints.value.map(p => `${tlPx(p.t)},${tlPy(p.score)}`).join(' '))
-const tlScoreArea = computed(() => {
-  const pts = timelinePoints.value
-  if (!pts.length) return ''
-  return `${tlPx(0)},200 ${tlScorePts.value} ${tlPx(720)},200`
-})
-const tlEvents = computed(() => timelinePoints.value.filter(p => p.event))
-
-const drillFactors = computed(() => {
-  const v = selected.value
-  if (!v) return []
-  return [
-    { label:'연속 운행',        val:(v.contMin||0)/60,  unit:'h', max:5,  thr:[1.5,3],  cLbl:'90분 +10', dLbl:'180분 +45' },
-    { label:'일일 누적',        val:(v.dailyMin||0)/60, unit:'h', max:12, thr:[6,10],   cLbl:'6h +15',   dLbl:'10h +45' },
-    { label:'야간 (22~06시)',   val:(v.nightMin||0)/60, unit:'h', max:4,  thr:[0.5,2],  cLbl:'30분 +10', dLbl:'2h +35' },
-  ]
-})
-const restEvents = computed(() => {
-  const v = selected.value
-  if (!v) return []
-  return [
-    { label:'VALID',   count:v.restValid||0,   color:'var(--ok)',     hint:'15m+ · -10' },
-    { label:'SUFF.',   count:v.restSuff||0,    color:'var(--accent)', hint:'30m+ · -20' },
-    { label:'INVALID', count:v.restInvalid||0, color:'var(--text-4)', hint:'<15m · ±0' },
-    { label:'MISSED',  count:v.restMiss||0,    color:'var(--danger)', hint:'2h+ · +10' },
-  ]
-})
-
 /* ─── Heatmap ─── */
 const heatmapDrivers = computed(() => {
   const cur = new Date().getHours()
@@ -335,11 +445,11 @@ const rankingItems = computed(() =>
   <div class="fade-up view">
 
     <!-- ── 페이지 헤더 ── -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;gap:16px;flex-wrap:wrap;">
+    <div class="page-hdr">
       <div>
-        <div style="font:600 10.5px/1.4 var(--font-mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">OPERATIONS / LIVE</div>
+        <div style="font:600 10.5px/1.4 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">OPERATIONS / LIVE</div>
         <h1 style="font:800 24px/1.25 var(--font-sans);letter-spacing:-0.02em;color:var(--text-1);margin:0;">관제 대시보드</h1>
-        <div style="font-size:12px;color:var(--text-3);margin-top:3px;">오늘 · 2026.05.04 (월) · 한라물류센터 · 가상 시뮬레이션 환경</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:3px;">오늘 · 2026.05.21 (수) · 한라물류센터 · 가상 시뮬레이션 환경</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:6px;">
@@ -352,8 +462,8 @@ const rankingItems = computed(() =>
       </div>
     </div>
 
-    <!-- ── KPI Strip (5 tiles) ── -->
-    <div class="kpi-strip" style="margin-bottom:16px;">
+    <!-- ── KPI Strip ── -->
+    <div class="kpi-strip">
 
       <!-- Tile 1: AVG FATIGUE -->
       <div class="kpi-tile" style="border-top:2px solid var(--accent);">
@@ -381,7 +491,7 @@ const rankingItems = computed(() =>
         </div>
       </div>
 
-      <!-- Tile 2: MAX CONT DRIVE -->
+      <!-- Tile 2: MAX CONT. DRIVE -->
       <div class="kpi-tile">
         <div class="tile-hdr">
           <span class="tile-label">MAX CONT. DRIVE</span>
@@ -458,7 +568,7 @@ const rankingItems = computed(() =>
         </div>
       </div>
 
-      <!-- Tile 5: FLEET HEALTH donut -->
+      <!-- Tile 5: FLEET HEALTH -->
       <div class="kpi-tile" style="border-right:none;">
         <div class="tile-hdr">
           <span class="tile-label" style="color:var(--accent);">FLEET HEALTH</span>
@@ -476,8 +586,8 @@ const rankingItems = computed(() =>
               </g>
             </svg>
             <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-              <span :style="`font-family:var(--font-mono);font-size:18px;font-weight:800;color:${avgColor};line-height:1;letter-spacing:-0.01em;`">{{ avgScore.toFixed(1) }}</span>
-              <span style="font-family:var(--font-mono);font-size:8px;color:var(--text-4);letter-spacing:0.1em;margin-top:2px;">AVG /100</span>
+              <span :style="`font-family:var(--font-mono);font-size:18px;font-weight:800;color:${avgColor};line-height:1;`">{{ avgScore.toFixed(1) }}</span>
+              <span style="font-family:var(--font-mono);font-size:8px;color:var(--text-4);letter-spacing:.1em;margin-top:2px;">AVG /100</span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
@@ -485,235 +595,271 @@ const rankingItems = computed(() =>
               :key="r.label" style="display:grid;grid-template-columns:10px 1fr auto;gap:6px;align-items:center;">
               <span :style="`width:10px;height:10px;border-radius:2px;background:${r.color};display:block;`"/>
               <span style="font-size:11px;color:var(--text-2);">{{ r.label }}</span>
-              <span :style="`font-family:var(--font-mono);font-size:13px;font-weight:800;color:${r.color};letter-spacing:-0.01em;`">{{ r.value }}</span>
+              <span :style="`font-family:var(--font-mono);font-size:13px;font-weight:800;color:${r.color};`">{{ r.value }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── Hero: FleetMap + EventStream/Alerts ── -->
-    <div style="display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:16px;margin-bottom:16px;">
+    <!-- ── 메인 3컬럼 그리드 ── -->
+    <div class="main-grid">
 
-      <!-- FleetMap -->
-      <div class="card" style="padding:0;overflow:hidden;">
-        <!-- header -->
-        <div style="padding:16px 20px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div>
-            <div class="label-sm" style="display:flex;align-items:center;gap:8px;">
-              <span class="dot dot-brand blink"/>
-              FLEET MAP · LIVE
-            </div>
-            <div style="font-size:14px;color:var(--text-2);margin-top:3px;">
-              실시간 차량 위치 · 운행 중 <strong style="color:var(--text-1);">{{ runningCount }}</strong>대 / 전체 {{ vehicles.length }}대
-            </div>
-          </div>
-          <div style="display:flex;gap:6px;">
-            <button v-for="t in mapTabs" :key="t" @click="mapTab=t"
-              :style="{padding:'6px 12px',fontSize:'11.5px',fontFamily:'var(--font-mono)',borderRadius:'var(--r-sm)',cursor:'pointer',
-                background:mapTab===t?'var(--accent-soft)':'var(--bg-2)',color:mapTab===t?'var(--accent)':'var(--text-3)',
-                border:'1px solid '+(mapTab===t?'var(--accent-line)':'var(--line-2)'),fontWeight:mapTab===t?700:500,
-                display:'flex',alignItems:'center',gap:'6px'}">
-              <span>{{ t }}</span><span style="opacity:0.65;font-weight:600;">{{ tabCount(t) }}</span>
-            </button>
-          </div>
-        </div>
+      <!-- ── 좌: FATIGUE BREAKDOWN + DRIVE TIMELINE ── -->
+      <div class="left-col">
 
-        <!-- body: 1.35fr map + 1fr list -->
-        <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:0;">
-          <!-- Korea map SVG -->
-          <div style="position:relative;background:var(--bg-2);border-right:1px solid var(--line-1);min-height:460px;">
-            <svg width="100%" height="100%" viewBox="0 0 600 580" preserveAspectRatio="xMidYMid meet" style="display:block;min-height:460px;">
-              <defs>
-                <linearGradient id="kor-grad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="var(--bg-1)"/>
-                  <stop offset="100%" stop-color="var(--bg-2)"/>
-                </linearGradient>
-                <radialGradient id="map-glow" cx="0.5" cy="0.5" r="0.5">
-                  <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.04"/>
-                  <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-                </radialGradient>
-              </defs>
-              <ellipse cx="280" cy="290" rx="240" ry="220" fill="url(#map-glow)"/>
-              <g opacity="0.18">
-                <circle v-for="(d,di) in mapDots" :key="di" :cx="d.cx" :cy="d.cy" r="0.8" fill="var(--text-4)"/>
-              </g>
-              <!-- peninsula -->
-              <path d="M268 38 L308 42 L348 56 L378 78 L388 108 L378 138 L398 162 L432 178 L458 198 L478 232 L488 270 L482 308 L470 348 L452 378 L424 410 L394 432 L362 450 L334 472 L304 500 L274 516 L240 506 L210 478 L188 444 L172 408 L160 372 L150 336 L138 298 L130 260 L132 222 L150 188 L172 154 L196 122 L222 90 L246 58 Z"
-                fill="url(#kor-grad)" stroke="var(--bg-5)" stroke-width="1.6"/>
-              <ellipse cx="208" cy="540" rx="44" ry="22" fill="url(#kor-grad)" stroke="var(--bg-5)" stroke-width="1.4"/>
-              <!-- highways -->
-              <g stroke="var(--line-2)" stroke-width="1.2" stroke-dasharray="3 5" fill="none" opacity="0.7">
-                <path d="M250 90 Q270 200 280 320 Q300 410 350 470"/>
-                <path d="M195 200 Q260 250 350 240 Q420 240 470 250"/>
-                <path d="M260 350 Q330 360 420 360"/>
-                <path d="M198 130 Q260 180 320 200 Q400 220 440 240"/>
-              </g>
-              <!-- cities -->
-              <g font-family="var(--font-mono)" font-size="9.5" fill="var(--text-3)">
-                <circle cx="252" cy="98"  r="2.5" fill="var(--text-2)"/><text x="260" y="102" font-weight="600">서울</text>
-                <circle cx="232" cy="138" r="2"   fill="var(--text-3)"/><text x="240" y="141">인천</text>
-                <circle cx="290" cy="200" r="2"   fill="var(--text-3)"/><text x="298" y="203">대전</text>
-                <circle cx="358" cy="248" r="2"   fill="var(--text-3)"/><text x="366" y="251">대구</text>
-                <circle cx="412" cy="338" r="2"   fill="var(--text-3)"/><text x="420" y="341">울산</text>
-                <circle cx="378" cy="376" r="2.5" fill="var(--text-2)"/><text x="386" y="380" font-weight="600">부산</text>
-                <circle cx="208" cy="328" r="2"   fill="var(--text-3)"/><text x="156" y="332" text-anchor="end">광주</text>
-                <text x="208" y="555" text-anchor="middle" font-size="9">제주</text>
-              </g>
-              <!-- vehicle markers -->
-              <g v-for="v in filteredVehicles.slice().sort((a,b)=>(a.level==='DANGER'?1:0)-(b.level==='DANGER'?1:0))" :key="v.id"
-                :transform="`translate(${v.pos.x},${v.pos.y})`" style="cursor:pointer;"
-                @click="selectedId=v.id" @mouseenter="hoveredId=v.id" @mouseleave="hoveredId=null">
-                <circle r="14" :fill="mapVColor(v)" opacity="0.18">
-                  <template v-if="v.level==='DANGER'">
-                    <animate attributeName="r" from="10" to="22" dur="2s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite"/>
-                  </template>
-                </circle>
-                <circle v-if="selectedId===v.id || hoveredId===v.id" r="12" fill="none" :stroke="mapVColor(v)" stroke-width="1.8" opacity="0.7"/>
-                <circle :r="selectedId===v.id?7:6" :fill="mapVColor(v)" stroke="var(--bg-1)" stroke-width="2"/>
-                <g v-if="selectedId===v.id||hoveredId===v.id" transform="translate(10,-10)">
-                  <rect x="0" y="-14" width="118" height="24" rx="4" fill="var(--bg-1)" :stroke="mapVColor(v)" stroke-width="1"/>
-                  <text x="6" y="2" font-family="var(--font-mono)" font-size="10.5" font-weight="700" fill="var(--text-1)">{{ v.plate }}</text>
-                  <text x="6" y="-4" font-family="var(--font-mono)" font-size="9" :fill="mapVColor(v)" font-weight="700">{{ v.score }}점</text>
-                </g>
-              </g>
-            </svg>
-            <!-- overlay chips -->
-            <div style="position:absolute;top:14px;left:14px;display:flex;flex-direction:column;gap:6px;">
-              <span class="chip chip-info"><span class="dot dot-brand"/>{{ runningCount }}대 운행중</span>
-              <span v-if="dangerCount>0" class="chip chip-danger"><span class="dot dot-danger"/>{{ dangerCount }} 위험</span>
-              <span v-if="cautionCount>0" class="chip chip-warn"><span class="dot dot-warn"/>{{ cautionCount }} 주의</span>
-            </div>
-            <!-- legend -->
-            <div style="position:absolute;bottom:14px;right:14px;background:rgba(255,255,255,0.92);border:1px solid var(--line-2);border-radius:var(--r-md);padding:10px 14px;font-family:var(--font-mono);font-size:10.5px;display:flex;flex-direction:column;gap:6px;backdrop-filter:blur(4px);">
-              <div style="font-size:9px;letter-spacing:0.12em;color:var(--text-4);font-weight:700;">LEGEND</div>
-              <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:var(--danger);display:inline-block;"/>위험 (70+)</div>
-              <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block;"/>주의 (40~69)</div>
-              <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block;"/>정상 (0~39)</div>
-            </div>
-            <!-- scale -->
-            <div style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.85);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:5px 8px;font-family:var(--font-mono);font-size:9.5px;color:var(--text-4);backdrop-filter:blur(4px);">
-              <div>SCALE 1 : 5M</div>
-              <div style="display:flex;gap:4px;align-items:center;margin-top:3px;"><div style="width:40px;height:3px;background:var(--text-3);"/><span>100km</span></div>
-            </div>
-          </div>
+        <!-- FATIGUE BREAKDOWN 카드 -->
+        <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
 
-          <!-- Running vehicle list -->
-          <div style="padding:14px;display:flex;flex-direction:column;gap:8px;min-height:460px;max-height:460px;overflow-y:auto;">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:0 2px;">
-              <div class="label-sm">RUNNING VEHICLES · {{ filteredVehicles.length }}대</div>
-              <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">{{ mapTab==='전체'?'점수 높은 순':mapTab }}</span>
-            </div>
-            <div v-if="sortedFiltered.length===0" style="padding:32px 14px;text-align:center;color:var(--text-4);font-size:12.5px;">해당 등급의 운행 차량이 없습니다</div>
-            <!-- VehicleRow -->
-            <div v-for="v in sortedFiltered" :key="v.id" @click="selectedId=v.id"
-              @mouseenter="hoveredId=v.id" @mouseleave="hoveredId=null"
-              :style="{display:'grid',gridTemplateColumns:'auto 1fr auto',gap:'10px',alignItems:'stretch',
-                padding:'9px',cursor:'pointer',borderRadius:'var(--r-sm)',
-                background:selectedId===v.id?'var(--accent-soft)':hoveredId===v.id?'var(--bg-3)':'var(--bg-2)',
-                border:'1px solid '+(selectedId===v.id||hoveredId===v.id?'var(--accent-line)':'var(--line-2)'),
-                transition:'background .12s,border-color .12s'}">
-              <!-- plate placeholder (light) -->
-              <div :style="{width:'76px',height:'56px',borderRadius:'4px',flexShrink:0,background:'linear-gradient(135deg,#DCDFE4,#B8BFC9)',border:'1px solid var(--line-3)',position:'relative',overflow:'hidden'}">
-                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:0.4;display:block;">
+          <!-- 드릴다운 헤더 -->
+          <div style="padding:14px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <!-- 번호판 플레이스홀더 -->
+              <div style="width:100px;height:66px;border-radius:4px;flex-shrink:0;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border:1px solid var(--line-3);position:relative;overflow:hidden;">
+                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
                   <rect width="200" height="130" fill="#E3E6EB"/>
                   <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
                   <circle cx="55" cy="98" r="8" fill="#747F95"/>
                   <circle cx="160" cy="98" r="8" fill="#747F95"/>
                 </svg>
-                <div style="position:absolute;left:50%;bottom:6px;transform:translateX(-50%);background:#fff;border:1px solid var(--accent-line);border-radius:2px;padding:2px 6px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent);white-space:nowrap;">{{ v.plate.split(' ').slice(-1)[0] }}</div>
+                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">
+                  {{ selected ? selected.plate.split(' ').slice(-1)[0] : '—' }}
+                </div>
               </div>
-              <!-- middle: plate + chip + factor bars -->
-              <div style="min-width:0;display:flex;flex-direction:column;gap:5px;justify-content:space-between;">
-                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;">{{ v.plate }}</span>
+              <div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+                  <span style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:var(--text-1);">{{ selected ? selected.plate : '—' }}</span>
+                  <span v-if="selected" :class="levelChipCls(selected.level)">{{ levelLabel(selected.level) }} · {{ selected.score }}점</span>
+                  <span v-if="selected" class="chip chip-mute"><AppIcon name="user" :size="10"/> {{ selected.driver }}</span>
+                  <span v-if="selected" class="chip chip-info">{{ selectedDetailId ?? '운행 ID 없음' }}</span>
+                </div>
+                <div style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);">
+                  {{ selected ? `${selected.loc} · 시작 ${selected.startedAt} · ${selected.spd}km/h · ${selected.type}` : '차량을 선택하세요' }}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-ghost" style="font-size:11.5px;"
+                :disabled="!selected || selected.level!=='DANGER'"
+                :style="{opacity:selected?.level==='DANGER'?1:0.45,cursor:selected?.level==='DANGER'?'pointer':'not-allowed'}">
+                <AppIcon name="phone" :size="12"/> 전화 권고
+              </button>
+              <button class="btn btn-ghost" style="font-size:11.5px;" :disabled="!selected">
+                <AppIcon name="coffee" :size="12"/> 휴게 안내
+              </button>
+              <button class="btn btn-primary" style="font-size:11.5px;"
+                :disabled="!selectedDetailId"
+                :style="{opacity:selectedDetailId?1:0.45,cursor:selectedDetailId?'pointer':'not-allowed'}"
+                @click="goToDriveHistoryDetail">
+                <AppIcon name="arrow" :size="12"/> 운행 상세
+              </button>
+            </div>
+          </div>
+
+          <!-- FATIGUE BREAKDOWN 레이블 -->
+          <div style="padding:10px 16px 0;display:flex;justify-content:space-between;align-items:center;">
+            <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand"/>FATIGUE BREAKDOWN</div>
+            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-4);letter-spacing:.06em;">score = Σ(factor · weight)</span>
+          </div>
+
+          <!-- 피로 요인 목록 -->
+          <div style="padding:14px;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;">
+            <div v-if="!selected" style="padding:20px;text-align:center;color:var(--text-4);font-size:12.5px;">차량을 선택하세요</div>
+            <div v-for="fb in drillFactors" :key="fb.label"
+              :style="`padding:10px 12px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-sm);border-top:2px solid ${fbColor(fb.val,fb.thr)};`">
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                <div>
+                  <div style="font-size:12px;color:var(--text-2);font-weight:600;">{{ fb.label }}</div>
+                  <div style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-4);margin-top:1px;">max {{ fb.max }}{{ fb.unit }} · 임계 {{ fb.thr[0] }} / {{ fb.thr[1] }}{{ fb.unit }}</div>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:4px;">
+                  <span :style="`font-family:var(--font-mono);font-size:20px;font-weight:800;color:${fbColor(fb.val,fb.thr)};line-height:1;`">{{ (Math.round(fb.val*10)/10).toFixed(1) }}</span>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-4);">{{ fb.unit }}</span>
+                </div>
+              </div>
+              <div class="fb-bar-wrap">
+                <div class="fb-bar-fill" :style="`width:${fbPct(fb.val,fb.max)}%;`"/>
+                <div :style="`position:absolute;top:-3px;bottom:-3px;left:${(fb.thr[0]/fb.max)*100}%;width:1.5px;background:var(--warn);`"/>
+                <div :style="`position:absolute;top:-3px;bottom:-3px;left:${(fb.thr[1]/fb.max)*100}%;width:1.5px;background:var(--danger);`"/>
+                <div :style="`position:absolute;top:-3px;bottom:-3px;left:calc(${fbPct(fb.val,fb.max)}% - 1px);width:2px;background:var(--text-1);`"/>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--font-mono);font-size:9.5px;">
+                <span :style="fb.val>fb.thr[0]?'color:var(--warn);font-weight:700;':'color:var(--text-4);'">{{ fb.val>fb.thr[0]?'▲ ':'○ ' }}{{ fb.cLbl }}</span>
+                <span :style="fb.val>fb.thr[1]?'color:var(--danger);font-weight:700;':'color:var(--text-4);'">{{ fb.val>fb.thr[1]?'▲ ':'○ ' }}{{ fb.dLbl }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- REST EVENTS -->
+          <div style="padding:12px 16px;border-top:1px solid var(--line-1);">
+            <div class="label-sm" style="margin-bottom:8px;">REST EVENTS</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
+              <div v-for="r in restEvents" :key="r.label"
+                :style="`padding:8px;border-radius:4px;background:var(--bg-2);border:1px solid var(--line-2);border-top:2px solid ${r.color};`">
+                <div :style="`font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;font-weight:700;color:${r.color};`">{{ r.label }}</div>
+                <div :style="`font-family:var(--font-mono);font-size:22px;font-weight:800;margin-top:2px;letter-spacing:-0.015em;color:${r.count>0?'var(--text-1)':'var(--text-4)'};`">{{ r.count }}</div>
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-4);margin-top:1px;">{{ r.hint }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DRIVE TIMELINE 카드 -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="label-sm">DRIVE TIMELINE</div>
+              <div style="font-size:11.5px;color:var(--text-2);margin-top:2px;">시간대별 누적 피로 점수</div>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:10px;">
+              <div style="text-align:right;">
+                <div class="label-sm">현재</div>
+                <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--text-1);line-height:1;">{{ selected ? selected.score : '—' }}</div>
+              </div>
+              <div style="border-left:1px solid var(--line-2);padding-left:10px;text-align:right;">
+                <div class="label-sm">최고</div>
+                <div style="font-family:var(--font-mono);font-size:22px;font-weight:800;color:var(--text-1);line-height:1;">{{ selected ? peakScore : '—' }}</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:12px 14px;">
+            <svg width="100%" height="160" viewBox="0 0 760 200" preserveAspectRatio="none">
+              <rect x="30" y="10" width="720" height="66" fill="rgba(181,84,74,.07)"/>
+              <rect x="30" y="76" width="720" height="54" fill="rgba(197,138,58,.07)"/>
+              <rect x="30" y="130" width="720" height="52" fill="rgba(94,138,111,.06)"/>
+              <text x="748" y="22"  text-anchor="end" font-family="var(--font-mono)" font-size="9" fill="var(--danger)">위험≥70</text>
+              <text x="748" y="96"  text-anchor="end" font-family="var(--font-mono)" font-size="9" fill="var(--warn)">주의40~69</text>
+              <text x="748" y="144" text-anchor="end" font-family="var(--font-mono)" font-size="9" fill="var(--ok)">정상≤39</text>
+              <line x1="30" y1="10"  x2="750" y2="10"  stroke="var(--line-1)" stroke-dasharray="2 4"/>
+              <line x1="30" y1="55"  x2="750" y2="55"  stroke="var(--line-1)" stroke-dasharray="2 4"/>
+              <line x1="30" y1="100" x2="750" y2="100" stroke="var(--line-1)" stroke-dasharray="2 4"/>
+              <line x1="30" y1="145" x2="750" y2="145" stroke="var(--line-1)" stroke-dasharray="2 4"/>
+              <line x1="30" y1="182" x2="750" y2="182" stroke="var(--line-1)" stroke-dasharray="2 4"/>
+              <polyline v-if="selected" :points="tlScoreArea" fill="rgba(81,95,122,.18)" stroke="none"/>
+              <polyline v-if="selected" :points="tlScorePts" fill="none" stroke="var(--accent)" stroke-width="2"/>
+              <g v-for="(p,i) in tlEvents" :key="i">
+                <line :x1="tlPx(p.t)" y1="10" :x2="tlPx(p.t)" y2="182" stroke="var(--accent)" stroke-dasharray="2 4" opacity=".35"/>
+                <circle :cx="tlPx(p.t)" :cy="tlPy(p.score)" r="4" :fill="tlEventColor(p.event)" stroke="var(--bg-1)" stroke-width="2"/>
+                <text :x="tlPx(p.t)+6" :y="tlPy(p.score)-8" font-family="var(--font-mono)" font-size="9" fill="var(--text-2)">{{ p.event }}</text>
+              </g>
+              <text x="30"  y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">0h</text>
+              <text x="150" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+2h</text>
+              <text x="270" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+4h</text>
+              <text x="390" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+6h</text>
+              <text x="510" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+8h</text>
+              <text x="630" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+10h</text>
+              <text x="750" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+12h</text>
+            </svg>
+          </div>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- ── 중: FLEET MAP + RUNNING VEHICLES ── -->
+      <div class="center-col">
+
+        <!-- Fleet Map 카드 -->
+        <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+          <div style="padding:12px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div>
+              <div class="label-sm" style="display:flex;align-items:center;gap:6px;"><span class="dot dot-brand blink"/>FLEET MAP · LIVE</div>
+              <div style="font-size:11.5px;color:var(--text-2);margin-top:2px;">운행 <strong style="color:var(--text-1);">{{ runningCount }}</strong>대 / 전체 {{ vehicles.length }}대</div>
+            </div>
+            <div class="map-tabs">
+              <button v-for="t in mapTabs" :key="t" class="map-tab" :class="{active: mapTab===t}" @click="mapTab=t">
+                {{ t }} <span>{{ tabCount(t) }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Kakao Maps 컨테이너 -->
+          <div style="position:relative;flex:1;display:flex;flex-direction:column;min-height:300px;">
+            <div ref="mapContainer" style="width:100%;flex:1;min-height:320px;overflow:hidden;"></div>
+            <!-- 운행 현황 오버레이 -->
+            <div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:10;pointer-events:none;">
+              <span class="chip chip-info"><span class="dot dot-brand"/>{{ runningCount }}대 운행중</span>
+              <span v-if="dangerCount>0" class="chip chip-danger"><span class="dot dot-danger"/>{{ dangerCount }} 위험</span>
+              <span v-if="cautionCount>0" class="chip chip-warn"><span class="dot dot-warn"/>{{ cautionCount }} 주의</span>
+            </div>
+            <!-- 범례 -->
+            <div style="position:absolute;bottom:20px;right:10px;background:rgba(241,243,246,.92);border:1px solid var(--line-2);border-radius:var(--r-md);padding:7px 10px;font-family:var(--font-mono);font-size:9.5px;display:flex;flex-direction:column;gap:4px;backdrop-filter:blur(4px);z-index:10;pointer-events:none;">
+              <div style="font-size:8px;letter-spacing:.12em;color:var(--text-4);font-weight:700;">LEGEND</div>
+              <div style="display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#B5544A;display:inline-block;"/>위험 (70+)</div>
+              <div style="display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#C58A3A;display:inline-block;"/>주의 (40~69)</div>
+              <div style="display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#515F7A;display:inline-block;"/>정상 (0~39)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Running Vehicles 카드 -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
+            <div class="label-sm">RUNNING VEHICLES · {{ sortedFiltered.length }}대</div>
+            <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">점수 높은 순</span>
+          </div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;">
+            <div v-if="sortedFiltered.length===0" style="padding:20px;text-align:center;color:var(--text-4);font-size:12px;">해당 등급의 차량이 없습니다</div>
+            <div v-for="v in sortedFiltered" :key="v.id" class="vrow" :class="{selected: selectedId===v.id}" @click="selectedId=v.id">
+              <!-- 번호판 -->
+              <div class="vrow-plate">
+                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
+                  <rect width="200" height="130" fill="#E3E6EB"/>
+                  <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
+                  <circle cx="55" cy="98" r="8" fill="#747F95"/>
+                  <circle cx="160" cy="98" r="8" fill="#747F95"/>
+                </svg>
+                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.plate.split(' ').slice(-1)[0] }}</div>
+              </div>
+              <!-- 중앙 정보 -->
+              <div style="min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:space-between;">
+                <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+                  <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;">{{ v.plate }}</span>
                   <span :class="levelChipCls(v.level)">{{ levelLabel(v.level) }} {{ v.score }}</span>
                 </div>
-                <div style="font-size:10.5px;color:var(--text-3);display:flex;align-items:center;gap:5px;font-family:var(--font-mono);">
-                  <AppIcon name="user" :size="9"/>{{ v.driver }}
-                  <span style="color:var(--text-4);">·</span>
-                  <AppIcon name="location" :size="9"/>
-                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ v.loc.replace(/^.*?· /,'') }}</span>
-                </div>
-                <!-- factor bars -->
-                <div style="display:flex;flex-direction:column;gap:2px;margin-top:1px;">
-                  <div v-for="f in vFactors" :key="f.key" style="display:grid;grid-template-columns:34px 1fr 30px;gap:6px;align-items:center;">
-                    <span style="font-family:var(--font-mono);font-size:8.5px;color:var(--text-4);letter-spacing:0.06em;">{{ f.key }}</span>
+                <div style="font-size:10px;color:var(--text-3);font-family:var(--font-mono);">{{ v.driver }} · {{ v.loc.replace(/^.*?· /,'') }}</div>
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div v-for="f in vFactors" :key="f.key" style="display:grid;grid-template-columns:30px 1fr 26px;gap:4px;align-items:center;">
+                    <span style="font-family:var(--font-mono);font-size:8px;color:var(--text-4);">{{ f.key }}</span>
                     <div style="position:relative;height:4px;background:var(--bg-3);border-radius:2px;overflow:hidden;">
-                      <div :style="`position:absolute;top:0;left:0;height:100%;width:${fbPct(factorVal(v,f.key),f.max)}%;background:${fbColor(factorVal(v,f.key),f.thr)};transition:width .3s;`"/>
+                      <div :style="`position:absolute;top:0;left:0;height:100%;width:${fbPct(factorVal(v,f.key),f.max)}%;background:${fbColor(factorVal(v,f.key),f.thr)};`"/>
                       <div :style="`position:absolute;top:-1px;bottom:-1px;left:${(f.thr[0]/f.max)*100}%;width:1px;background:var(--warn);`"/>
                       <div :style="`position:absolute;top:-1px;bottom:-1px;left:${(f.thr[1]/f.max)*100}%;width:1px;background:var(--danger);`"/>
                     </div>
-                    <span :style="`font-family:var(--font-mono);font-size:9px;color:${fbColor(factorVal(v,f.key),f.thr)};font-weight:700;text-align:right;`">{{ factorVal(v,f.key)===0?'—':fmtHM(factorVal(v,f.key)) }}</span>
+                    <span :style="`font-family:var(--font-mono);font-size:8px;color:${fbColor(factorVal(v,f.key),f.thr)};font-weight:700;text-align:right;`">{{ factorVal(v,f.key)===0?'—':fmtHM(factorVal(v,f.key)) }}</span>
                   </div>
                 </div>
               </div>
-              <!-- right: score + sparkline -->
-              <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;min-width:92px;">
-                <div style="display:flex;flex-direction:column;align-items:flex-end;">
-                  <span :style="`font-family:var(--font-mono);font-size:22px;font-weight:800;color:${vSparkColor(v)};line-height:1;letter-spacing:-0.015em;`">{{ v.score }}</span>
+              <!-- 우측 점수 -->
+              <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;min-width:70px;">
+                <div>
+                  <span :style="`font-family:var(--font-mono);font-size:20px;font-weight:800;color:${vSparkColor(v)};line-height:1;`">{{ v.score }}</span>
                   <span style="font-size:9px;color:var(--text-4);font-family:var(--font-mono);">/100</span>
                 </div>
-                <svg width="86" height="24" style="display:block;">
-                  <line x1="0" :y1="22-(40/100)*18" x2="86" :y2="22-(40/100)*18" stroke="var(--warn)" stroke-dasharray="2 3" stroke-width="0.6"/>
-                  <line x1="0" :y1="22-(70/100)*18" x2="86" :y2="22-(70/100)*18" stroke="var(--danger)" stroke-dasharray="2 3" stroke-width="0.6"/>
+                <svg width="70" height="22" style="display:block;">
                   <polyline :points="vSparkPts(v)" fill="none" :stroke="vSparkColor(v)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle :cx="vSparkEnd(v).cx" :cy="vSparkEnd(v).cy" r="2" :fill="vSparkColor(v)" stroke="var(--bg-1)" stroke-width="1"/>
+                  <circle :cx="vSparkEnd(v).cx" :cy="vSparkEnd(v).cy" r="2" :fill="vSparkColor(v)"/>
                 </svg>
-                <span :style="`font-family:var(--font-mono);font-size:9.5px;color:${vDelta(v).color};font-weight:700;`">{{ vDelta(v).txt }} · {{ v.startedAt }}</span>
+                <span :style="`font-family:var(--font-mono);font-size:9px;color:${vDelta(v).color};font-weight:700;`">{{ vDelta(v).txt }}</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- EventStream + AlertList -->
-      <div style="display:grid;grid-template-rows:auto 1fr;gap:16px;min-width:0;">
+      </div><!-- /center-col -->
 
-        <!-- EventStream -->
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div style="padding:14px 18px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand blink"/>EVENT STREAM</div>
-              <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">시간 역순</div>
-            </div>
-            <span class="chip chip-info">{{ allEvents.length }} events</span>
-          </div>
-          <div style="padding:6px 6px 6px 4px;max-height:340px;overflow-y:auto;">
-            <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
-              <tbody>
-                <tr v-for="(e,i) in allEvents" :key="i"
-                  @click="()=>{ const id=eventVehicleId(e.plate); if(id) selectedId=id; }"
-                  :style="{cursor:eventVehicleId(e.plate)?'pointer':'default',borderBottom:i<allEvents.length-1?'1px solid var(--line-1)':'none'}"
-                  @mouseenter="ev=>ev.currentTarget.style.background='var(--bg-2)'"
-                  @mouseleave="ev=>ev.currentTarget.style.background='transparent'">
-                  <td style="padding:8px 10px;white-space:nowrap;vertical-align:middle;width:78px;">
-                    <div style="display:flex;align-items:center;gap:6px;">
-                      <span :style="`width:6px;height:6px;border-radius:50%;background:${evColor(e.kind)};flex-shrink:0;display:inline-block;`"/>
-                      <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3);">{{ e.t }}</span>
-                    </div>
-                  </td>
-                  <td style="padding:8px 10px;white-space:nowrap;vertical-align:middle;width:132px;">
-                    <span :style="`font-family:var(--font-mono);font-size:11.5px;font-weight:700;color:${evColor(e.kind)};`">{{ e.plate }}</span>
-                  </td>
-                  <td style="padding:8px 10px;vertical-align:middle;color:var(--text-2);font-size:12px;">{{ e.text }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <!-- ── 우: ACTIVE ALERTS + EVENT STREAM ── -->
+      <div class="right-col">
 
-        <!-- AlertList -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
-          <div style="padding:14px 18px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
+        <!-- ACTIVE ALERTS -->
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-danger pulse-ring"/>ACTIVE ALERTS</div>
             <span class="chip chip-danger">{{ alertList.length }} active</span>
           </div>
-          <div style="padding:10px;display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;">
-            <div v-if="alertList.length===0" style="padding:32px 14px;text-align:center;color:var(--text-4);font-size:12.5px;">현재 활성 알림이 없습니다</div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;">
+            <div v-if="alertList.length===0" style="padding:20px;text-align:center;color:var(--text-4);font-size:12.5px;">현재 활성 알림이 없습니다</div>
             <div v-for="a in alertList" :key="a.id" @click="selectedId=a.id"
-              :style="{padding:'10px 12px',borderLeft:`3px solid var(--${a.sev})`,background:`var(--${a.sev}-soft)`,borderRadius:'0 4px 4px 0',cursor:'pointer',transition:'background .12s'}">
+              :style="`padding:10px 12px;border-left:3px solid var(--${a.sev});background:var(--${a.sev}-soft);border-radius:0 4px 4px 0;cursor:pointer;`">
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <span :style="`font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--${a.sev});`">{{ a.plate }}</span>
                 <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-4);">{{ a.t }}</span>
@@ -725,178 +871,47 @@ const rankingItems = computed(() =>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ── VehicleDrilldown ── -->
-    <div v-if="selected" class="card" style="margin-bottom:16px;overflow:hidden;padding:0;">
-      <!-- header -->
-      <div style="padding:16px 18px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:16px;">
-          <!-- plate placeholder 130x86 light -->
-          <div style="width:130px;height:86px;border-radius:4px;flex-shrink:0;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border:1px solid var(--line-3);position:relative;overflow:hidden;">
-            <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:0.4;display:block;">
-              <rect width="200" height="130" fill="#E3E6EB"/>
-              <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
-              <circle cx="55" cy="98" r="8" fill="#747F95"/>
-              <circle cx="160" cy="98" r="8" fill="#747F95"/>
-            </svg>
-            <div style="position:absolute;left:50%;bottom:6px;transform:translateX(-50%);background:#fff;border:1px solid var(--accent-line);border-radius:2px;padding:2px 6px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--accent);white-space:nowrap;">{{ selected.plate }}</div>
-          </div>
-          <div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span style="font-family:var(--font-mono);font-size:18px;font-weight:800;">{{ selected.plate }}</span>
-              <span :class="levelChipCls(selected.level)">{{ levelLabel(selected.level) }} · {{ selected.score }}점</span>
-              <span class="chip chip-mute"><AppIcon name="user" :size="10"/> {{ selected.driver }}</span>
-              <span class="chip chip-info">{{ selected.driveLogId || '운행 ID 없음' }}</span>
-            </div>
-            <div style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-3);margin-top:5px;display:flex;gap:8px;align-items:center;">
-              <AppIcon name="location" :size="11"/>{{ selected.loc }}
-              <span>·</span><span>시작 {{ selected.startedAt }}</span>
-              <span>·</span><span>{{ selected.spd }} km/h</span>
-              <span>·</span><span>{{ selected.type }}</span>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost" :disabled="selected.level!=='DANGER'" :style="{opacity:selected.level==='DANGER'?1:0.45,cursor:selected.level==='DANGER'?'pointer':'not-allowed'}">
-            <AppIcon name="phone" :size="13"/> 전화 권고
-          </button>
-          <button class="btn btn-ghost"><AppIcon name="coffee" :size="13"/> 휴게 안내</button>
-          <button class="btn btn-primary" @click="selected.driveLogId && router.push('/drive-history/'+selected.driveLogId)">
-            <AppIcon name="arrow" :size="13"/> 운행 상세
-          </button>
-        </div>
-      </div>
-
-      <!-- body: factor breakdown + timeline -->
-      <div style="display:grid;grid-template-columns:1fr 1.7fr;">
-        <!-- Factor breakdown -->
-        <div style="padding:18px;border-right:1px solid var(--line-1);">
-          <div class="label-sm" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-            <span>FATIGUE BREAKDOWN</span>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-4);letter-spacing:0.06em;">score = Σ(factor · weight)</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <div v-for="fb in drillFactors" :key="fb.label"
-              :style="{padding:'10px 12px',background:'var(--bg-2)',border:'1px solid var(--line-2)',borderRadius:'var(--r-sm)',borderTop:`2px solid ${fbColor(fb.val,fb.thr)}`}">
-              <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-                <div>
-                  <div style="font-size:12px;color:var(--text-2);font-weight:600;">{{ fb.label }}</div>
-                  <div style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-4);letter-spacing:0.04em;margin-top:1px;">max {{ fb.max }}{{ fb.unit }} · 임계 {{ fb.thr[0] }} / {{ fb.thr[1] }}{{ fb.unit }}</div>
-                </div>
-                <div style="display:flex;align-items:baseline;gap:4px;">
-                  <span :style="`font-family:var(--font-mono);font-size:20px;font-weight:800;color:${fbColor(fb.val,fb.thr)};letter-spacing:-0.01em;line-height:1;`">{{ (Math.round(fb.val*10)/10).toFixed(1) }}</span>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-4);">{{ fb.unit }}</span>
-                </div>
-              </div>
-              <div style="position:relative;height:10px;background:var(--bg-3);border-radius:5px;margin-top:8px;overflow:hidden;">
-                <div :style="`position:absolute;top:0;left:0;height:100%;width:${fbPct(fb.val,fb.max)}%;background:linear-gradient(90deg,var(--ok),var(--warn) 50%,var(--danger) 85%);transition:width .4s;`"/>
-                <div :style="`position:absolute;top:-3px;bottom:-3px;left:${(fb.thr[0]/fb.max)*100}%;width:1.5px;background:var(--warn);`"/>
-                <div :style="`position:absolute;top:-3px;bottom:-3px;left:${(fb.thr[1]/fb.max)*100}%;width:1.5px;background:var(--danger);`"/>
-                <div :style="`position:absolute;top:-3px;bottom:-3px;left:calc(${fbPct(fb.val,fb.max)}% - 1px);width:2px;background:var(--text-1);`"/>
-              </div>
-              <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--font-mono);font-size:9.5px;">
-                <span :style="fb.val>fb.thr[0]?'color:var(--warn);font-weight:700;':'color:var(--text-4);'">{{ fb.val>fb.thr[0]?'▲ ':'○ ' }}{{ fb.cLbl }}</span>
-                <span :style="fb.val>fb.thr[1]?'color:var(--danger);font-weight:700;':'color:var(--text-4);'">{{ fb.val>fb.thr[1]?'▲ ':'○ ' }}{{ fb.dLbl }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="label-sm" style="margin:16px 0 8px;display:flex;justify-content:space-between;align-items:center;">
-            <span>REST EVENTS</span>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-4);letter-spacing:0.06em;">4 stages · 점수 보정</span>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-            <div v-for="r in restEvents" :key="r.label"
-              :style="{padding:'10px',borderRadius:'4px',background:'var(--bg-2)',border:'1px solid var(--line-2)',borderTop:`2px solid ${r.color}`}">
-              <div :style="`font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;font-weight:700;color:${r.color};`">{{ r.label }}</div>
-              <div :style="`font-family:var(--font-mono);font-size:22px;font-weight:800;margin-top:3px;letter-spacing:-0.015em;color:${r.count>0?'var(--text-1)':'var(--text-4)'};`">{{ r.count }}</div>
-              <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-4);margin-top:2px;">{{ r.hint }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Drive timeline -->
-        <div style="padding:18px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <!-- EVENT STREAM -->
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div class="label-sm">DRIVE TIMELINE · {{ selected.plate }}</div>
-              <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">시간대별 누적 피로 점수 (12h)</div>
+              <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand blink"/>EVENT STREAM</div>
+              <div style="font-size:11.5px;color:var(--text-2);margin-top:2px;">시간 역순</div>
             </div>
-            <div style="display:flex;align-items:baseline;gap:14px;">
-              <div>
-                <div class="label-sm">현재</div>
-                <div style="display:flex;align-items:baseline;gap:4px;margin-top:3px;">
-                  <span :style="`font-family:var(--font-mono);font-size:22px;font-weight:700;color:${levelLabel(selected.level)==='위험'?'var(--danger)':levelLabel(selected.level)==='주의'?'var(--warn)':'var(--ok)'};line-height:1;`">{{ selected.score }}</span>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-4);">/100</span>
-                </div>
-              </div>
-              <div style="border-left:1px solid var(--line-2);padding-left:14px;">
-                <div class="label-sm">최고</div>
-                <span :style="`font-family:var(--font-mono);font-size:22px;font-weight:800;color:${levelLabel(selected.level)==='위험'?'var(--danger)':levelLabel(selected.level)==='주의'?'var(--warn)':'var(--ok)'};letter-spacing:-0.01em;`">{{ peakScore }}</span>
-              </div>
-            </div>
+            <span class="chip chip-info">{{ allEvents.length }} events</span>
           </div>
-          <svg width="100%" height="220" viewBox="0 0 800 220" preserveAspectRatio="none">
-            <rect x="40" y="20"  width="740" height="74" fill="rgba(181,84,74,0.07)"/>
-            <rect x="40" y="94"  width="740" height="54" fill="rgba(197,138,58,0.07)"/>
-            <rect x="40" y="148" width="740" height="52" fill="rgba(94,138,111,0.06)"/>
-            <text x="780" y="34"  text-anchor="end" font-family="var(--font-mono)" font-size="9.5" fill="var(--danger)">위험 ≥ 70</text>
-            <text x="780" y="108" text-anchor="end" font-family="var(--font-mono)" font-size="9.5" fill="var(--warn)">주의 40~69</text>
-            <text x="780" y="162" text-anchor="end" font-family="var(--font-mono)" font-size="9.5" fill="var(--ok)">정상 ≤ 39</text>
-            <line v-for="y in [0,0.25,0.5,0.75,1]" :key="y" x1="40" x2="780" :y1="20+y*180" :y2="20+y*180" stroke="var(--line-1)" stroke-dasharray="2 4"/>
-            <polyline :points="tlScoreArea" fill="rgba(81,95,122,0.18)" stroke="none"/>
-            <polyline :points="tlScorePts" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
-            <g v-for="(p,i) in tlEvents" :key="i">
-              <line :x1="tlPx(p.t)" y1="20" :x2="tlPx(p.t)" y2="200" stroke="var(--accent)" stroke-dasharray="2 4" opacity="0.35"/>
-              <circle :cx="tlPx(p.t)" :cy="tlPy(p.score)" r="4" :fill="tlEventColor(p.event)" stroke="var(--bg-1)" stroke-width="2"/>
-              <text :x="tlPx(p.t)+6" :y="tlPy(p.score)-8" font-family="var(--font-mono)" font-size="9.5" fill="var(--text-2)">{{ p.event }}</text>
-            </g>
-            <text v-for="(h,i) in [0,2,4,6,8,10,12]" :key="'h'+i" :x="40+h*61.6" y="212" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--text-4)">+{{ h }}h</text>
-          </svg>
+          <div style="flex:1;overflow-y:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <tbody>
+                <tr v-for="(e,i) in allEvents" :key="i"
+                  @click="()=>{ const id=eventVehicleId(e.plate); if(id) selectedId=id; }"
+                  :style="{cursor:eventVehicleId(e.plate)?'pointer':'default',borderBottom:i<allEvents.length-1?'1px solid var(--line-1)':'none'}"
+                  @mouseenter="ev=>ev.currentTarget.style.background='var(--bg-2)'"
+                  @mouseleave="ev=>ev.currentTarget.style.background='transparent'">
+                  <td style="padding:8px 10px;white-space:nowrap;vertical-align:middle;width:60px;">
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <span :style="`width:6px;height:6px;border-radius:50%;background:${evColor(e.kind)};flex-shrink:0;display:inline-block;`"/>
+                      <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);">{{ e.t }}</span>
+                    </div>
+                  </td>
+                  <td style="padding:8px 10px;white-space:nowrap;vertical-align:middle;">
+                    <span :style="`font-family:var(--font-mono);font-size:11px;font-weight:700;color:${evColor(e.kind)};`">{{ e.plate }}</span>
+                  </td>
+                  <td style="padding:8px 10px;vertical-align:middle;color:var(--text-2);font-size:11px;">{{ e.text }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ── Heatmap + Ranking ── -->
-    <div style="display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:16px;margin-bottom:24px;">
-      <!-- HeatmapHours -->
-      <div class="card" style="padding:18px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <div>
-            <div class="label-sm">DRIVER × HOUR HEATMAP</div>
-            <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">오늘 시간대별 누적 피로 점수</div>
-          </div>
-          <span class="chip chip-mute">2026.05.04</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <!-- hour axis -->
-          <div style="display:grid;grid-template-columns:120px repeat(24,1fr);gap:2px;font-family:var(--font-mono);font-size:9px;color:var(--text-4);">
-            <div/>
-            <div v-for="h in 24" :key="h" style="text-align:center;">{{ String(h-1).padStart(2,'0') }}</div>
-          </div>
-          <!-- rows -->
-          <div v-for="d in heatmapDrivers" :key="d.plate" style="display:grid;grid-template-columns:120px repeat(24,1fr);gap:2px;align-items:center;">
-            <div style="font-size:11.5px;">
-              <div style="font-weight:600;color:var(--text-1);">{{ d.name }}</div>
-              <div style="font-family:var(--font-mono);color:var(--text-4);font-size:10px;margin-top:1px;">{{ d.plate }}</div>
-            </div>
-            <div v-for="(s,i) in d.hours" :key="i"
-              :style="`height:22px;border-radius:2px;background:${heatColor(s)};`"
-              :title="`${i}:00 · ${s===null?'운행 없음':s+'점'}`"/>
-          </div>
-        </div>
-        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-3);">
-          <span>0 (안전)</span>
-          <div style="display:flex;gap:2px;">
-            <span v-for="c in ['var(--bg-2)','#5E8A6F','#92A08F','#C5A56A','#C58A3A','#B5544A']" :key="c"
-              :style="`width:18px;height:14px;background:${c};${c==='var(--bg-2)'?'border:1px solid var(--line-2);':''}display:inline-block;`"/>
-          </div>
-          <span>100 (위험)</span>
-        </div>
-      </div>
+      </div><!-- /right-col -->
+    </div><!-- /main-grid -->
 
-      <!-- DriverRanking -->
+    <!-- ── 하단: DRIVER RANKING + HEATMAP ── -->
+    <div class="bottom-grid">
+
+      <!-- Driver Ranking -->
       <div class="card" style="padding:0;overflow:hidden;">
         <div style="padding:14px 18px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
           <div>
@@ -914,7 +929,7 @@ const rankingItems = computed(() =>
                 <div style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">{{ it.sub }}</div>
               </div>
               <div style="height:16px;background:var(--bg-2);border-radius:3px;overflow:hidden;position:relative;">
-                <div :style="`width:${(it.value/100)*100}%;height:100%;background:${it.color};transition:width 0.4s;`"/>
+                <div :style="`width:${it.value}%;height:100%;background:${it.color};transition:width .4s;`"/>
                 <div style="position:absolute;top:50%;left:8px;transform:translateY(-50%);font-family:var(--font-mono);font-size:10px;color:var(--bg-1);font-weight:700;">{{ it.value }}</div>
               </div>
               <span :style="`font-family:var(--font-mono);font-size:11px;font-weight:700;color:${it.color};text-align:right;`">{{ it.tag }}</span>
@@ -922,17 +937,57 @@ const rankingItems = computed(() =>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Heatmap -->
+      <div class="card" style="padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div class="label-sm">DRIVER × HOUR HEATMAP</div>
+            <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">오늘 시간대별 누적 피로 점수</div>
+          </div>
+          <span class="chip chip-mute">2026.05.21</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;font-family:var(--font-mono);font-size:9px;color:var(--text-4);">
+            <div/>
+            <div v-for="h in 24" :key="h" style="text-align:center;">{{ String(h-1).padStart(2,'0') }}</div>
+          </div>
+          <div v-for="d in heatmapDrivers" :key="d.plate" style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;align-items:center;">
+            <div style="font-size:11px;">
+              <div style="font-weight:600;color:var(--text-1);">{{ d.name }}</div>
+              <div style="font-family:var(--font-mono);color:var(--text-4);font-size:9px;margin-top:1px;">{{ d.plate }}</div>
+            </div>
+            <div v-for="(s,i) in d.hours" :key="i"
+              :style="`height:20px;border-radius:2px;background:${heatColor(s)};`"
+              :title="`${i}:00 · ${s===null?'운행 없음':s+'점'}`"/>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-3);">
+          <span>0 (안전)</span>
+          <div style="display:flex;gap:2px;">
+            <span v-for="c in ['var(--bg-2)','#5E8A6F','#92A08F','#C5A56A','#C58A3A','#B5544A']" :key="c"
+              :style="`width:16px;height:12px;background:${c};${c==='var(--bg-2)'?'border:1px solid var(--line-2);':''}display:inline-block;`"/>
+          </div>
+          <span>100 (위험)</span>
+        </div>
+      </div>
+
+    </div><!-- /bottom-grid -->
 
   </div>
 </template>
 
 <style scoped>
 .fade-up { animation: fadeUp 0.4s ease both; }
-.view    { padding: 32px 32px 40px; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-/* KPI strip */
+/* 페이지 */
+.view { padding: 20px 8px 32px; max-width:100%; }
+
+/* 페이지 헤더 */
+.page-hdr { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px; gap:16px; flex-wrap:wrap; }
+
+/* KPI Strip */
 .kpi-strip {
   background: var(--bg-1);
   border: 1px solid var(--line-2);
@@ -941,54 +996,115 @@ const rankingItems = computed(() =>
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   box-shadow: var(--shadow-1);
+  margin-bottom: 14px;
 }
-.kpi-tile {
-  padding: 14px 16px;
-  position: relative;
-  border-right: 1px solid var(--line-1);
-  min-width: 180px;
-}
-.tile-hdr { display:flex; justify-content:space-between; align-items:center; }
-.tile-label { font: 600 9.5px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); }
+.kpi-tile { padding: 14px 16px; border-right: 1px solid var(--line-1); }
+.kpi-tile:last-child { border-right: none; }
+.tile-hdr   { display:flex; justify-content:space-between; align-items:center; }
+.tile-label { font: 600 9.5px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-4); }
 .tile-meta  { font-family: var(--font-mono); font-size: 9px; color: var(--text-4); }
 .tile-val   { display:flex; align-items:baseline; gap:4px; margin-top:8px; }
 .tile-delta { margin-left:auto; font-family:var(--font-mono); font-size:10.5px; padding:2px 5px; border-radius:3px; }
 .tile-delta.bad  { color:var(--danger); background:var(--danger-soft); }
 .tile-delta.good { color:var(--ok);     background:var(--ok-soft); }
 
-/* label-sm */
-.label-sm {
+/* 메인 3컬럼 그리드 */
+.main-grid {
+  display: grid;
+  grid-template-columns: 35fr 25fr 35fr;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: stretch;
+}
+.left-col   { display:flex; flex-direction:column; gap:12px; height:100%; }
+.center-col { display:flex; flex-direction:column; gap:12px; height:100%; }
+.right-col  { display:flex; flex-direction:column; gap:12px; height:100%; }
+
+/* 하단 그리드 */
+.bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
+
+/* 지도 탭 */
+.map-tabs { display:flex; gap:5px; }
+.map-tab {
+  padding: 5px 10px;
+  font-size: 11px;
   font-family: var(--font-mono);
-  font-size: 10.5px; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--text-3); font-weight: 600;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  border: 1px solid var(--line-2);
+  background: var(--bg-2);
+  color: var(--text-3);
+  font-weight: 500;
+  transition: all .12s;
+}
+.map-tab.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent-line);
+  font-weight: 700;
 }
 
-/* chips */
-.chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 3px 8px; border-radius: 999px;
-  font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
-  border: 1px solid transparent; font-family: var(--font-mono);
+/* 차량 행 */
+.vrow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: stretch;
+  padding: 9px;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  transition: background .12s, border-color .12s;
 }
-.chip-ok     { background:var(--ok-soft);     color:var(--ok);     border-color:rgba(138,186,154,0.25); }
-.chip-warn   { background:var(--warn-soft);   color:var(--warn);   border-color:rgba(214,181,106,0.25); }
-.chip-danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(209,139,126,0.25); }
+.vrow:hover, .vrow.selected {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.vrow-plate {
+  width: 70px; height: 52px;
+  border-radius: 4px; flex-shrink: 0;
+  background: linear-gradient(135deg, #DCDFE4, #B8BFC9);
+  border: 1px solid var(--line-3);
+  position: relative; overflow: hidden;
+}
+
+/* 피로 바 */
+.fb-bar-wrap { position:relative; height:10px; background:var(--bg-3); border-radius:5px; margin-top:8px; overflow:hidden; }
+.fb-bar-fill { position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg,var(--ok),var(--warn) 50%,var(--danger) 85%); transition:width .4s; }
+
+/* label-sm */
+.label-sm { font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-3); font-weight:600; }
+
+/* chips */
+.chip { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:500; border:1px solid transparent; font-family:var(--font-mono); }
+.chip-ok     { background:var(--ok-soft);     color:var(--ok);     border-color:rgba(138,186,154,.25); }
+.chip-warn   { background:var(--warn-soft);   color:var(--warn);   border-color:rgba(214,181,106,.25); }
+.chip-danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(209,139,126,.25); }
 .chip-info   { background:var(--info-soft);   color:var(--info);   border-color:var(--accent-line); }
 .chip-mute   { background:var(--bg-3);        color:var(--text-3); border-color:var(--line-2); }
 
 /* dots */
-.dot         { width:6px; height:6px; border-radius:50%; display:inline-block; }
-.dot-ok      { background:var(--ok);     box-shadow:0 0 0 3px var(--ok-soft); }
-.dot-danger  { background:var(--danger); box-shadow:0 0 0 3px var(--danger-soft); }
-.dot-warn    { background:var(--warn);   box-shadow:0 0 0 3px var(--warn-soft); }
-.dot-brand   { background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+.dot        { width:6px; height:6px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.dot-ok     { background:var(--ok);     box-shadow:0 0 0 3px var(--ok-soft); }
+.dot-danger { background:var(--danger); box-shadow:0 0 0 3px var(--danger-soft); }
+.dot-warn   { background:var(--warn);   box-shadow:0 0 0 3px var(--warn-soft); }
+.dot-brand  { background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
 
-/* animations */
+/* 애니메이션 */
 .blink { animation: blink-soft 2s infinite; }
-@keyframes blink-soft { 0%,100% { opacity:1; } 50% { opacity:0.55; } }
+@keyframes blink-soft { 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
 .pulse-ring { animation: pulse-ring 2s infinite; }
-@keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(209,139,126,0.45);} 70%{box-shadow:0 0 0 8px rgba(209,139,126,0);} 100%{box-shadow:0 0 0 0 rgba(209,139,126,0);} }
+@keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(209,139,126,.45);} 70%{box-shadow:0 0 0 8px rgba(209,139,126,0);} 100%{box-shadow:0 0 0 0 rgba(209,139,126,0);} }
+@keyframes kakao-pulse { 0%{opacity:.55;} 70%{opacity:0;} 100%{opacity:0;} }
 
 /* card */
-.card { background:var(--bg-1); border:1px solid var(--line-2); border-radius:var(--r-md); }
+.card { background:var(--bg-1); border:1px solid var(--line-2); border-radius:var(--r-md); box-shadow:var(--shadow-1); }
+
+/* 버튼 */
+.btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:var(--r-sm); font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:var(--font-sans); transition:background .12s; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:var(--accent-hover); }
+.btn-ghost { background:var(--bg-2); color:var(--text-2); border:1px solid var(--line-2); }
+.btn-ghost:hover { background:var(--bg-3); }
 </style>
