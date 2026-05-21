@@ -19,4 +19,7 @@ public interface DriveLogRepository extends JpaRepository<DriveLog, Long> {
 
 	List<DriveLog> findByCompanyIdAndStartedAtBetweenOrderByStartedAtAsc(Long companyId,
 		LocalDateTime start, LocalDateTime end);
+
+	List<DriveLog> findByCompanyIdAndStartedAtBetweenOrderByStartedAtDesc(Long companyId,
+		LocalDateTime start, LocalDateTime end);
 }
