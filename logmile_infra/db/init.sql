@@ -261,7 +261,40 @@ CREATE INDEX idx_fatigue_event_drive_log_id ON fatigue_event (drive_log_id);
 CREATE INDEX idx_fatigue_event_occurred_at  ON fatigue_event (occurred_at);
 
 -- ============================================================
--- 9. plate_event (번호판 입출차 관측 이벤트)
+-- 9. dashboard_action (관제 액션 기록)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dashboard_action (
+    id              BIGSERIAL       PRIMARY KEY,
+    company_id      BIGINT          NOT NULL,
+    drive_log_id    BIGINT          NOT NULL,
+    admin_id        BIGINT          NOT NULL,
+    action_type     VARCHAR(40)     NOT NULL,
+    note            VARCHAR(255),
+    created_at      TIMESTAMP       NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_dashboard_action_company
+        FOREIGN KEY (company_id) REFERENCES company (id),
+    CONSTRAINT fk_dashboard_action_drive_log
+        FOREIGN KEY (drive_log_id) REFERENCES drive_log (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_dashboard_action_admin
+        FOREIGN KEY (admin_id) REFERENCES admin (id),
+    CONSTRAINT chk_dashboard_action_type
+        CHECK (action_type IN ('REST_GUIDE', 'PHONE_RECOMMENDATION'))
+);
+
+COMMENT ON TABLE  dashboard_action                 IS '대시보드 휴게 안내/전화 권고 액션 기록';
+COMMENT ON COLUMN dashboard_action.company_id      IS '소속 업체 ID';
+COMMENT ON COLUMN dashboard_action.drive_log_id    IS '대상 운행 ID';
+COMMENT ON COLUMN dashboard_action.admin_id        IS '액션을 기록한 관리자 ID';
+COMMENT ON COLUMN dashboard_action.action_type     IS '액션 유형 (REST_GUIDE, PHONE_RECOMMENDATION)';
+COMMENT ON COLUMN dashboard_action.note            IS '관리자 메모';
+
+CREATE INDEX idx_dashboard_action_drive_log_id ON dashboard_action (drive_log_id);
+CREATE INDEX idx_dashboard_action_admin_id     ON dashboard_action (admin_id);
+CREATE INDEX idx_dashboard_action_created_at   ON dashboard_action (created_at);
+
+-- ============================================================
+-- 10. plate_event (번호판 입출차 관측 이벤트)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS plate_event (
     id                      BIGSERIAL        PRIMARY KEY,
@@ -309,7 +342,7 @@ CREATE INDEX idx_plate_event_plate_no    ON plate_event (plate_no);
 CREATE INDEX idx_plate_event_observed_at ON plate_event (observed_at);
 
 -- ============================================================
--- 10. fatigue_threshold (피로도 임계값 설정)
+-- 11. fatigue_threshold (피로도 임계값 설정)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS fatigue_threshold (
     id                  BIGSERIAL        PRIMARY KEY,

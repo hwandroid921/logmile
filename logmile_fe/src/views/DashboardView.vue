@@ -9,16 +9,16 @@ const router = useRouter()
 
 /* ─── 시드 데이터 (lat/lng 추가) ─── */
 const SEED_VEHICLES = [
-  { id:1,  plate:'경기 80바 1024', driver:'김민수', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:'DL-2026-0438', lat:37.0078, lng:127.2714 },
-  { id:2,  plate:'경기 80바 1025', driver:'박정호', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:'DL-2026-0437', lat:36.7842, lng:126.4502 },
-  { id:3,  plate:'경기 80바 1026', driver:'이영준', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:'DL-2026-0436', lat:36.9357, lng:127.6882 },
-  { id:4,  plate:'경기 80바 1027', driver:'최성훈', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:'DL-2026-0435', lat:37.2986, lng:127.6374 },
-  { id:5,  plate:'경기 80바 1028', driver:'정우석', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:'DL-2026-0434', lat:35.1797, lng:128.1077 },
-  { id:6,  plate:'경기 80바 1029', driver:'강지훈', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:'DL-2026-0433', lat:36.3933, lng:128.1968 },
-  { id:7,  plate:'경기 80바 1030', driver:'한승연', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:'DL-2026-0432', lat:37.4875, lng:126.7657 },
-  { id:8,  plate:'경기 80바 1031', driver:'조영민', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:'DL-2026-0431', lat:36.8897, lng:126.6453 },
-  { id:9,  plate:'경기 80바 1032', driver:'윤태경', type:'카고 5톤',    score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
-  { id:10, plate:'경기 80바 1033', driver:'서동현', type:'윙바디 8톤',  score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
+  { id:1,  plate:'경기 80바 1024', driver:'김민수', phone:'010-3821-4507', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:'DL-2026-0438', lat:37.0078, lng:127.2714 },
+  { id:2,  plate:'경기 80바 1025', driver:'박정호', phone:'010-5512-8834', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:'DL-2026-0437', lat:36.7842, lng:126.4502 },
+  { id:3,  plate:'경기 80바 1026', driver:'이영준', phone:'010-7743-2291', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:'DL-2026-0436', lat:36.9357, lng:127.6882 },
+  { id:4,  plate:'경기 80바 1027', driver:'최성훈', phone:'010-2267-9104', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:'DL-2026-0435', lat:37.2986, lng:127.6374 },
+  { id:5,  plate:'경기 80바 1028', driver:'정우석', phone:'010-9934-6612', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:'DL-2026-0434', lat:35.1797, lng:128.1077 },
+  { id:6,  plate:'경기 80바 1029', driver:'강지훈', phone:'010-4418-7753', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:'DL-2026-0433', lat:36.3933, lng:128.1968 },
+  { id:7,  plate:'경기 80바 1030', driver:'한승연', phone:'010-6629-3380', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:'DL-2026-0432', lat:37.4875, lng:126.7657 },
+  { id:8,  plate:'경기 80바 1031', driver:'조영민', phone:'010-8801-5547', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:'DL-2026-0431', lat:36.8897, lng:126.6453 },
+  { id:9,  plate:'경기 80바 1032', driver:'윤태경', phone:'010-1193-4428', type:'카고 5톤',    score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
+  { id:10, plate:'경기 80바 1033', driver:'서동현', phone:'010-3375-8819', type:'윙바디 8톤',  score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
 ]
 
 const DEMO_RUNNING_PRESETS = SEED_VEHICLES.filter(v => v.status === 'RUNNING')
@@ -40,6 +40,32 @@ function levelChipCls(l)  { return l === 'DANGER' ? 'chip chip-danger' : l === '
 function evColor(k)       { return k === 'danger' ? 'var(--danger)' : k === 'warn' ? 'var(--warn)' : 'var(--accent)' }
 function startedAtLabel(dt, fallback = '—') { return dt ? String(dt).slice(11, 16) : fallback }
 function mapVColor(v)     { return v.level === 'DANGER' ? '#B5544A' : v.level === 'CAUTION' ? '#C58A3A' : '#515F7A' }
+function todayDateValue() { return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }) }
+function formatSelectedDateLabel(value) {
+  if (!value) return '날짜 미선택'
+  const [year, month, day] = value.split('-')
+  return `${year}.${month}.${day}`
+}
+function formatCsvDateTime(value) {
+  if (!value) return '—'
+  const text = String(value)
+  if (text.includes('T')) return text.slice(0, 16).replace('T', ' ')
+  return text
+}
+function actionTimeLabel(value) {
+  if (!value) return ''
+  return formatCsvDateTime(value)
+}
+function escapeCsvCell(value) {
+  const text = value == null ? '' : String(value)
+  return `"${text.replace(/"/g, '""')}"`
+}
+function csvTabSuffix(tab) {
+  if (tab === '위험') return 'danger'
+  if (tab === '주의') return 'caution'
+  if (tab === '정상') return 'normal'
+  return 'all'
+}
 
 function buildRuntimeVehicle(apiVehicle, index) {
   const preset = DEMO_RUNNING_PRESETS[index % DEMO_RUNNING_PRESETS.length] || DEMO_RUNNING_PRESETS[0]
@@ -55,27 +81,40 @@ function buildRuntimeVehicle(apiVehicle, index) {
   return {
     ...preset,
     id: apiVehicle.vehicleId ?? apiVehicle.driveLogId ?? preset.id,
+    vehicleId: apiVehicle.vehicleId ?? preset.id,
     plate: apiVehicle.plateNo ?? preset.plate,
     driver: apiVehicle.driverName ?? preset.driver,
     type: apiVehicle.vehicleType ?? preset.type,
-    score, level, status: 'RUNNING',
+    score,
+    level,
+    status: apiVehicle.status ?? 'RUNNING',
     contMin, dailyMin, nightMin,
     restValid: level === 'DANGER' ? 1 : 1 + (index % 2),
     restSuff:  level === 'NORMAL' ? 1 : 0,
     restInvalid: level === 'DANGER' ? 1 : 0,
     restMiss: level === 'DANGER' ? 2 : level === 'CAUTION' ? 1 : 0,
     startedAt: startedAtLabel(apiVehicle.startedAt, preset.startedAt),
+    startedAtRaw: apiVehicle.startedAt ?? null,
     driveLogId: apiVehicle.driveLogId ?? null,
+    driverPhone: apiVehicle.driverPhone ?? preset.phone ?? null,
+    restGuideCount: apiVehicle.restGuideCount ?? 0,
+    lastRestGuideAt: apiVehicle.lastRestGuideAt ?? null,
+    lastPhoneRecommendationAt: apiVehicle.lastPhoneRecommendationAt ?? null,
     lat: preset.lat, lng: preset.lng,
   }
 }
 
 /* ─── State ─── */
 const now        = ref(new Date().toLocaleString('ko-KR', { hour12: false }))
+const selectedDate = ref(todayDateValue())
 const mapTab     = ref('전체')
 const mapTabs    = ['전체', '위험', '주의', '정상']
 const vehicles   = ref([])
 const selectedId = ref(null)
+const actionSubmitting = ref({ rest: false, phone: false })
+const phoneModal       = ref(null)   // null | { driver, phone, plate }
+const smsToast         = ref(null)   // null | { driver, phone, message, count }
+const localEvents      = ref([])     // SMS 시뮬레이션 이벤트 누적
 const isDemoBoard = computed(() => route.name === 'demoBoard')
 
 /* ─── Kakao Maps ─── */
@@ -101,11 +140,7 @@ function renderKakaoMarkers() {
   kakaoOverlays = []
   if (!kakaoMap) return
 
-  const running  = vehicles.value.filter(v => v.status === 'RUNNING')
-  const filtered = mapTab.value === '전체' ? running
-    : running.filter(v => v.level === (mapTab.value === '위험' ? 'DANGER' : mapTab.value === '주의' ? 'CAUTION' : 'NORMAL'))
-
-  filtered.forEach(v => {
+  filteredVehicles.value.forEach(v => {
     const overlay = new window.kakao.maps.CustomOverlay({
       position: new window.kakao.maps.LatLng(v.lat, v.lng),
       content:  makeMarkerEl(v),
@@ -129,8 +164,8 @@ function initKakaoMap() {
     if (!container) return
     if (!container.offsetHeight) container.style.height = '360px'
     kakaoMap = new window.kakao.maps.Map(container, {
-      center: new window.kakao.maps.LatLng(36.5, 127.8),
-      level: 9,
+      center: new window.kakao.maps.LatLng(36.0, 127.7),
+      level: 12,
     })
     kakaoMap.addControl(new window.kakao.maps.ZoomControl(), window.kakao.maps.ControlPosition.RIGHT)
     setTimeout(() => { kakaoMap.relayout(); renderKakaoMarkers() }, 100)
@@ -147,7 +182,8 @@ async function fetchData() {
     return
   }
   try {
-    const [, vRes] = await Promise.all([dashboardApi.getSummary(), dashboardApi.getVehicles()])
+    const params = { date: selectedDate.value }
+    const [, vRes] = await Promise.all([dashboardApi.getSummary(params), dashboardApi.getVehicles(params)])
     const runtimeVehicles = Array.isArray(vRes.data)
       ? vRes.data.map((v, index) => buildRuntimeVehicle(v, index))
       : []
@@ -179,8 +215,15 @@ onUnmounted(() => clearInterval(timer))
 watch(selectedId, () => renderKakaoMarkers())
 watch(mapTab,     () => renderKakaoMarkers())
 watch(vehicles,   () => renderKakaoMarkers())
+watch(selectedDate, async () => {
+  selectedId.value = null
+  await refresh()
+})
 
 /* ─── 파생값 ─── */
+const isTodaySelected = computed(() => selectedDate.value === todayDateValue())
+const dashboardVehicles = computed(() =>
+  vehicles.value.filter(v => isTodaySelected.value ? v.status === 'RUNNING' : v.status !== 'IDLE'))
 const selected         = computed(() => vehicles.value.find(v => v.id === selectedId.value) || null)
 const selectedDetailId = computed(() => {
   const raw = selected.value?.driveLogId
@@ -188,22 +231,23 @@ const selectedDetailId = computed(() => {
   const parsed = Number(raw)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null
 })
-const runningVehicles  = computed(() => vehicles.value.filter(v => v.status === 'RUNNING'))
+const restGuideCount            = computed(() => selected.value?.restGuideCount ?? 0)
+const phoneRecommendationIssued = computed(() => Boolean(selected.value?.lastPhoneRecommendationAt))
 const filteredVehicles = computed(() => {
-  const r = runningVehicles.value
+  const r = dashboardVehicles.value
   if (mapTab.value === '전체') return r
   const need = mapTab.value === '위험' ? 'DANGER' : mapTab.value === '주의' ? 'CAUTION' : 'NORMAL'
   return r.filter(v => v.level === need)
 })
 const sortedFiltered = computed(() => filteredVehicles.value.slice().sort((a, b) => b.score - a.score))
 
-const runningCount = computed(() => runningVehicles.value.length)
-const dangerCount  = computed(() => runningVehicles.value.filter(v => v.level === 'DANGER').length)
-const cautionCount = computed(() => runningVehicles.value.filter(v => v.level === 'CAUTION').length)
-const normalCount  = computed(() => runningVehicles.value.filter(v => v.level === 'NORMAL').length)
-const idleCount    = computed(() => vehicles.value.length - runningCount.value)
+const runningCount = computed(() => dashboardVehicles.value.length)
+const dangerCount  = computed(() => dashboardVehicles.value.filter(v => v.level === 'DANGER').length)
+const cautionCount = computed(() => dashboardVehicles.value.filter(v => v.level === 'CAUTION').length)
+const normalCount  = computed(() => dashboardVehicles.value.filter(v => v.level === 'NORMAL').length)
+const idleCount    = computed(() => isTodaySelected.value ? vehicles.value.length - runningCount.value : 0)
 
-const scores   = computed(() => runningVehicles.value.map(v => v.score))
+const scores   = computed(() => dashboardVehicles.value.map(v => v.score))
 const avgScore = computed(() => scores.value.length ? scores.value.reduce((a, b) => a + b, 0) / scores.value.length : 0)
 const stdev    = computed(() => {
   const avg = avgScore.value
@@ -229,7 +273,7 @@ const distBars  = computed(() => {
 const meanX = computed(() => (avgScore.value / 100) * 200)
 
 /* ─── KPI Tile 2 ─── */
-const maxCont      = computed(() => runningVehicles.value.reduce((m, v) => Math.max(m, v.contMin || 0), 0))
+const maxCont      = computed(() => dashboardVehicles.value.reduce((m, v) => Math.max(m, v.contMin || 0), 0))
 const maxContH     = computed(() => Math.floor(maxCont.value / 60))
 const maxContM     = computed(() => maxCont.value % 60)
 const contGaugePct = computed(() => Math.min(100, (maxCont.value / 300) * 100))
@@ -311,6 +355,97 @@ function vDelta(v) {
   return { txt: '→ 0', color: 'var(--text-4)' }
 }
 
+function downloadCsv() {
+  if (!sortedFiltered.value.length) {
+    alert('다운로드할 차량 데이터가 없습니다.')
+    return
+  }
+
+  const header = ['조회일자', '운행 ID', '차량 ID', '번호판', '운전자명', '차량유형', '피로점수', '피로등급', '운행시작시각', '상태']
+  const rows = sortedFiltered.value.map(v => [
+    selectedDate.value,
+    v.driveLogId ?? '',
+    v.vehicleId ?? '',
+    v.plate,
+    v.driver,
+    v.type,
+    v.score,
+    v.level,
+    formatCsvDateTime(v.startedAtRaw ?? v.startedAt),
+    v.status,
+  ])
+  const csv = [header, ...rows].map(row => row.map(escapeCsvCell).join(',')).join('\n')
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  const suffix = csvTabSuffix(mapTab.value)
+  link.href = url
+  link.download = suffix === 'all'
+    ? `dashboard_${selectedDate.value}.csv`
+    : `dashboard_${selectedDate.value}_${suffix}.csv`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+async function sendRestGuide() {
+  if (!selectedDetailId.value) return
+  if (!confirm(`${selected.value?.plate ?? '선택 차량'}에 휴게 안내를 기록할까요?`)) return
+  actionSubmitting.value.rest = true
+  try {
+    const res = await dashboardApi.createAction({
+      driveLogId: selectedDetailId.value,
+      actionType: 'REST_GUIDE',
+    })
+    await refresh()
+    // SMS 시뮬레이션: 토스트 + 이벤트 스트림 기록
+    const data = res?.data ?? {}
+    const driver = data.driverName  ?? selected.value?.driver ?? ''
+    const phone  = data.driverPhone ?? selected.value?.driverPhone ?? ''
+    const msg    = data.smsMessage  ?? `[관제센터] ${driver} 기사님, 즉시 휴식을 취해주시기 바랍니다.`
+    const count  = restGuideCount.value  // refresh() 후 갱신된 값
+    smsToast.value = { driver, phone, message: msg, count }
+    const nowStr = new Date().toTimeString().slice(0, 5)
+    localEvents.value.unshift({
+      t: nowStr,
+      kind: 'info',
+      plate: selected.value?.plate ?? '',
+      text: `📱 SMS 발송 완료 · ${phone} · 휴게 안내 ${count}회차`,
+    })
+    // 5초 후 토스트 자동 닫기
+    setTimeout(() => { smsToast.value = null }, 5000)
+  } catch (e) {
+    alert(e?.response?.data?.message || '휴게 안내 기록 중 오류가 발생했습니다.')
+  } finally {
+    actionSubmitting.value.rest = false
+  }
+}
+
+async function sendPhoneRecommendation() {
+  if (!selectedDetailId.value) return
+  if (!confirm(`${selected.value?.plate ?? '선택 차량'}에 전화 권고를 기록할까요?`)) return
+  actionSubmitting.value.phone = true
+  try {
+    await dashboardApi.createAction({
+      driveLogId: selectedDetailId.value,
+      actionType: 'PHONE_RECOMMENDATION',
+      note: '대시보드 전화 권고 기록',
+    })
+    await refresh()
+    // 기록 완료 후 전화/문자 모달 표시
+    phoneModal.value = {
+      driver: selected.value?.driver ?? '',
+      phone:  selected.value?.driverPhone ?? '',
+      plate:  selected.value?.plate ?? '',
+    }
+  } catch (e) {
+    alert(e?.response?.data?.message || '전화 권고 기록 중 오류가 발생했습니다.')
+  } finally {
+    actionSubmitting.value.phone = false
+  }
+}
+
 function goToDriveHistoryDetail() {
   if (!selectedDetailId.value) return
   router.push({ name: 'driveHistoryDetail', params: { id: selectedDetailId.value } })
@@ -370,7 +505,7 @@ function tlEventColor(e) { return e === '위험 진입' ? 'var(--danger)' : e ==
 
 /* ─── EventStream ─── */
 const liveEvents = computed(() =>
-  runningVehicles.value
+  dashboardVehicles.value
     .filter(v => v.level === 'DANGER' || v.level === 'CAUTION')
     .slice(0, 4)
     .map((v, i) => ({
@@ -390,12 +525,12 @@ const seedEvents = [
   { t:'09:18', kind:'info', plate:'경기 80바 1029', text:'HIGHWAY_CCTV · 중부내륙 점촌 상행 · OCR 0.94' },
   { t:'08:50', kind:'info', plate:'경기 80바 1027', text:'DEPARTURE · 한라물류 출발 · 시나리오 A 시작' },
 ]
-const allEvents = computed(() => [...liveEvents.value, ...seedEvents])
+const allEvents = computed(() => [...localEvents.value, ...liveEvents.value, ...seedEvents])
 function eventVehicleId(plate) { return vehicles.value.find(v => v.plate === plate)?.id ?? null }
 
 /* ─── AlertList ─── */
 const alertList = computed(() =>
-  runningVehicles.value
+  dashboardVehicles.value
     .filter(v => v.level === 'DANGER' || v.level === 'CAUTION')
     .sort((a, b) => b.score - a.score)
     .map(v => ({
@@ -410,7 +545,7 @@ const alertList = computed(() =>
 /* ─── Heatmap ─── */
 const heatmapDrivers = computed(() => {
   const cur = new Date().getHours()
-  return runningVehicles.value.slice(0, 8).map(v => {
+  return dashboardVehicles.value.slice(0, 8).map(v => {
     const start = parseInt((v.startedAt || '06').split(':')[0], 10) || 6
     const arr = new Array(24).fill(null)
     let acc = 5
@@ -433,7 +568,7 @@ function heatColor(s) {
 
 /* ─── Ranking ─── */
 const rankingItems = computed(() =>
-  runningVehicles.value.slice().sort((a, b) => b.score - a.score).slice(0, 6).map(v => ({
+  dashboardVehicles.value.slice().sort((a, b) => b.score - a.score).slice(0, 6).map(v => ({
     id: v.id, label: v.driver, sub: v.plate, value: v.score,
     color: v.level === 'DANGER' ? 'var(--danger)' : v.level === 'CAUTION' ? 'var(--warn)' : 'var(--ok)',
     tag:   v.level === 'DANGER' ? '위험' : v.level === 'CAUTION' ? '주의' : '정상',
@@ -449,15 +584,20 @@ const rankingItems = computed(() =>
       <div>
         <div style="font:600 10.5px/1.4 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">OPERATIONS / LIVE</div>
         <h1 style="font:800 24px/1.25 var(--font-sans);letter-spacing:-0.02em;color:var(--text-1);margin:0;">관제 대시보드</h1>
-        <div style="font-size:12px;color:var(--text-3);margin-top:3px;">오늘 · 2026.05.21 (수) · 한라물류센터 · 가상 시뮬레이션 환경</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:3px;">조회일 · {{ formatSelectedDateLabel(selectedDate) }} · 한라물류센터 · 가상 시뮬레이션 환경</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:6px;">
           <span class="dot dot-ok blink"/>connected · {{ now }}
         </span>
         <div style="width:1px;height:18px;background:var(--line-2);"/>
-        <button class="btn btn-ghost"><AppIcon name="filter" :size="13"/> 필터</button>
-        <button class="btn btn-ghost"><AppIcon name="download" :size="13"/> CSV</button>
+        <label class="date-filter">
+          <span class="date-filter__label"><AppIcon name="filter" :size="13"/> 날짜</span>
+          <input v-model="selectedDate" class="date-filter__input mono" type="date" />
+        </label>
+        <button class="btn btn-ghost" :disabled="!sortedFiltered.length" @click="downloadCsv">
+          <AppIcon name="download" :size="13"/> CSV
+        </button>
         <button class="btn btn-primary" @click="refresh"><AppIcon name="refresh" :size="13"/> 새로고침</button>
       </div>
     </div>
@@ -612,21 +752,22 @@ const rankingItems = computed(() =>
         <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
 
           <!-- 드릴다운 헤더 -->
-          <div style="padding:14px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <!-- 번호판 플레이스홀더 -->
-              <div style="width:100px;height:66px;border-radius:4px;flex-shrink:0;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border:1px solid var(--line-3);position:relative;overflow:hidden;">
-                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
-                  <rect width="200" height="130" fill="#E3E6EB"/>
-                  <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
-                  <circle cx="55" cy="98" r="8" fill="#747F95"/>
-                  <circle cx="160" cy="98" r="8" fill="#747F95"/>
-                </svg>
-                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">
-                  {{ selected ? selected.plate.split(' ').slice(-1)[0] : '—' }}
-                </div>
+          <div style="border-bottom:1px solid var(--line-1);display:flex;align-items:stretch;">
+            <!-- 번호판 이미지 (왼쪽 끝, 헤더 전체 높이) -->
+            <div style="flex-shrink:0;aspect-ratio:200/130;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
+              <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
+                <rect width="200" height="130" fill="#E3E6EB"/>
+                <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
+                <circle cx="55" cy="98" r="8" fill="#747F95"/>
+                <circle cx="160" cy="98" r="8" fill="#747F95"/>
+              </svg>
+              <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 7px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#515F7A;white-space:nowrap;">
+                {{ selected ? selected.plate.split(' ').slice(-1)[0] : '—' }}
               </div>
-              <div>
+            </div>
+            <!-- 텍스트 + 버튼 -->
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1;padding:14px 16px;flex-wrap:wrap;min-width:0;">
+              <div style="min-width:0;">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
                   <span style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:var(--text-1);">{{ selected ? selected.plate : '—' }}</span>
                   <span v-if="selected" :class="levelChipCls(selected.level)">{{ levelLabel(selected.level) }} · {{ selected.score }}점</span>
@@ -636,23 +777,40 @@ const rankingItems = computed(() =>
                 <div style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);">
                   {{ selected ? `${selected.loc} · 시작 ${selected.startedAt} · ${selected.spd}km/h · ${selected.type}` : '차량을 선택하세요' }}
                 </div>
+                <div v-if="selected && (restGuideCount > 0 || phoneRecommendationIssued)"
+                  style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-4);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                  <span v-if="restGuideCount > 0" style="display:flex;align-items:center;gap:4px;">
+                    ☕ 휴게 안내 <strong style="color:var(--warn);">{{ restGuideCount }}회</strong> · 마지막 {{ actionTimeLabel(selected.lastRestGuideAt) }}
+                  </span>
+                  <span v-if="phoneRecommendationIssued" style="display:flex;align-items:center;gap:4px;">
+                    📞 전화 권고 완료 · {{ actionTimeLabel(selected.lastPhoneRecommendationAt) }}
+                    <a v-if="selected.driverPhone" :href="`tel:${selected.driverPhone.replace(/-/g,'')}`"
+                      style="color:var(--accent);text-decoration:none;font-weight:700;">{{ selected.driverPhone }}</a>
+                  </span>
+                </div>
               </div>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button class="btn btn-ghost" style="font-size:11.5px;"
-                :disabled="!selected || selected.level!=='DANGER'"
-                :style="{opacity:selected?.level==='DANGER'?1:0.45,cursor:selected?.level==='DANGER'?'pointer':'not-allowed'}">
-                <AppIcon name="phone" :size="12"/> 전화 권고
-              </button>
-              <button class="btn btn-ghost" style="font-size:11.5px;" :disabled="!selected">
-                <AppIcon name="coffee" :size="12"/> 휴게 안내
-              </button>
-              <button class="btn btn-primary" style="font-size:11.5px;"
-                :disabled="!selectedDetailId"
-                :style="{opacity:selectedDetailId?1:0.45,cursor:selectedDetailId?'pointer':'not-allowed'}"
-                @click="goToDriveHistoryDetail">
-                <AppIcon name="arrow" :size="12"/> 운행 상세
-              </button>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
+                <button class="btn btn-ghost" style="font-size:11.5px;"
+                  :disabled="!selected || selected.level!=='DANGER' || !selectedDetailId || phoneRecommendationIssued || actionSubmitting.phone"
+                  :style="{opacity:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 1 : 0.45,cursor:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 'pointer' : 'not-allowed'}"
+                  @click="sendPhoneRecommendation">
+                  <AppIcon name="phone" :size="12"/>
+                  {{ phoneRecommendationIssued ? '전화 권고 완료' : actionSubmitting.phone ? '기록 중...' : '전화 권고' }}
+                </button>
+                <button class="btn btn-ghost" style="font-size:11.5px;"
+                  :disabled="!selected || !selectedDetailId || actionSubmitting.rest"
+                  :style="{opacity:selected && selectedDetailId ? 1 : 0.45,cursor:selected && selectedDetailId ? 'pointer' : 'not-allowed'}"
+                  @click="sendRestGuide">
+                  <AppIcon name="coffee" :size="12"/>
+                  {{ actionSubmitting.rest ? '기록 중...' : restGuideCount > 0 ? `휴게 안내 (${restGuideCount}회)` : '휴게 안내' }}
+                </button>
+                <button class="btn btn-primary" style="font-size:11.5px;"
+                  :disabled="!selectedDetailId"
+                  :style="{opacity:selectedDetailId?1:0.45,cursor:selectedDetailId?'pointer':'not-allowed'}"
+                  @click="goToDriveHistoryDetail">
+                  <AppIcon name="arrow" :size="12"/> 운행 상세
+                </button>
+              </div>
             </div>
           </div>
 
@@ -945,7 +1103,7 @@ const rankingItems = computed(() =>
             <div class="label-sm">DRIVER × HOUR HEATMAP</div>
             <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">오늘 시간대별 누적 피로 점수</div>
           </div>
-          <span class="chip chip-mute">2026.05.21</span>
+          <span class="chip chip-mute">{{ formatSelectedDateLabel(selectedDate) }}</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <div style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;font-family:var(--font-mono);font-size:9px;color:var(--text-4);">
@@ -975,6 +1133,68 @@ const rankingItems = computed(() =>
     </div><!-- /bottom-grid -->
 
   </div>
+
+  <!-- ── 전화 권고 모달 ── -->
+  <Teleport to="body">
+    <div v-if="phoneModal" class="phone-modal-backdrop" @click.self="phoneModal=null">
+      <div class="phone-modal">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div>
+            <div style="font:600 10px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--danger);margin-bottom:4px;">PHONE RECOMMENDATION</div>
+            <div style="font:800 16px/1.2 var(--font-sans);color:var(--text-1);">전화 권고 기록 완료</div>
+          </div>
+          <button class="btn btn-ghost" style="padding:4px 8px;" @click="phoneModal=null">✕</button>
+        </div>
+
+        <div style="background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:11px;color:var(--text-4);font-family:var(--font-mono);margin-bottom:6px;">대상 운전자</div>
+          <div style="font:700 15px/1.3 var(--font-mono);color:var(--text-1);">{{ phoneModal.driver }}</div>
+          <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;">{{ phoneModal.plate }}</div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;color:var(--text-4);font-family:var(--font-mono);letter-spacing:.1em;margin-bottom:8px;">DRIVER CONTACT</div>
+          <div style="font:800 22px/1 var(--font-mono);color:var(--text-1);letter-spacing:.04em;margin-bottom:12px;">
+            {{ phoneModal.phone || '번호 없음' }}
+          </div>
+          <div v-if="phoneModal.phone" style="display:flex;gap:8px;">
+            <a :href="`tel:${phoneModal.phone.replace(/-/g,'')}`" class="btn btn-primary" style="text-decoration:none;flex:1;justify-content:center;">
+              📞 전화 걸기
+            </a>
+            <a :href="`sms:${phoneModal.phone.replace(/-/g,'')}?body=${encodeURIComponent('안전 운행을 위해 즉시 휴식을 취해주시기 바랍니다. (한라물류 관제센터)')}`"
+              class="btn btn-ghost" style="text-decoration:none;flex:1;justify-content:center;">
+              💬 문자 보내기
+            </a>
+          </div>
+        </div>
+
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-4);text-align:center;border-top:1px solid var(--line-1);padding-top:10px;">
+          전화 권고 이력이 시스템에 기록되었습니다
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
+  <!-- ── SMS 시뮬레이션 토스트 ── -->
+  <Teleport to="body">
+    <Transition name="sms-toast">
+      <div v-if="smsToast" class="sms-toast">
+        <div class="sms-toast__header">
+          <span style="font:600 10px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ok);">📱 SMS 발송 시뮬레이션</span>
+          <button style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;line-height:1;padding:0;" @click="smsToast=null">✕</button>
+        </div>
+        <div class="sms-toast__to">
+          <span style="font-size:10px;color:var(--text-4);font-family:var(--font-mono);">TO</span>
+          <span style="font:700 13px/1 var(--font-mono);color:var(--text-1);">{{ smsToast.driver }}</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--ok);">{{ smsToast.phone }}</span>
+          <span style="font-size:10px;color:var(--text-4);font-family:var(--font-mono);">· {{ smsToast.count }}회차</span>
+        </div>
+        <div class="sms-toast__bubble">{{ smsToast.message }}</div>
+        <div style="font-size:10px;color:var(--text-4);font-family:var(--font-mono);margin-top:6px;">포트폴리오 시뮬레이션 · 실제 전송 아님</div>
+      </div>
+    </Transition>
+  </Teleport>
+
 </template>
 
 <style scoped>
@@ -986,6 +1206,30 @@ const rankingItems = computed(() =>
 
 /* 페이지 헤더 */
 .page-hdr { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px; gap:16px; flex-wrap:wrap; }
+.date-filter {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border:1px solid var(--line-2);
+  border-radius:var(--r-md);
+  background:var(--bg-1);
+}
+.date-filter__label {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:11px;
+  color:var(--text-3);
+  white-space:nowrap;
+}
+.date-filter__input {
+  border:none;
+  background:transparent;
+  color:var(--text-1);
+  font-size:12px;
+  outline:none;
+}
 
 /* KPI Strip */
 .kpi-strip {
@@ -1101,10 +1345,67 @@ const rankingItems = computed(() =>
 /* card */
 .card { background:var(--bg-1); border:1px solid var(--line-2); border-radius:var(--r-md); box-shadow:var(--shadow-1); }
 
+/* 전화 권고 모달 */
+.phone-modal-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(15,20,30,.55);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+  animation: fadeUp .18s ease both;
+}
+.phone-modal {
+  background: var(--bg-1);
+  border: 1px solid var(--danger-soft);
+  border-top: 3px solid var(--danger);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 32px rgba(0,0,0,.22);
+  padding: 20px 22px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+}
+
 /* 버튼 */
 .btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:var(--r-sm); font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:var(--font-sans); transition:background .12s; }
 .btn-primary { background:var(--accent); color:#fff; }
 .btn-primary:hover { background:var(--accent-hover); }
 .btn-ghost { background:var(--bg-2); color:var(--text-2); border:1px solid var(--line-2); }
 .btn-ghost:hover { background:var(--bg-3); }
+
+/* SMS 시뮬레이션 토스트 */
+.sms-toast {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 1100;
+  width: 360px;
+  background: var(--bg-1);
+  border: 1px solid var(--ok-soft);
+  border-top: 3px solid var(--ok);
+  border-radius: var(--r-md);
+  box-shadow: 0 8px 32px rgba(0,0,0,.22);
+  padding: 14px 16px;
+}
+.sms-toast__header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.sms-toast__to {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.sms-toast__bubble {
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+  font-family: var(--font-sans);
+  word-break: keep-all;
+}
+/* 토스트 Transition */
+.sms-toast-enter-active { animation: sms-slide-in .22s ease both; }
+.sms-toast-leave-active { animation: sms-slide-in .18s ease reverse both; }
+@keyframes sms-slide-in {
+  from { opacity:0; transform:translateX(-50%) translateY(-16px); }
+  to   { opacity:1; transform:translateX(-50%) translateY(0); }
+}
 </style>
