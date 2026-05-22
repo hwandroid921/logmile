@@ -37,45 +37,8 @@ const error   = ref('')
 
 const rangeMap = { '1d': 1, '7d': 7, '14d': 14, '30d': 30 }
 
-/* ── 예시 데이터 (실 데이터 없을 때 레이아웃 확인용) ── */
-const MOCK_STATS = (() => {
-  const base   = new Date('2026-05-21')
-  const scores  = [28, 35, 42, 67, 55, 38, 71, 44, 29, 58, 63, 41, 76, 33]
-  const dangers = [ 0,  0,  1,  2,  1,  0,  2,  1,  0,  1,  2,  0,  3,  0]
-  const rests   = [ 1,  0,  1,  2,  1,  0,  2,  1,  0,  2,  1,  1,  2,  0]
-  const drives  = [420,380,510,600,480,300,660,450,360,540,570,390,690,320]
-  const nights  = [ 30,  0, 60,120, 90,  0,150, 45,  0, 90,120, 30,180, 20]
-  const logCnts = [  3,  2,  4,  5,  4,  2,  5,  3,  2,  4,  4,  3,  5,  2]
-  return Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(base)
-    d.setDate(d.getDate() - (13 - i))
-    return {
-      date:                 d.toISOString().slice(0, 10),
-      averageFatigueScore:  scores[i],
-      dangerEventCount:     dangers[i],
-      restViolationCount:   rests[i],
-      totalDrivingMinutes:  drives[i],
-      nightDrivingMinutes:  nights[i],
-      driveLogCount:        logCnts[i],
-    }
-  })
-})()
-
-const MOCK_DRIVE_DETAILS = [
-  { driveLogId: 1, startedAt: '2026-05-20T22:10:00', plateNo: '12가3456', driverName: '김철수', maxFatigueScore: 76, totalDrivingMinutes: 480, nightDrivingMinutes: 180, fatigueEvents: [{ continuousDrivingMinutes: 260 }] },
-  { driveLogId: 2, startedAt: '2026-05-18T07:30:00', plateNo: '34나5678', driverName: '이영희', maxFatigueScore: 71, totalDrivingMinutes: 390, nightDrivingMinutes:  60, fatigueEvents: [{ continuousDrivingMinutes: 210 }] },
-  { driveLogId: 3, startedAt: '2026-05-15T21:00:00', plateNo: '56다7890', driverName: '박민준', maxFatigueScore: 67, totalDrivingMinutes: 540, nightDrivingMinutes: 150, fatigueEvents: [{ continuousDrivingMinutes: 195 }] },
-  { driveLogId: 4, startedAt: '2026-05-13T06:45:00', plateNo: '78라1234', driverName: '최수진', maxFatigueScore: 63, totalDrivingMinutes: 450, nightDrivingMinutes: 120, fatigueEvents: [{ continuousDrivingMinutes: 180 }] },
-  { driveLogId: 5, startedAt: '2026-05-19T09:15:00', plateNo: '90마2345', driverName: '정대현', maxFatigueScore: 58, totalDrivingMinutes: 360, nightDrivingMinutes:  90, fatigueEvents: [{ continuousDrivingMinutes: 165 }] },
-  { driveLogId: 6, startedAt: '2026-05-17T14:20:00', plateNo: '12바3456', driverName: '강지원', maxFatigueScore: 42, totalDrivingMinutes: 300, nightDrivingMinutes:  30, fatigueEvents: [{ continuousDrivingMinutes: 120 }] },
-  { driveLogId: 7, startedAt: '2026-05-21T08:00:00', plateNo: '34사5678', driverName: '윤소영', maxFatigueScore: 33, totalDrivingMinutes: 270, nightDrivingMinutes:   0, fatigueEvents: [{ continuousDrivingMinutes:  90 }] },
-  { driveLogId: 8, startedAt: '2026-05-14T11:30:00', plateNo: '56아7890', driverName: '임재혁', maxFatigueScore: 55, totalDrivingMinutes: 420, nightDrivingMinutes:  45, fatigueEvents: [{ continuousDrivingMinutes: 150 }] },
-]
-
-const isMockData = computed(() => !loading.value && !stats.value.length)
-
 /* ── 파생 데이터 ── */
-const statDays = computed(() => (isMockData.value ? MOCK_STATS : stats.value).map((row) => ({
+const statDays = computed(() => stats.value.map((row) => ({
   date:          row.date,
   label:         formatDate(row.date),
   avgScore:      Math.round(Number(row.averageFatigueScore ?? 0)),
@@ -85,6 +48,14 @@ const statDays = computed(() => (isMockData.value ? MOCK_STATS : stats.value).ma
   nightMinutes:  Number(row.nightDrivingMinutes ?? 0),
   driveLogCount: Number(row.driveLogCount ?? 0),
 })))
+const hasStatsData = computed(() => statDays.value.some(day =>
+  day.avgScore > 0 ||
+  day.danger > 0 ||
+  day.restMiss > 0 ||
+  day.driveMinutes > 0 ||
+  day.nightMinutes > 0 ||
+  day.driveLogCount > 0,
+))
 
 const avgScore     = computed(() => statDays.value.length
   ? Math.round(statDays.value.reduce((s, d) => s + d.avgScore, 0) / statDays.value.length) : 0)
@@ -97,7 +68,7 @@ const totalDriveH  = computed(() => Math.round(totalDriveMin.value / 60))
 const totalNightH  = computed(() => Math.round(totalNightMin.value / 60))
 const hasDriveChartData = computed(() => totalDriveMin.value > 0 || totalNightMin.value > 0)
 const hasEventChartData = computed(() => missingTotal.value > 0 || dangerTotal.value > 0)
-const driveRows = computed(() => (isMockData.value ? MOCK_DRIVE_DETAILS : driveDetails.value)
+const driveRows = computed(() => driveDetails.value
   .map((log) => {
     const continuousMinutes = Math.max(
       0,
@@ -165,7 +136,7 @@ const peakScoreDay = computed(() => statDays.value
   .slice()
   .sort((a, b) => b.avgScore - a.avgScore)[0] ?? null
 )
-const top5MaxScore = computed(() => (isMockData.value ? MOCK_DRIVE_DETAILS : driveDetails.value)
+const top5MaxScore = computed(() => driveDetails.value
   .filter(log => log.maxFatigueScore != null)
   .sort((a, b) => (b.maxFatigueScore ?? 0) - (a.maxFatigueScore ?? 0))
   .slice(0, 5)
@@ -274,7 +245,15 @@ const chartDefaults = {
 }
 
 function renderCharts() {
-  if (!statDays.value.length) return
+  if (!hasStatsData.value) {
+    scoreChart?.destroy()
+    driveChart?.destroy()
+    eventChart?.destroy()
+    scoreChart = null
+    driveChart = null
+    eventChart = null
+    return
+  }
 
   const labels    = statDays.value.map(d => d.label)
   const scores    = statDays.value.map(d => d.avgScore)
@@ -450,8 +429,8 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
     </div>
 
     <div v-if="error" class="notice error-box">{{ error }}</div>
-    <div v-if="isMockData" class="notice mock-notice mono">
-      MOCK DATA · 실제 데이터가 없어 예시 데이터로 레이아웃을 표시합니다.
+    <div v-else-if="!loading && !hasStatsData" class="notice empty-notice mono">
+      NO DATA · 조회 기간 내 집계된 운행/피로도 데이터가 없습니다.
     </div>
 
     <div v-if="loading" class="card state-card mono">통계 데이터를 불러오는 중입니다.</div>
@@ -530,13 +509,13 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
             <div class="card-title">일별 평균 피로 점수</div>
             <span class="mono card-meta">{{ statDays.length }}일 · 점수 0~100</span>
           </div>
-          <div v-if="statDays.length" class="canvas-wrap" style="height:180px">
+          <div v-if="hasStatsData" class="canvas-wrap" style="height:180px">
             <canvas ref="scoreCanvas" />
           </div>
           <div v-else class="chart-empty" style="height:180px">
             조회된 통계 데이터가 없습니다.
           </div>
-          <div class="level-bars score-level-bars">
+          <div v-if="hasStatsData" class="level-bars score-level-bars">
             <div class="level-row">
               <span class="mono level-label normal">NORMAL</span>
               <div class="level-track"><div class="level-fill normal" :style="{ width: statDays.length ? (normalDays / statDays.length * 100) + '%' : '0%' }" /></div>
@@ -602,7 +581,7 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
             <span class="chip chip-warn">최장 연속 운행</span>
             <span class="chip chip-danger">야간 운행</span>
           </div>
-          <div class="daily-night-list">
+          <div v-if="hasDrivingStatusData" class="daily-night-list">
             <div v-for="day in dailyDriveDetails" :key="day.date" class="night-day-row">
               <span class="mono night-day-date">{{ day.label }}</span>
               <div class="night-ratio-track">
@@ -689,7 +668,7 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 
 .notice    { border-radius:var(--r-md); font-size:12px; padding:12px 14px; }
 .error-box { border:1px solid var(--danger); background:var(--danger-soft); color:var(--danger); }
-.mock-notice { border:1px solid var(--accent-line); background:var(--accent-soft); color:var(--accent); }
+.empty-notice { border:1px solid var(--line-2); background:var(--bg-2); color:var(--text-3); }
 .state-card { min-height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-3); font-size:13px; }
 
 .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
