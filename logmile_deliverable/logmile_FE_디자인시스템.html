@@ -35,7 +35,7 @@
   --text-1: var(--ink);
   --text-2: var(--ink-2);
   --text-3: var(--ink-3);
-  --text-4: #8A93A1;
+  --text-4: #6F7A8A;
 
   --accent: var(--slate-900);
   --accent-hover: var(--ink);
@@ -111,14 +111,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-bottom: 1px solid var(--line-1);
 }
 .guide-sidebar-logo h2 {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--accent);
   letter-spacing: -0.01em;
 }
 .guide-sidebar-logo p {
-  font-size: 10px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   font-family: var(--font-mono);
   letter-spacing: 0.06em;
   margin-top: 2px;
@@ -126,10 +126,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .guide-nav { padding: 12px 8px; flex: 1; }
 .guide-nav-section {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-4);
+  color: var(--text-3);
   padding: 10px 10px 5px;
   margin-top: 6px;
 }
@@ -137,9 +137,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: block;
   padding: 7px 10px;
   border-radius: var(--r-md);
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-3);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }
@@ -147,7 +147,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .guide-nav-item.active { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
 
 /* MAIN CONTENT */
-.guide-main { flex: 1; overflow-y: auto; padding: 48px; max-width: 1080px; }
+.guide-main { flex: 1; overflow-y: auto; padding: 48px; width: min(100%, 1240px); max-width: 1240px; margin: 0 auto; }
 .section { margin-bottom: 72px; }
 .section-header { margin-bottom: 28px; }
 .section-title {
@@ -158,8 +158,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   margin-bottom: 6px;
 }
 .section-sub {
-  font-size: 12.5px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   font-family: var(--font-mono);
   letter-spacing: 0.03em;
 }
@@ -171,6 +171,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border: 1px solid var(--line-2);
   border-radius: var(--r-lg);
   overflow: hidden;
+  width: 100%;
 }
 .preview-box-inner {
   padding: 32px;
@@ -178,6 +179,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   flex-wrap: wrap;
   gap: 16px;
   align-items: flex-start;
+  width: 100%;
 }
 .preview-box-inner.col { flex-direction: column; }
 .preview-box-inner.center { justify-content: center; }
@@ -186,8 +188,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-top: 1px solid var(--line-1);
   padding: 8px 16px;
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-2);
   letter-spacing: 0.06em;
 }
 
@@ -200,8 +202,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .label-name {
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   letter-spacing: 0.04em;
 }
 
@@ -210,8 +212,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 ─────────────────────────────────────────── */
 .color-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
+  width: 100%;
 }
 .color-swatch {
   display: flex;
@@ -223,8 +226,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--r-md);
   border: 1px solid rgba(0,0,0,0.08);
 }
-.swatch-name { font-size: 10.5px; font-weight: 600; color: var(--text-2); }
-.swatch-val  { font-size: 10px; font-family: var(--font-mono); color: var(--text-4); }
+.swatch-name { font-size: 16px; font-weight: 700; color: var(--text-1); }
+.swatch-val  { font-size: 14px; font-family: var(--font-mono); color: var(--text-2); }
 
 .status-swatches { display: flex; gap: 16px; flex-wrap: wrap; }
 .status-swatch { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
@@ -235,10 +238,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
    2. TYPOGRAPHY
 ─────────────────────────────────────────── */
 .type-scale { display: flex; flex-direction: column; gap: 20px; }
-.type-row { display: flex; align-items: baseline; gap: 20px; border-bottom: 1px solid var(--line-1); padding-bottom: 14px; }
-.type-meta { width: 160px; flex-shrink: 0; }
-.type-meta .label-name { font-family: var(--font-mono); font-size: 10px; color: var(--text-4); }
-.type-meta .type-spec { font-size: 10.5px; color: var(--text-3); margin-top: 2px; }
+.type-row { display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: start; gap: 24px; border-bottom: 1px solid var(--line-1); padding-bottom: 14px; width: 100%; }
+.type-meta { min-width: 0; }
+.type-meta .label-name { font-family: var(--font-mono); font-size: 16px; color: var(--text-1); font-weight: 700; }
+.type-meta .type-spec { font-size: 14px; color: var(--text-2); margin-top: 2px; }
 .type-sample { flex: 1; color: var(--text-1); }
 
 /* ───────────────────────────────────────────
@@ -247,7 +250,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .spacing-grid { display: flex; flex-direction: column; gap: 14px; }
 .spacing-row { display: flex; align-items: center; gap: 16px; }
 .spacing-bar { background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 2px; height: 20px; }
-.spacing-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); width: 200px; flex-shrink: 0; }
+.spacing-meta { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); width: 200px; flex-shrink: 0; }
 
 .radius-row { display: flex; gap: 20px; flex-wrap: wrap; }
 .radius-item { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
@@ -259,7 +262,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 8px 14px; border-radius: var(--r-sm);
-  font-size: 13px; font-weight: 500; border: 1px solid transparent;
+  font-size: 14px; font-weight: 600; border: 1px solid transparent;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   white-space: nowrap; cursor: pointer; font-family: inherit;
 }
@@ -269,9 +272,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .btn-ghost:hover { background: var(--bg-3); color: var(--text-1); border-color: var(--line-3); }
 .btn-link { color: var(--accent); padding: 0; border: none; background: none; }
 .btn-link:hover { color: var(--accent-hover); }
-.btn-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(181,84,74,0.25); border-radius: var(--r-md); }
+.btn-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(181,84,74,0.32); border-radius: var(--r-md); }
 .btn-danger:hover { background: var(--danger); color: #fff; }
-.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-sm { padding: 5px 10px; font-size: 14px; }
 .btn-lg { padding: 11px 22px; font-size: 14px; font-weight: 600; }
 
 /* ───────────────────────────────────────────
@@ -280,12 +283,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 9px; border-radius: 999px;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
   border: 1px solid transparent; font-family: var(--font-mono);
 }
-.chip-ok     { background: var(--ok-soft);     color: var(--ok);     border-color: rgba(94,138,111,0.25); }
-.chip-warn   { background: var(--warn-soft);   color: var(--warn);   border-color: rgba(197,138,58,0.25); }
-.chip-danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(181,84,74,0.25); }
+.chip-ok     { background: var(--ok-soft);     color: var(--ok);     border-color: rgba(94,138,111,0.32); }
+.chip-warn   { background: var(--warn-soft);   color: var(--warn);   border-color: rgba(197,138,58,0.32); }
+.chip-danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(181,84,74,0.32); }
 .chip-info   { background: var(--info-soft);   color: var(--info);   border-color: var(--accent-line); }
 .chip-mute   { background: var(--bg-2);        color: var(--text-3); border-color: var(--line-2); }
 .chip-brand  { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
@@ -303,12 +306,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 ─────────────────────────────────────────── */
 .field-group { display: flex; flex-direction: column; gap: 6px; }
 .field-label {
-  font-size: 10.5px; font-weight: 600; color: var(--text-3);
+  font-size: 14px; font-weight: 700; color: var(--text-2);
   letter-spacing: 0.08em; text-transform: uppercase;
 }
 .field-input {
   width: 100%; background: var(--bg-0); border: 1px solid var(--line-2);
-  border-radius: var(--r-md); padding: 9px 12px; font-size: 13px;
+  border-radius: var(--r-md); padding: 9px 12px; font-size: 14px;
   color: var(--text-1); font-family: var(--font-mono); outline: none;
   transition: border-color 0.15s;
 }
@@ -318,7 +321,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .field-input.ok  { border-color: rgba(94,138,111,0.4); }
 
 .err-msg {
-  font-size: 12px; color: var(--danger); padding: 8px 12px;
+  font-size: 14px; color: var(--danger); padding: 8px 12px;
   background: var(--danger-soft); border-radius: var(--r-sm);
   border: 1px solid rgba(181,84,74,0.2);
 }
@@ -338,21 +341,38 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex; flex-direction: column; gap: 6px;
   min-width: 140px;
 }
-.kpi-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-4); }
-.kpi-val { font-size: 28px; font-weight: 800; color: var(--text-1); font-family: var(--font-mono); line-height: 1; }
-.kpi-sub { font-size: 11px; color: var(--text-3); }
+.kpi-label { font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); font-weight: 700; }
+.kpi-val { font-size: 30px; font-weight: 800; color: var(--text-1); font-family: var(--font-mono); line-height: 1; }
+.kpi-sub { font-size: 14px; color: var(--text-2); }
+
+.rule-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; width: 100%; }
+.rule-card { border: 1px solid var(--line-1); border-radius: var(--r-lg); background: var(--bg-1); padding: 16px; }
+.rule-title { font-size: 16px; font-weight: 700; color: var(--text-1); margin-bottom: 10px; }
+.rule-list { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--text-2); line-height: 1.55; }
+.rule-list strong { color: var(--text-1); font-weight: 700; }
+.rule-table { width: 100%; border-collapse: collapse; font-size: 14px; color: var(--text-2); }
+.rule-table th, .rule-table td { padding: 9px 10px; border-bottom: 1px solid var(--line-1); text-align: left; vertical-align: top; }
+.rule-table th { font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); }
+.rule-table td:first-child { color: var(--text-1); font-weight: 600; }
+.font-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; width: 100%; }
+.font-card { border: 1px solid var(--line-1); border-radius: var(--r-lg); background: var(--bg-1); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.font-card-title { font-size: 16px; font-weight: 800; color: var(--text-1); }
+.font-card-meta { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); }
+.font-sample { font-size: 24px; font-weight: 700; color: var(--text-1); line-height: 1.35; }
+.font-sample.mono { font-family: var(--font-mono); letter-spacing: 0; }
+.font-desc { font-size: 14px; color: var(--text-2); line-height: 1.55; }
 
 /* ───────────────────────────────────────────
    9. NAV ITEMS
 ─────────────────────────────────────────── */
 .nav-demo { display: flex; flex-direction: column; gap: 2px; background: var(--bg-0); border-radius: var(--r-md); padding: 8px; width: 220px; }
 .nav-section-lbl {
-  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--text-4); padding: 10px 10px 5px;
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-3); padding: 10px 10px 5px;
 }
 .nav-item-demo {
   display: flex; align-items: center; gap: 10px; padding: 8px 10px;
-  border-radius: var(--r-md); font-size: 13px; font-weight: 500; color: var(--text-3);
+  border-radius: var(--r-md); font-size: 14px; font-weight: 600; color: var(--text-2);
   transition: background 0.15s, color 0.15s; position: relative;
 }
 .nav-item-demo:hover { background: var(--bg-3); color: var(--text-1); }
@@ -378,18 +398,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   width: 24px; height: 24px; border-radius: 50%;
   background: var(--accent-soft); border: 1px solid var(--accent-line);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: var(--accent);
+  font-size: 14px; font-weight: 700; color: var(--accent);
 }
-.user-name { font-size: 13px; font-weight: 500; color: var(--text-2); }
+.user-name { font-size: 14px; font-weight: 600; color: var(--text-2); }
 
 .topbar-env {
-  font-size: 10px; letter-spacing: 0.08em; color: var(--text-4);
+  font-size: 14px; letter-spacing: 0.06em; color: var(--text-2);
   padding: 2px 7px; background: var(--bg-3); border: 1px solid var(--line-2);
   border-radius: var(--r-sm); font-family: var(--font-mono);
 }
 .live-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; color: var(--ok); letter-spacing: 0.06em;
+  font-size: 14px; color: var(--ok); letter-spacing: 0.06em;
   font-family: var(--font-mono);
 }
 .icon-btn {
@@ -409,7 +429,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .role-tab {
   flex: 1; padding: 7px 12px; border-radius: var(--r-sm);
-  font-size: 12px; font-weight: 500; color: var(--text-4);
+  font-size: 14px; font-weight: 600; color: var(--text-2);
   background: none; border: none; cursor: pointer; font-family: inherit;
   transition: background 0.12s, color 0.12s;
 }
@@ -426,14 +446,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--r-lg); padding: 32px; position: relative; overflow: hidden;
 }
 .brand-demo-title { font-size: 24px; font-weight: 800; color: #fff; line-height: 1.25; margin-bottom: 10px; }
-.brand-demo-sub   { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+.brand-demo-sub   { font-size: 14px; color: rgba(255,255,255,0.76); line-height: 1.6; }
 .brand-deco {
   position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,0.08);
   pointer-events: none;
 }
 .brand-demo-stats { display: flex; gap: 20px; margin-top: 24px; }
 .bd-stat-val { font-size: 26px; font-weight: 800; color: #fff; font-family: var(--font-mono); line-height: 1; }
-.bd-stat-lbl { font-size: 10.5px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; }
+.bd-stat-lbl { font-size: 14px; color: rgba(255,255,255,0.72); letter-spacing: 0.06em; }
 
 /* ───────────────────────────────────────────
    13. ALERT ITEMS
@@ -446,8 +466,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .alert-item.danger { background: var(--danger-soft); border-color: var(--danger); }
 .alert-item.warn   { background: var(--warn-soft);   border-color: var(--warn); }
 .alert-item.info   { background: var(--info-soft);   border-color: var(--info); }
-.alert-title { font-size: 12.5px; font-weight: 600; }
-.alert-sub   { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+.alert-title { font-size: 16px; font-weight: 700; }
+.alert-sub   { font-size: 14px; color: var(--text-2); margin-top: 2px; }
 
 /* ───────────────────────────────────────────
    14. SHADOWS DEMO
@@ -458,7 +478,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--r-lg); display: flex; align-items: center;
   justify-content: center; flex-direction: column; gap: 4px;
 }
-.shadow-lbl { font-size: 10px; font-family: var(--font-mono); color: var(--text-4); }
+.shadow-lbl { font-size: 14px; font-family: var(--font-mono); color: var(--text-2); }
 
 /* ───────────────────────────────────────────
    15. ANIMATIONS
@@ -489,21 +509,28 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--r-md); padding: 12px 14px;
   display: flex; flex-direction: column; gap: 6px;
 }
-.seed-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-4); text-transform: uppercase; }
+.seed-label { font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.1em; color: var(--text-2); text-transform: uppercase; }
 .seed-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.seed-val { font-size: 11.5px; color: var(--text-2); font-family: var(--font-mono); }
-.seed-fill { font-size: 10.5px; color: var(--accent); cursor: pointer; font-family: var(--font-sans); }
+.seed-val { font-size: 14px; color: var(--text-2); font-family: var(--font-mono); }
+.seed-fill { font-size: 14px; color: var(--accent); cursor: pointer; font-family: var(--font-sans); }
 
 /* ───────────────────────────────────────────
    UTILITY
 ─────────────────────────────────────────── */
 .mono { font-family: var(--font-mono); }
 .label-sm {
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--text-3); font-weight: 600;
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-2); font-weight: 700;
 }
 .flex-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .flex-col  { display: flex; flex-direction: column; gap: 10px; }
+
+@media (max-width: 980px) {
+  .guide-main { padding: 32px; }
+  .type-row,
+  .rule-grid,
+  .font-grid { grid-template-columns: 1fr; }
+}
 
 /* ───────────────────────────────────────────
    HERO
@@ -519,18 +546,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .hero-inner { position: relative; z-index: 1; }
 .hero-badge {
-  display: inline-block; font-family: var(--font-mono); font-size: 9.5px;
+  display: inline-block; font-family: var(--font-mono); font-size: 14px;
   letter-spacing: 0.14em; text-transform: uppercase;
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7); padding: 4px 10px; border-radius: 999px; margin-bottom: 16px;
+  color: rgba(255,255,255,0.82); padding: 4px 10px; border-radius: 999px; margin-bottom: 16px;
 }
 .hero h1 { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 8px; }
-.hero p  { font-size: 13px; color: rgba(255,255,255,0.5); font-family: var(--font-mono); }
+.hero p  { font-size: 14px; color: rgba(255,255,255,0.72); font-family: var(--font-mono); }
 .hero-pills { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
 .hero-pill {
-  font-size: 10.5px; font-family: var(--font-mono); letter-spacing: 0.06em;
+  font-size: 14px; font-family: var(--font-mono); letter-spacing: 0.06em;
   background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.6); padding: 4px 10px; border-radius: var(--r-sm);
+  color: rgba(255,255,255,0.78); padding: 4px 10px; border-radius: var(--r-sm);
 }
 </style>
 </head>
@@ -541,11 +568,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <aside class="guide-sidebar">
     <div class="guide-sidebar-logo">
       <h2>Logmile DS</h2>
-      <p>DESIGN SYSTEM v1.0</p>
+      <p>DESIGN SYSTEM v1.1.3</p>
     </div>
     <nav class="guide-nav">
       <div class="guide-nav-section">Foundation</div>
       <a class="guide-nav-item active" href="#colors">Color System</a>
+      <a class="guide-nav-item" href="#readability">Readability Rules</a>
       <a class="guide-nav-item" href="#typography">Typography</a>
       <a class="guide-nav-item" href="#spacing">Spacing & Radius</a>
       <a class="guide-nav-item" href="#shadows">Shadows</a>
@@ -572,7 +600,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <div class="hero-inner">
         <div class="hero-badge">LOGMILE DESIGN SYSTEM</div>
         <h1>라이트 슬레이트 테마</h1>
-        <p>화물차 피로도 관제 플랫폼 · Light Slate Theme · v1.0.0</p>
+        <p>화물차 피로도 관제 플랫폼 · Light Slate Theme · v1.1.3</p>
         <div class="hero-pills">
           <span class="hero-pill">Pretendard Variable</span>
           <span class="hero-pill">JetBrains Mono</span>
@@ -669,19 +697,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <div class="status-swatches">
             <div class="status-swatch">
               <div class="status-block" style="background:#5E8A6F;"></div>
-              <div class="status-soft-block" style="background:rgba(94,138,111,0.12);border:1px solid rgba(94,138,111,0.25);"></div>
+              <div class="status-soft-block" style="background:rgba(94,138,111,0.12);border:1px solid rgba(94,138,111,0.32);"></div>
               <div class="swatch-name">--ok</div>
               <div class="swatch-val">#5E8A6F · NORMAL</div>
             </div>
             <div class="status-swatch">
               <div class="status-block" style="background:#C58A3A;"></div>
-              <div class="status-soft-block" style="background:rgba(197,138,58,0.12);border:1px solid rgba(197,138,58,0.25);"></div>
+              <div class="status-soft-block" style="background:rgba(197,138,58,0.12);border:1px solid rgba(197,138,58,0.32);"></div>
               <div class="swatch-name">--warn</div>
               <div class="swatch-val">#C58A3A · CAUTION</div>
             </div>
             <div class="status-swatch">
               <div class="status-block" style="background:#B5544A;"></div>
-              <div class="status-soft-block" style="background:rgba(181,84,74,0.12);border:1px solid rgba(181,84,74,0.25);"></div>
+              <div class="status-soft-block" style="background:rgba(181,84,74,0.12);border:1px solid rgba(181,84,74,0.32);"></div>
               <div class="swatch-name">--danger</div>
               <div class="swatch-val">#B5544A · DANGER</div>
             </div>
@@ -705,7 +733,107 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
     <div class="divider"></div>
 
-    <!-- ─── 2. TYPOGRAPHY ─── -->
+    <!-- ─── 2. READABILITY RULES ─── -->
+    <section class="section" id="readability">
+      <div class="section-header">
+        <div class="section-title">Readability Rules</div>
+        <div class="section-sub">데이터 UI 가독성을 위한 폰트 종류 · 크기 · 색상 · 상태 표현 기준</div>
+      </div>
+
+      <div class="preview-box" style="margin-bottom:20px;">
+        <div class="preview-box-inner">
+          <div class="font-grid">
+            <div class="font-card">
+              <div class="font-card-title">Pretendard Variable</div>
+              <div class="font-card-meta">--font-sans · Korean / UI text</div>
+              <div class="font-sample">화물차 피로도 관제</div>
+              <div class="font-desc">페이지 제목, 카드 제목, 본문, 버튼, 폼 라벨처럼 자연어 중심의 UI 텍스트에 사용한다.</div>
+            </div>
+            <div class="font-card">
+              <div class="font-card-title">JetBrains Mono</div>
+              <div class="font-card-meta">--font-mono · Number / code / status</div>
+              <div class="font-sample mono">LOGMILE 42.8 DANGER</div>
+              <div class="font-desc">KPI 숫자, 차량번호, 상태 chip, 테이블 헤더, 코드성 라벨처럼 정렬과 식별성이 필요한 텍스트에 사용한다.</div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-label">폰트 종류: Pretendard Variable은 기본 UI, JetBrains Mono는 숫자·상태·코드성 정보에 사용</div>
+      </div>
+
+      <div class="preview-box" style="margin-bottom:20px;">
+        <div class="preview-box-inner">
+          <div class="rule-grid">
+            <div class="rule-card">
+              <div class="rule-title">Text Color</div>
+              <div class="rule-list">
+                <div><strong>text-1</strong> 페이지 제목, 카드 제목, 핵심 수치</div>
+                <div><strong>text-2</strong> 카드 본문, 리스트 주요 텍스트, 테이블 주요 값</div>
+                <div><strong>text-3</strong> 보조 설명, 차트 축/범례, KPI 보조 문구</div>
+                <div><strong>text-4</strong> breadcrumb, placeholder, 짧은 meta label에 한정</div>
+              </div>
+            </div>
+            <div class="rule-card">
+              <div class="rule-title">Typography</div>
+              <div class="rule-list">
+                <div>스타일 가이드와 실제 앱 UI의 상세 항목 최소 크기는 <strong>14px</strong>로 둔다.</div>
+                <div>항목 제목, 카드 제목, 핵심 텍스트는 <strong>16px 이상</strong>을 기준으로 한다.</div>
+                <div>페이지 섹션 제목은 <strong>18px / 800</strong> 이상을 기준으로 한다.</div>
+                <div>숫자, 상태값, 테이블 헤더, chip은 <strong>JetBrains Mono</strong>를 우선 사용한다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-label">text-4는 긴 설명, 차트 값, 테이블 값에는 사용하지 않음</div>
+      </div>
+
+      <div class="preview-box" style="margin-bottom:20px;">
+        <div class="preview-box-inner col">
+          <table class="rule-table">
+            <thead>
+              <tr><th>Data UI</th><th>Size / Weight</th><th>Color</th><th>Usage</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>KPI label</td><td>14px / 700 / mono</td><td>text-2</td><td>짧은 영문 meta 라벨</td></tr>
+              <tr><td>KPI value</td><td>28–32px / 800 / mono</td><td>text-1 또는 status</td><td>핵심 수치</td></tr>
+              <tr><td>Chart axis</td><td>14px / 400</td><td>text-2 또는 text-3</td><td>차트 축 기본</td></tr>
+              <tr><td>Chart legend</td><td>14px / 600 / mono</td><td>text-2 또는 text-3</td><td>상태 범례는 chip + dot 권장</td></tr>
+              <tr><td>Table header</td><td>16px / 700 / mono</td><td>text-2</td><td>항목 제목으로 취급</td></tr>
+              <tr><td>Table cell</td><td>14px / 400</td><td>text-2 또는 text-3</td><td>값은 text-2 이상 권장</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="preview-label">표, 차트, KPI, 리스트는 장식보다 판독성을 우선</div>
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-box-inner">
+          <div class="rule-grid">
+            <div class="rule-card">
+              <div class="rule-title">Status Contrast</div>
+              <div class="rule-list">
+                <div><span class="chip chip-ok"><span class="dot dot-ok"></span>NORMAL</span> 정상 수치와 안정 상태</div>
+                <div><span class="chip chip-warn"><span class="dot dot-warn"></span>CAUTION</span> 주의 수치와 임계 접근 상태</div>
+                <div><span class="chip chip-danger"><span class="dot dot-danger"></span>DANGER</span> 위험 수치와 오류 상태</div>
+                <div>soft background만으로 상태를 표현하지 않고, 텍스트 색상 또는 dot을 함께 사용한다.</div>
+              </div>
+            </div>
+            <div class="rule-card">
+              <div class="rule-title">Numeric Emphasis</div>
+              <div class="rule-list">
+                <div>상태값이 숫자와 결합될 때는 숫자 자체에도 상태 색상을 적용한다.</div>
+                <div>KPI 값은 28–32px 범위에서 화면 밀도에 맞춰 조정한다.</div>
+                <div>차트 축과 범례는 text-3 이상 대비를 기본으로 한다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-label">상태 chip은 font-weight 700, 상태 border는 32% opacity 기준</div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ─── 3. TYPOGRAPHY ─── -->
     <section class="section" id="typography">
       <div class="section-header">
         <div class="section-title">Typography</div>
@@ -726,10 +854,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
             <div class="type-row">
               <div class="type-meta">
-                <div class="label-name">Section Title</div>
-                <div class="type-spec">22px · weight 800 · -0.02em</div>
+                <div class="label-name">Page Title</div>
+                <div class="type-spec">24px · weight 800 · lh 1.25</div>
               </div>
-              <div class="type-sample" style="font-size:22px;font-weight:800;letter-spacing:-0.02em;">대시보드 현황</div>
+              <div class="type-sample" style="font-size:24px;font-weight:800;line-height:1.25;">대시보드 현황</div>
+            </div>
+
+            <div class="type-row">
+              <div class="type-meta">
+                <div class="label-name">Section Title</div>
+                <div class="type-spec">18px · weight 800 · lh 1.3</div>
+              </div>
+              <div class="type-sample" style="font-size:18px;font-weight:800;line-height:1.3;">운행 현황 통계</div>
             </div>
 
             <div class="type-row">
@@ -742,32 +878,48 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
             <div class="type-row">
               <div class="type-meta">
+                <div class="label-name">Card Title</div>
+                <div class="type-spec">16px · weight 700 · lh 1.35</div>
+              </div>
+              <div class="type-sample" style="font-size:16px;font-weight:700;line-height:1.35;">일별 운행 시간</div>
+            </div>
+
+            <div class="type-row">
+              <div class="type-meta">
                 <div class="label-name">Body Default</div>
-                <div class="type-spec">14px · weight 400 · lh 1.55</div>
+                <div class="type-spec">14px · weight 400 · lh 1.55 · text-2/3</div>
               </div>
               <div class="type-sample" style="font-size:14px;">운전자 피로도 상태를 실시간으로 모니터링합니다.</div>
             </div>
 
             <div class="type-row">
               <div class="type-meta">
-                <div class="label-name">Nav / Button</div>
-                <div class="type-spec">13–13.5px · weight 500–600</div>
+                <div class="label-name">Body Small</div>
+                <div class="type-spec">14px · weight 400 · lh 1.5 · text-2/3</div>
               </div>
-              <div class="type-sample" style="font-size:13.5px;font-weight:600;">대시보드&nbsp;&nbsp;운행 이력&nbsp;&nbsp;차량 관리</div>
+              <div class="type-sample" style="font-size:14px;color:var(--text-2);">차량별 운행 시간과 야간 운전 비율을 비교합니다.</div>
+            </div>
+
+            <div class="type-row">
+              <div class="type-meta">
+                <div class="label-name">Nav / Button</div>
+                <div class="type-spec">14px · weight 600</div>
+              </div>
+              <div class="type-sample" style="font-size:14px;font-weight:600;">대시보드&nbsp;&nbsp;운행 이력&nbsp;&nbsp;차량 관리</div>
             </div>
 
             <div class="type-row">
               <div class="type-meta">
                 <div class="label-name">Caption / Sub</div>
-                <div class="type-spec">12px · weight 400 · text-4</div>
+                <div class="type-spec">14px · weight 400 · text-3</div>
               </div>
-              <div class="type-sample" style="font-size:12px;color:var(--text-4);">화물차 피로도 관제 시스템 · logmile</div>
+              <div class="type-sample" style="font-size:14px;color:var(--text-3);">화물차 피로도 관제 시스템 · logmile</div>
             </div>
 
             <div class="type-row">
               <div class="type-meta">
                 <div class="label-name">Label SM (mono)</div>
-                <div class="type-spec">10.5px · mono · uppercase · 0.14em</div>
+                <div class="type-spec">14px · mono · uppercase · 0.1em</div>
               </div>
               <div class="type-sample">
                 <span class="label-sm">RUNNING · DANGER · MONITOR</span>
@@ -777,18 +929,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             <div class="type-row">
               <div class="type-meta">
                 <div class="label-name">KPI Value (mono)</div>
-                <div class="type-spec">28px · mono · weight 800</div>
+                <div class="type-spec">28–32px · mono · weight 800</div>
               </div>
-              <div class="type-sample" style="font-size:28px;font-weight:800;font-family:var(--font-mono);">42</div>
+              <div class="type-sample" style="font-size:30px;font-weight:800;font-family:var(--font-mono);">42</div>
             </div>
 
             <div class="type-row">
               <div class="type-meta">
                 <div class="label-name">Nav Section (mono)</div>
-                <div class="type-spec">9.5px · mono · uppercase · 0.14em</div>
+                <div class="type-spec">14px · mono · uppercase · 0.1em</div>
               </div>
               <div class="type-sample">
-                <span style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-4);">MONITOR · MANAGE · CONFIG</span>
+                <span style="font-family:var(--font-mono);font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-2);">MONITOR · MANAGE · CONFIG</span>
               </div>
             </div>
 
@@ -800,7 +952,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
     <div class="divider"></div>
 
-    <!-- ─── 3. SPACING & RADIUS ─── -->
+    <!-- ─── 4. SPACING & RADIUS ─── -->
     <section class="section" id="spacing">
       <div class="section-header">
         <div class="section-title">Spacing & Border Radius</div>
@@ -990,7 +1142,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             <div class="label-name">.chip-brand</div>
           </div>
         </div>
-        <div class="preview-label">Chip variants · font: JetBrains Mono · font-size: 11px</div>
+        <div class="preview-label">Chip variants · font: JetBrains Mono · font-size: 14px</div>
       </div>
 
       <div class="preview-box">
@@ -1030,7 +1182,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       </div>
 
       <div class="preview-box">
-        <div class="preview-box-inner" style="flex-direction:column;max-width:400px;gap:20px;">
+        <div class="preview-box-inner" style="flex-direction:column;width:100%;gap:20px;">
           <!-- Role tabs -->
           <div>
             <div class="label-name" style="margin-bottom:8px;">Role Tabs</div>
@@ -1068,7 +1220,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 <span class="mono seed-val">c1_admin1@logmile.com</span>
                 <button class="seed-fill">자동 입력</button>
               </div>
-              <div class="mono" style="font-size:11px;color:var(--text-4);">pw: admin1234</div>
+              <div class="mono" style="font-size:14px;color:var(--text-2);">pw: admin1234</div>
             </div>
           </div>
         </div>
@@ -1090,14 +1242,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <div class="label-pair">
             <div class="card" style="min-width:180px;">
               <div class="label-sm" style="margin-bottom:8px;">기본 카드</div>
-              <div style="font-size:13px;color:var(--text-2);">카드 내용이 들어갑니다.</div>
+              <div style="font-size:14px;color:var(--text-2);">카드 내용이 들어갑니다.</div>
             </div>
             <div class="label-name">.card</div>
           </div>
           <div class="label-pair">
             <div class="card card-elev" style="min-width:180px;">
               <div class="label-sm" style="margin-bottom:8px;">떠있는 카드</div>
-              <div style="font-size:13px;color:var(--text-2);">shadow-2 적용</div>
+              <div style="font-size:14px;color:var(--text-2);">shadow-2 적용</div>
             </div>
             <div class="label-name">.card.card-elev</div>
           </div>
@@ -1191,7 +1343,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             <div class="label-name">.user-chip</div>
           </div>
           <div class="label-pair" style="align-items:flex-start;">
-            <a class="btn" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--accent);">관리자 로그인</a>
+            <a class="btn" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:var(--r-md);font-size:14px;font-weight:600;color:var(--accent);">관리자 로그인</a>
             <div class="label-name">.btn-login</div>
           </div>
         </div>
@@ -1247,7 +1399,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       </div>
 
       <div class="preview-box">
-        <div class="preview-box-inner col" style="gap:10px;max-width:500px;">
+        <div class="preview-box-inner col" style="gap:10px;width:100%;">
           <div class="alert-item danger">
             <span class="dot dot-danger" style="margin-top:3px;flex-shrink:0;"></span>
             <div>
@@ -1301,7 +1453,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             <div class="swatch-val">1.8s · ok 색상 ring</div>
           </div>
           <div class="label-pair" style="align-items:center;">
-            <div class="card" style="animation:fadeUp 1.5s ease infinite alternate;padding:10px 16px;font-size:12px;">fadeUp 예시</div>
+            <div class="card" style="animation:fadeUp 1.5s ease infinite alternate;padding:10px 16px;font-size:14px;">fadeUp 예시</div>
             <div class="label-name">fadeUp</div>
             <div class="swatch-val">0.35s ease · 페이지 진입</div>
           </div>
