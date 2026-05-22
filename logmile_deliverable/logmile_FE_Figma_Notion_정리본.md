@@ -1,6 +1,7 @@
 # Logmile Design System — Figma / Notion 정리본
 
-> 버전: v1.0.0 | 테마: Light Slate | 기준 파일: `tokens.css`, `main.css`
+> 버전: v1.1.3 | 테마: Light Slate | 기준 파일: `tokens.css`, `main.css`
+> 변경 기준: Readability Rules 우선 배치, 폰트 종류 기준 추가, 스타일 가이드 페이지 폭/정렬 보정
 
 ---
 
@@ -48,7 +49,23 @@ Figma에서 Local Variables 패널에 아래 그룹으로 등록하세요.
 | `Text/text-1` | `--text-1` | `#1F2630` | 제목, 기본 텍스트 |
 | `Text/text-2` | `--text-2` | `#3B4453` | 보조 텍스트, 카드 내용 |
 | `Text/text-3` | `--text-3` | `#5A6371` | 3차 텍스트, nav 기본 |
-| `Text/text-4` | `--text-4` | `#8A93A1` | 플레이스홀더, 캡션, 라벨 |
+| `Text/text-4` | `--text-4` | `#6F7A8A` | 플레이스홀더, 짧은 meta label, 비활성 보조 라벨 |
+
+#### Text Color Usage Rules
+
+| 토큰 | 권장 사용처 | 제한 기준 |
+|---|---|---|
+| `--text-1` | 페이지 제목, 카드 제목, 핵심 수치, 주요 값 | 긴 설명 문단에 과사용하지 않음 |
+| `--text-2` | 카드 본문, 리스트 주요 텍스트, 테이블 주요 셀 | 제목 위계에는 `--text-1` 우선 |
+| `--text-3` | 보조 설명, 테이블 일반 셀, 차트 축/범례, KPI 보조 문구 | placeholder나 비활성 라벨에는 `--text-4` 사용 |
+| `--text-4` | breadcrumb, placeholder, 짧은 meta label, 비활성 보조 라벨 | 긴 문장, 중요한 설명, 표 셀 값에는 사용 금지 |
+
+**가독성 기준**
+
+- 설명 문구는 기본적으로 `--text-3` 이상을 사용한다.
+- `--text-4`는 14px 이상의 짧은 라벨 또는 placeholder 성격에 한정한다.
+- 차트 축, 차트 범례, 테이블 셀, 리스트 값은 `--text-3` 이상을 사용한다.
+- 숫자 값은 `--text-1` 또는 상태 색상(`--ok`, `--warn`, `--danger`)으로 표시한다.
 
 #### Accent
 
@@ -74,6 +91,19 @@ Figma에서 Local Variables 패널에 아래 그룹으로 등록하세요.
 | `Status/info` | `--info` | `#747F95` | INFO · 텍스트 |
 | `Status/info-soft` | `--info-soft` | `rgba(116,127,149,0.14)` | INFO · 배경 |
 
+#### Status Color Usage Rules
+
+| 상태 | Text | Soft BG | Border | 권장 표현 |
+|---|---|---|---|---|
+| NORMAL | `--ok` | `--ok-soft` | `rgba(94,138,111,0.32)` | dot + chip, 정상 수치 |
+| CAUTION | `--warn` | `--warn-soft` | `rgba(197,138,58,0.32)` | dot + chip, 주의 수치 |
+| DANGER | `--danger` | `--danger-soft` | `rgba(181,84,74,0.32)` | dot + chip, 위험 수치, 오류 |
+| INFO | `--info` | `--info-soft` | `--accent-line` | 일반 상태, 보조 정보 |
+
+- 상태 구분은 soft background만으로 표현하지 않고, 텍스트 색상 또는 dot을 함께 사용한다.
+- `warn`, `danger` 계열은 작은 chip에서도 읽히도록 `font-weight: 700`을 기본 권장한다.
+- 상태값이 숫자와 결합될 때는 숫자 자체에도 상태 색상을 적용한다.
+
 ---
 
 ### 📝 Text Style 설정
@@ -81,23 +111,63 @@ Figma에서 Local Variables 패널에 아래 그룹으로 등록하세요.
 Figma Text Styles에 아래와 같이 등록하세요.
 폰트: **Pretendard Variable** (기본) / **JetBrains Mono** (mono 계열)
 
+#### Font Family Usage
+
+| 폰트 | CSS 토큰 | 권장 사용처 | 제한 기준 |
+|---|---|---|---|
+| Pretendard Variable | `--font-sans` | 페이지 제목, 카드 제목, 본문, 버튼, 폼 라벨, 자연어 중심 UI | 숫자 정렬이 중요한 KPI/코드성 라벨에는 mono 우선 |
+| JetBrains Mono | `--font-mono` | KPI 숫자, 차량번호, 상태 chip, 테이블 헤더, 코드성 라벨 | 긴 한글 문장 본문에는 사용하지 않음 |
+
+- Readability Rules는 Typography보다 먼저 확인하는 기준 섹션으로 둔다.
+- 스타일 가이드 페이지는 동일한 본문 폭을 기준으로 preview box를 100% 정렬한다.
+- 좁은 form, alert 예시는 별도 max-width를 두지 않고 같은 가이드 폭 안에서 정렬한다.
+
 | Style 이름 | 폰트 | 크기 | 굵기 | 자간 | 줄간 | 용도 |
 |---|---|---|---|---|---|---|
 | `Brand/Title` | Pretendard Variable | 32 | 800 | -2% | 125% | 로그인 브랜드 패널 제목 |
-| `Section/Title` | Pretendard Variable | 22 | 800 | -2% | auto | 페이지 섹션 제목 |
+| `Page/Title` | Pretendard Variable | 24 | 800 | 0 | 125% | 앱 주요 페이지 제목 |
+| `Section/Title` | Pretendard Variable | 18 | 800 | 0 | 130% | 페이지 섹션 제목 |
 | `Form/Title` | Pretendard Variable | 22 | 700 | -1% | auto | 폼 제목 |
+| `Card/Title` | Pretendard Variable | 16 | 700 | 0 | 135% | 카드, 패널 제목 |
 | `Body/Default` | Pretendard Variable | 14 | 400 | 0 | 155% | 기본 본문 |
-| `Nav/Item` | Pretendard Variable | 13 | 500 | 0 | auto | 사이드바 메뉴 |
-| `Nav/Item-Topbar` | Pretendard Variable | 13.5 | 600 | 0 | auto | 탑바 nav |
-| `Button/Default` | Pretendard Variable | 13 | 500 | 0 | auto | 기본 버튼 |
+| `Body/Small` | Pretendard Variable | 14 | 400 | 0 | 150% | 보조 본문, 리스트 보조 텍스트 |
+| `Nav/Item` | Pretendard Variable | 14 | 600 | 0 | auto | 사이드바 메뉴 |
+| `Nav/Item-Topbar` | Pretendard Variable | 14 | 600 | 0 | auto | 탑바 nav |
+| `Button/Default` | Pretendard Variable | 14 | 600 | 0 | auto | 기본 버튼 |
 | `Button/Large` | Pretendard Variable | 14 | 600 | 0 | auto | submit 버튼 |
-| `Caption/Default` | Pretendard Variable | 12 | 400 | 0 | auto | 서브 텍스트 |
-| `Mono/KPI-Value` | JetBrains Mono | 28 | 800 | 0 | 100% | 대시보드 KPI 숫자 |
-| `Mono/Chip` | JetBrains Mono | 11 | 600 | 2% | auto | chip 텍스트 |
-| `Mono/Label-SM` | JetBrains Mono | 10.5 | 600 | 14% | auto | 섹션 레이블 (UPPERCASE) |
-| `Mono/Nav-Section` | JetBrains Mono | 9.5 | 600 | 14% | auto | 사이드바 섹션 라벨 |
-| `Mono/Field-Label` | Pretendard Variable | 10.5 | 600 | 8% | auto | 폼 필드 라벨 (UPPERCASE) |
-| `Mono/Caption` | JetBrains Mono | 10–12 | 400 | 4–6% | auto | 코드/수치 캡션 |
+| `Caption/Default` | Pretendard Variable | 14 | 400 | 0 | auto | 서브 텍스트 |
+| `Mono/KPI-Value` | JetBrains Mono | 28–32 | 800 | 0 | 100% | 대시보드 KPI 숫자 |
+| `Mono/Table-Header` | JetBrains Mono | 16 | 700 | 4% | auto | 테이블 헤더 |
+| `Mono/Chip` | JetBrains Mono | 14 | 700 | 2% | auto | chip 텍스트 |
+| `Mono/Label-SM` | JetBrains Mono | 14 | 700 | 10% | auto | 섹션 레이블 (UPPERCASE) |
+| `Mono/Nav-Section` | JetBrains Mono | 14 | 700 | 10% | auto | 사이드바 섹션 라벨 |
+| `Mono/Field-Label` | Pretendard Variable | 14 | 700 | 8% | auto | 폼 필드 라벨 (UPPERCASE) |
+| `Mono/Caption` | JetBrains Mono | 14 | 400 | 4–6% | auto | 코드/수치 캡션 |
+
+#### Typography Usage Rules
+
+- 스타일 가이드와 실제 앱 UI의 상세 항목 최소 폰트 크기는 `14px`로 둔다.
+- 항목 제목, 카드 제목, 핵심 텍스트는 `16px` 이상을 기준으로 한다.
+- 일반 본문, 보조 본문, 캡션은 모두 `14px` 이상을 기준으로 한다.
+- 카드 제목은 `16px / 700`을 기준으로 하며, 카드 내부에서 18px 이상의 제목은 사용하지 않는다.
+- KPI 값은 `28~32px / 800 / JetBrains Mono`를 사용한다.
+- 버튼 텍스트는 `14px / 600`을 기본으로 한다.
+- 숫자, 상태값, 코드성 라벨, 테이블 헤더, chip은 `JetBrains Mono`를 우선 사용한다.
+
+#### Data UI Typography
+
+| UI 요소 | 크기/굵기 | 색상 | 비고 |
+|---|---|---|---|
+| KPI label | 14px / 700 / mono | `--text-2` | 짧은 영문 meta 라벨 |
+| KPI value | 28~32px / 800 / mono | `--text-1` 또는 상태 색상 | 핵심 수치 |
+| KPI sub | 14px / 400 | `--text-2` 또는 `--text-3` | `--text-4` 사용 지양 |
+| Chart axis | 14px / 400 | `--text-2` 또는 `--text-3` | 차트 축 기본 |
+| Chart legend | 14px / 600 / mono | `--text-2` 또는 `--text-3` | 상태 범례는 chip + dot 권장 |
+| Table header | 16px / 700 / mono | `--text-2` | 항목 제목으로 취급 |
+| Table cell | 14px / 400 | `--text-2` 또는 `--text-3` | 값은 `--text-2` 이상 |
+| List primary | 16px / 600 | `--text-1` 또는 `--text-2` | 차량번호, 이름 등 핵심 정보 |
+| List secondary | 14px / 400 | `--text-2` 또는 `--text-3` | 보조 설명 |
+| Empty state | 14px / 400 | `--text-3` | 빈 상태 안내 |
 
 ---
 
@@ -144,22 +214,22 @@ Figma Number Variables 또는 Effect Styles로 등록:
 | `.btn-primary` | `--accent` | `#FFFFFF` | none | `--r-md` | 주요 액션 |
 | `.btn-ghost` | transparent | `--text-2` | `--line-2` | `--r-md` | 보조 액션 |
 | `.btn-link` | none | `--accent` | none | 0 | 인라인 링크형 |
-| `.btn-danger` | `--danger-soft` | `--danger` | `rgba(181,84,74,0.25)` | `--r-md` | 위험/삭제 액션 |
+| `.btn-danger` | `--danger-soft` | `--danger` | `rgba(181,84,74,0.32)` | `--r-md` | 위험/삭제 액션 |
 | `btn-login` | `--accent-soft` | `--accent` | `--accent-line` | `--r-md` | 탑바 로그인 버튼 |
 
-**크기:** `btn-sm` (5/10px padding, 12px) · 기본 (8/14px, 13px) · `btn-lg` (11/22px, 14px, weight 600)
+**크기:** `btn-sm` (5/10px padding, 14px) · 기본 (8/14px, 14px) · `btn-lg` (11/22px, 14px, weight 600)
 
 ---
 
 ### Chips
 
-> 모두 `border-radius: 999px`, `font-family: JetBrains Mono`, `font-size: 11px`, `font-weight: 600`
+> 모두 `border-radius: 999px`, `font-family: JetBrains Mono`, `font-size: 14px`, `font-weight: 700`
 
 | 클래스 | 배경 | 글자색 | 테두리 |
 |---|---|---|---|
-| `.chip-ok` | `--ok-soft` | `--ok` | `rgba(94,138,111,0.25)` |
-| `.chip-warn` | `--warn-soft` | `--warn` | `rgba(197,138,58,0.25)` |
-| `.chip-danger` | `--danger-soft` | `--danger` | `rgba(181,84,74,0.25)` |
+| `.chip-ok` | `--ok-soft` | `--ok` | `rgba(94,138,111,0.32)` |
+| `.chip-warn` | `--warn-soft` | `--warn` | `rgba(197,138,58,0.32)` |
+| `.chip-danger` | `--danger-soft` | `--danger` | `rgba(181,84,74,0.32)` |
 | `.chip-info` | `--info-soft` | `--info` | `--accent-line` |
 | `.chip-mute` | `--bg-2` | `--text-3` | `--line-2` |
 | `.chip-brand` | `--accent-soft` | `--accent` | `--accent-line` |
@@ -186,7 +256,7 @@ Figma Number Variables 또는 Effect Styles로 등록:
 
 **탑바 nav 아이템**
 
-- 기본: `color: --text-3`, `padding: 7px 13px`, `font-size: 13.5px`, `font-weight: 600`, `border-radius: --r-sm`
+- 기본: `color: --text-2`, `padding: 7px 13px`, `font-size: 14px`, `font-weight: 600`, `border-radius: --r-sm`
 - Hover: `bg: --bg-3`, `color: --text-1`
 - Active: `bg: --accent-soft`, `border: 1px solid --accent-line`, `color: --accent`
 
@@ -201,11 +271,11 @@ Figma Number Variables 또는 Effect Styles로 등록:
 ### Form Inputs
 
 - 배경: `--bg-0`, 테두리: `1px solid --line-2`, radius: `--r-md`
-- 폰트: `JetBrains Mono`, `font-size: 13px`, `color: --text-1`
+- 폰트: `JetBrains Mono`, `font-size: 14px`, `color: --text-1`
 - 플레이스홀더: `color: --text-4`
 - Focus: `border-color: --accent-line`
 - 오류: `border-color: --danger`, `background: --danger-soft`
-- 라벨: Pretendard, 10.5px, weight 600, uppercase, `letter-spacing: 0.08em`, `color: --text-3`
+- 라벨: Pretendard, 14px, weight 700, uppercase, `letter-spacing: 0.08em`, `color: --text-2`
 
 ---
 
@@ -227,7 +297,7 @@ position: sticky top:0 z-index:50
 background: linear-gradient(135deg, #1A2230 0%, #2C3851 55%, #515F7A 100%)
 데코 원: border: 1px solid rgba(255,255,255,0.06), border-radius: 50%
 제목: 32px, weight 800, color: #FFFFFF
-서브: 14px, color: rgba(255,255,255,0.55)
+서브: 14px, color: rgba(255,255,255,0.76)
 통계 숫자: 28px, weight 800, font-mono, color: #FFFFFF
 ```
 
@@ -240,6 +310,8 @@ background: linear-gradient(135deg, #1A2230 0%, #2C3851 55%, #515F7A 100%)
 3. **상태 색상 쌍**: solid(강조 텍스트·도트) + soft(배경) 항상 쌍으로 사용
 4. **Accent 파생 토큰**: accent-soft(10% opacity), accent-line(28% opacity)으로 활성 상태 표현
 5. **피로도 기준**: NORMAL(0~39점, ok), CAUTION(40~69점, warn), DANGER(70점 이상, danger)
+6. **최소 가독성 기준**: 스타일 가이드와 실제 앱 UI의 상세 항목 최소 크기는 14px이며, 항목 제목과 핵심 텍스트는 16px 이상을 사용한다.
+7. **데이터 UI 우선 원칙**: 표, 차트, KPI, 리스트는 장식보다 판독성을 우선하며 `--text-3` 이상 대비를 기본으로 한다.
 
 ---
 

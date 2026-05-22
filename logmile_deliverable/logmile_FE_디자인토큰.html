@@ -11,7 +11,7 @@
   --ink: #1F2630; --ink-2: #3B4453; --ink-3: #5A6371;
   --bg-0: #DEE2E8; --bg-1: #F1F3F6; --bg-2: #E6E9EE; --bg-3: #D4D9E0;
   --line-1: #C9CFD8; --line-2: #BCC3CD;
-  --text-1: #1F2630; --text-2: #3B4453; --text-3: #5A6371; --text-4: #8A93A1;
+  --text-1: #1F2630; --text-2: #3B4453; --text-3: #5A6371; --text-4: #6F7A8A;
   --accent: #515F7A; --accent-hover: #1F2630;
   --accent-soft: rgba(81,95,122,0.10); --accent-line: rgba(81,95,122,0.28);
   --ok: #5E8A6F; --ok-soft: rgba(94,138,111,0.12);
@@ -25,7 +25,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   background: var(--bg-0); color: var(--text-1);
-  font-family: var(--font-sans); font-size: 13px; line-height: 1.5;
+  font-family: var(--font-sans); font-size: 14px; line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 ::-webkit-scrollbar { width: 6px; }
@@ -43,13 +43,13 @@ body {
 }
 .doc-header-inner { position: relative; z-index: 1; }
 .doc-badge {
-  display: inline-block; font-family: var(--font-mono); font-size: 9px;
+  display: inline-block; font-family: var(--font-mono); font-size: 14px;
   letter-spacing: 0.14em; text-transform: uppercase;
   background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.65); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px;
+  color: rgba(255,255,255,0.82); padding: 3px 10px; border-radius: 999px; margin-bottom: 14px;
 }
 .doc-title { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 6px; }
-.doc-sub { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.45); }
+.doc-sub { font-family: var(--font-mono); font-size: 14px; color: rgba(255,255,255,0.76); }
 
 /* ── LAYOUT ── */
 .doc-body { max-width: 960px; margin: 0 auto; padding: 40px 48px 80px; }
@@ -57,11 +57,11 @@ body {
 /* ── SECTION ── */
 .tok-section { margin-bottom: 56px; }
 .tok-section-title {
-  font-size: 15px; font-weight: 800; color: var(--text-1);
+  font-size: 16px; font-weight: 800; color: var(--text-1);
   letter-spacing: -0.01em; margin-bottom: 4px;
   display: flex; align-items: center; gap: 10px;
 }
-.tok-section-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-4); margin-bottom: 20px; }
+.tok-section-sub { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); margin-bottom: 20px; }
 .tok-section-title::before {
   content: ''; display: block; width: 3px; height: 16px;
   background: var(--accent); border-radius: 2px;
@@ -77,23 +77,23 @@ body {
   background: var(--bg-3); border-bottom: 1px solid var(--line-1);
 }
 .tok-table th {
-  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--text-4); font-weight: 600;
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-3); font-weight: 700;
   padding: 10px 16px; text-align: left;
 }
 .tok-table td {
   padding: 10px 16px; border-bottom: 1px solid var(--line-1);
-  vertical-align: middle; font-size: 12.5px;
+  vertical-align: middle; font-size: 14px;
 }
 .tok-table tr:last-child td { border-bottom: none; }
 .tok-table tr:hover td { background: rgba(81,95,122,0.04); }
 
 .tok-name {
-  font-family: var(--font-mono); font-size: 12px;
-  color: var(--accent); font-weight: 600; white-space: nowrap;
+  font-family: var(--font-mono); font-size: 16px;
+  color: var(--accent); font-weight: 700; white-space: nowrap;
 }
 .tok-value {
-  font-family: var(--font-mono); font-size: 11.5px; color: var(--text-3);
+  font-family: var(--font-mono); font-size: 14px; color: var(--text-2);
   display: flex; align-items: center; gap: 8px; white-space: nowrap;
 }
 .tok-swatch {
@@ -101,10 +101,10 @@ body {
   border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
   display: inline-block;
 }
-.tok-usage { font-size: 12px; color: var(--text-3); }
+.tok-usage { font-size: 14px; color: var(--text-2); }
 .tok-category {
-  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--text-4); padding: 2px 7px;
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-2); padding: 2px 7px;
   background: var(--bg-3); border-radius: var(--r-sm); border: 1px solid var(--line-1);
   white-space: nowrap;
 }
@@ -116,14 +116,14 @@ body {
 .usage-note {
   background: var(--accent-soft); border: 1px solid var(--accent-line);
   border-radius: var(--r-md); padding: 12px 16px; margin-bottom: 20px;
-  font-size: 12px; color: var(--text-2); display: flex; gap: 10px;
+  font-size: 14px; color: var(--text-2); display: flex; gap: 10px;
 }
-.usage-note-icon { font-size: 14px; flex-shrink: 0; }
+.usage-note-icon { font-size: 16px; flex-shrink: 0; }
 
 /* ── COPY BUTTON ── */
 .copy-btn {
-  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.06em;
-  color: var(--text-4); background: var(--bg-3); border: 1px solid var(--line-2);
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.06em;
+  color: var(--text-2); background: var(--bg-3); border: 1px solid var(--line-2);
   border-radius: var(--r-sm); padding: 2px 8px; cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }
@@ -135,10 +135,10 @@ body {
   background: var(--bg-1); border: 1px solid var(--line-2);
   border-radius: var(--r-md); padding: 16px;
 }
-.compound-item-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
-.compound-item-desc { font-size: 11.5px; color: var(--text-3); line-height: 1.6; }
+.compound-item-title { font-family: var(--font-mono); font-size: 16px; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+.compound-item-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; }
 .compound-item-tokens { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
-.compound-item-token { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-4); }
+.compound-item-token { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); }
 </style>
 </head>
 <body>
@@ -150,7 +150,7 @@ body {
   <div class="doc-header-inner">
     <div class="doc-badge">DESIGN TOKENS REFERENCE</div>
     <div class="doc-title">Logmile Design Tokens</div>
-    <div class="doc-sub">tokens.css · main.css · 변수명 · 값 · 용도 전체 정리 · v1.0.0</div>
+    <div class="doc-sub">tokens.css · main.css · 변수명 · 값 · 용도 전체 정리 · v1.1.3</div>
   </div>
 </div>
 
@@ -259,7 +259,7 @@ body {
         <tr><td><span class="tok-name">--text-1</span></td><td><span class="tok-value">var(--ink)</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#1F2630;"></span>#1F2630</span></td><td class="tok-usage">기본 텍스트, 제목, 최고 강조</td></tr>
         <tr><td><span class="tok-name">--text-2</span></td><td><span class="tok-value">var(--ink-2)</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#3B4453;"></span>#3B4453</span></td><td class="tok-usage">보조 텍스트, 카드 내용, user-name</td></tr>
         <tr><td><span class="tok-name">--text-3</span></td><td><span class="tok-value">var(--ink-3)</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#5A6371;"></span>#5A6371</span></td><td class="tok-usage">3차 텍스트, nav-item 기본, ghost 버튼</td></tr>
-        <tr><td><span class="tok-name">--text-4</span></td><td><span class="tok-value">—</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#8A93A1;"></span>#8A93A1</span></td><td class="tok-usage">플레이스홀더, 캡션, nav-section 라벨, footer</td></tr>
+        <tr><td><span class="tok-name">--text-4</span></td><td><span class="tok-value">—</span></td><td><span class="tok-value"><span class="tok-swatch" style="background:#6F7A8A;"></span>#6F7A8A</span></td><td class="tok-usage">플레이스홀더, 짧은 meta label, 비활성 보조 라벨 · 긴 설명/표 값에는 사용 금지</td></tr>
       </tbody>
     </table>
   </div>
@@ -317,16 +317,16 @@ body {
         <tr><td><span class="tok-name">section-title</span></td><td><span class="tok-value">22px · weight 800 · ls -0.02em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">페이지 섹션 제목</td></tr>
         <tr><td><span class="tok-name">form-title</span></td><td><span class="tok-value">22px · weight 700 · ls -0.01em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">폼 제목 (로그인)</td></tr>
         <tr><td><span class="tok-name">body-default</span></td><td><span class="tok-value">14px · weight 400 · lh 1.55</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">html, body 기본 텍스트</td></tr>
-        <tr><td><span class="tok-name">nav-item</span></td><td><span class="tok-value">13px · weight 500</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">사이드바 메뉴, 탑바 nav</td></tr>
-        <tr><td><span class="tok-name">nav-item-topbar</span></td><td><span class="tok-value">13.5px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">탑바 nav 아이템</td></tr>
-        <tr><td><span class="tok-name">button-default</span></td><td><span class="tok-value">13px · weight 500</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">.btn 기본 크기</td></tr>
+        <tr><td><span class="tok-name">nav-item</span></td><td><span class="tok-value">14px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">사이드바 메뉴, 탑바 nav</td></tr>
+        <tr><td><span class="tok-name">nav-item-topbar</span></td><td><span class="tok-value">14px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">탑바 nav 아이템</td></tr>
+        <tr><td><span class="tok-name">button-default</span></td><td><span class="tok-value">14px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">.btn 기본 크기</td></tr>
         <tr><td><span class="tok-name">button-lg</span></td><td><span class="tok-value">14px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">submit 버튼, 로그인 버튼</td></tr>
-        <tr><td><span class="tok-name">chip-text (mono)</span></td><td><span class="tok-value">11px · weight 600 · ls 0.02em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">.chip 내부 텍스트</td></tr>
-        <tr><td><span class="tok-name">kpi-value (mono)</span></td><td><span class="tok-value">28px · weight 800 · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">대시보드 KPI 숫자</td></tr>
-        <tr><td><span class="tok-name">.label-sm (mono)</span></td><td><span class="tok-value">10.5px · weight 600 · uppercase · ls 0.14em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">섹션 레이블, 카테고리 태그</td></tr>
-        <tr><td><span class="tok-name">nav-section (mono)</span></td><td><span class="tok-value">9–9.5px · uppercase · ls 0.14em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">사이드바 섹션 (MONITOR, MANAGE, CONFIG)</td></tr>
-        <tr><td><span class="tok-name">field-label</span></td><td><span class="tok-value">10.5px · weight 600 · uppercase · ls 0.08em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">폼 필드 레이블</td></tr>
-        <tr><td><span class="tok-name">caption</span></td><td><span class="tok-value">12px · weight 400</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">서브 텍스트, 폼 설명</td></tr>
+        <tr><td><span class="tok-name">chip-text (mono)</span></td><td><span class="tok-value">14px · weight 700 · ls 0.02em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">.chip 내부 텍스트</td></tr>
+        <tr><td><span class="tok-name">kpi-value (mono)</span></td><td><span class="tok-value">28–32px · weight 800 · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">대시보드 KPI 숫자</td></tr>
+        <tr><td><span class="tok-name">.label-sm (mono)</span></td><td><span class="tok-value">14px · weight 700 · uppercase · ls 0.1em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">섹션 레이블, 카테고리 태그</td></tr>
+        <tr><td><span class="tok-name">nav-section (mono)</span></td><td><span class="tok-value">14px · uppercase · ls 0.1em · mono</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">사이드바 섹션 (MONITOR, MANAGE, CONFIG)</td></tr>
+        <tr><td><span class="tok-name">field-label</span></td><td><span class="tok-value">14px · weight 700 · uppercase · ls 0.08em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">폼 필드 레이블</td></tr>
+        <tr><td><span class="tok-name">caption</span></td><td><span class="tok-value">14px · weight 400</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">서브 텍스트, 폼 설명</td></tr>
       </tbody>
     </table>
   </div>
@@ -357,19 +357,19 @@ body {
       <tbody>
         <tr>
           <td><span class="tok-name">--shadow-1</span></td>
-          <td><span class="tok-value" style="white-space:normal;font-size:10.5px;">0 1px 0 rgba(255,255,255,0.6) inset,<br/>0 1px 2px rgba(31,38,48,0.06)</span></td>
+          <td><span class="tok-value" style="white-space:normal;font-size:14px;">0 1px 0 rgba(255,255,255,0.6) inset,<br/>0 1px 2px rgba(31,38,48,0.06)</span></td>
           <td><span class="tok-category">Shadow</span></td>
           <td class="tok-usage">기본 카드 (.card), subtle 깊이감</td>
         </tr>
         <tr>
           <td><span class="tok-name">--shadow-2</span></td>
-          <td><span class="tok-value" style="white-space:normal;font-size:10.5px;">0 1px 0 rgba(255,255,255,0.7) inset,<br/>0 8px 30px rgba(81,95,122,0.10)</span></td>
+          <td><span class="tok-value" style="white-space:normal;font-size:14px;">0 1px 0 rgba(255,255,255,0.7) inset,<br/>0 8px 30px rgba(81,95,122,0.10)</span></td>
           <td><span class="tok-category">Shadow</span></td>
           <td class="tok-usage">떠있는 카드 (.card-elev), 강조 카드</td>
         </tr>
         <tr>
           <td><span class="tok-name">--shadow-3</span></td>
-          <td><span class="tok-value" style="white-space:normal;font-size:10.5px;">0 24px 60px rgba(81,95,122,0.18)</span></td>
+          <td><span class="tok-value" style="white-space:normal;font-size:14px;">0 24px 60px rgba(81,95,122,0.18)</span></td>
           <td><span class="tok-category">Shadow</span></td>
           <td class="tok-usage">모달, 플로팅 패널, 최상단 레이어</td>
         </tr>
@@ -385,7 +385,7 @@ body {
       <thead><tr><th>Token</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
       <tbody>
         <tr><td><span class="tok-name">--topbar-height</span></td><td><span class="tok-value">64px</span></td><td><span class="tok-category">Layout</span></td><td class="tok-usage">AppTopbar 고정 높이 (sticky top) · 실제 레이아웃에서 유일한 네비게이션</td></tr>
-        <tr><td><span class="tok-name">--sidebar-width</span></td><td><span class="tok-value">220px <span style="color:var(--text-4);font-size:10px;">(미사용)</span></span></td><td><span class="tok-category">Layout</span></td><td class="tok-usage">tokens.css에 정의돼 있으나 AppLayout에서 사용 안 함 (AppSidebar.vue 미사용)</td></tr>
+        <tr><td><span class="tok-name">--sidebar-width</span></td><td><span class="tok-value">220px <span style="color:var(--text-2);font-size:14px;">(미사용)</span></span></td><td><span class="tok-category">Layout</span></td><td class="tok-usage">tokens.css에 정의돼 있으나 AppLayout에서 사용 안 함 (AppSidebar.vue 미사용)</td></tr>
       </tbody>
     </table>
   </div>
@@ -426,8 +426,8 @@ body {
         <div class="compound-item-tokens">
           <span class="compound-item-token">bg: --danger-soft</span>
           <span class="compound-item-token">color: --danger</span>
-          <span class="compound-item-token">border: 1px solid rgba(181,84,74,0.25)</span>
-          <span class="compound-item-token">font: --font-mono · 11px</span>
+          <span class="compound-item-token">border: 1px solid rgba(181,84,74,0.32)</span>
+          <span class="compound-item-token">font: --font-mono · 14px · weight 700</span>
         </div>
       </div>
       <div class="compound-item">
