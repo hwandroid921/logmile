@@ -1,5 +1,6 @@
 package com.project.logmile.domain.dashboard.controller;
 
+import com.project.logmile.domain.dashboard.dto.DashboardEventResponse;
 import com.project.logmile.domain.dashboard.dto.DashboardSummaryResponse;
 import com.project.logmile.domain.dashboard.dto.VehicleStatusResponse;
 import com.project.logmile.domain.dashboard.service.DashboardService;
@@ -41,5 +42,14 @@ public class DashboardController {
 		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 		LocalDate date) {
 		return ResponseEntity.ok(dashboardService.getRunningVehicles(date));
+	}
+
+	@Operation(summary = "대시보드 이벤트 스트림 조회",
+		description = "선택 날짜 기준 최근 피로도 이벤트 30건을 최신순으로 반환합니다.")
+	@GetMapping("/events")
+	public ResponseEntity<List<DashboardEventResponse>> getRecentEvents(
+		@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+		LocalDate date) {
+		return ResponseEntity.ok(dashboardService.getRecentEvents(date));
 	}
 }

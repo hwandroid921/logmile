@@ -5,10 +5,12 @@ import com.project.logmile.common.exception.ErrorCode;
 import com.project.logmile.common.security.TenantAccessService;
 import com.project.logmile.domain.drivelog.dto.DriveHistoryDetailResponse;
 import com.project.logmile.domain.drivelog.dto.DriveHistoryListResponse;
+import com.project.logmile.domain.drivelog.dto.GpsPointResponse;
 import com.project.logmile.domain.drivelog.entity.DriveLog;
 import com.project.logmile.domain.drivelog.repository.DriveLogRepository;
 import com.project.logmile.domain.fatigue.entity.FatigueEvent;
 import com.project.logmile.domain.fatigue.repository.FatigueEventRepository;
+import com.project.logmile.domain.gps.repository.GpsDataRepository;
 import com.project.logmile.domain.rest.entity.RestEvent;
 import com.project.logmile.domain.rest.repository.RestEventRepository;
 import java.util.List;
@@ -23,6 +25,7 @@ public class DriveHistoryService {
 	private final DriveLogRepository driveLogRepository;
 	private final FatigueEventRepository fatigueEventRepository;
 	private final RestEventRepository restEventRepository;
+	private final GpsDataRepository gpsDataRepository;
 	private final TenantAccessService tenantAccessService;
 
 	/**
@@ -53,5 +56,20 @@ public class DriveHistoryService {
 			restEventRepository.findByDriveLogIdOrderByRestStartedAtAsc(driveLogId);
 
 		return DriveHistoryDetailResponse.from(log, fatigueEvents, restEvents);
+	}
+
+	/**
+	 * 운행 GPS 경로 조회
+	 */
+	@Transactional(readOnly = true)
+	public List<GpsPointResponse> getGpsRoute(Long driveLogId) {
+		DriveLog log = driveLogRepository.findById(driveLogId)
+			.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_INPUT));
+		tenantAccessService.validate(log.getCompany().getId());
+
+		return gpsDataRepository.findByDriveLogIdOrderByRecordedAtAsc(driveLogId)
+			.stream()
+			.map(GpsPointResponse::from)
+			.toList();
 	}
 }

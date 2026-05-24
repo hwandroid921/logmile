@@ -3,20 +3,22 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { dashboardApi } from '@/api/dashboardApi'
+import { fatigueStatsApi } from '@/api/fatigueStatsApi'
+import { driveHistoryApi } from '@/api/driveHistoryApi'
 
 const route = useRoute()
 const router = useRouter()
 
 /* ─── 시드 데이터 (lat/lng 추가) ─── */
 const SEED_VEHICLES = [
-  { id:1,  plate:'경기 80바 1024', driver:'김민수', phone:'010-3821-4507', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:'DL-2026-0438', lat:37.0078, lng:127.2714 },
-  { id:2,  plate:'경기 80바 1025', driver:'박정호', phone:'010-5512-8834', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:'DL-2026-0437', lat:36.7842, lng:126.4502 },
-  { id:3,  plate:'경기 80바 1026', driver:'이영준', phone:'010-7743-2291', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:'DL-2026-0436', lat:36.9357, lng:127.6882 },
-  { id:4,  plate:'경기 80바 1027', driver:'최성훈', phone:'010-2267-9104', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:'DL-2026-0435', lat:37.2986, lng:127.6374 },
-  { id:5,  plate:'경기 80바 1028', driver:'정우석', phone:'010-9934-6612', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:'DL-2026-0434', lat:35.1797, lng:128.1077 },
-  { id:6,  plate:'경기 80바 1029', driver:'강지훈', phone:'010-4418-7753', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:'DL-2026-0433', lat:36.3933, lng:128.1968 },
-  { id:7,  plate:'경기 80바 1030', driver:'한승연', phone:'010-6629-3380', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:'DL-2026-0432', lat:37.4875, lng:126.7657 },
-  { id:8,  plate:'경기 80바 1031', driver:'조영민', phone:'010-8801-5547', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:'DL-2026-0431', lat:36.8897, lng:126.6453 },
+  { id:1,  plate:'경기 80바 1024', driver:'김민수', phone:'010-3821-4507', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:1,  recognizedPlate:'01누 5936', lat:37.0078, lng:127.2714 },
+  { id:2,  plate:'경기 80바 1025', driver:'박정호', phone:'010-5512-8834', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:10, recognizedPlate:'01다 0673', lat:36.7842, lng:126.4502 },
+  { id:3,  plate:'경기 80바 1026', driver:'이영준', phone:'010-7743-2291', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:11, recognizedPlate:null,        lat:36.9357, lng:127.6882 },
+  { id:4,  plate:'경기 80바 1027', driver:'최성훈', phone:'010-2267-9104', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:12, recognizedPlate:'01도 4663', lat:37.2986, lng:127.6374 },
+  { id:5,  plate:'경기 80바 1028', driver:'정우석', phone:'010-9934-6612', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:13, recognizedPlate:'01스 4684', lat:35.1797, lng:128.1077 },
+  { id:6,  plate:'경기 80바 1029', driver:'강지훈', phone:'010-4418-7753', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:null, recognizedPlate:null,       lat:36.3933, lng:128.1968 },
+  { id:7,  plate:'경기 80바 1030', driver:'한승연', phone:'010-6629-3380', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:null, recognizedPlate:null,       lat:37.4875, lng:126.7657 },
+  { id:8,  plate:'경기 80바 1031', driver:'조영민', phone:'010-8801-5547', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:null, recognizedPlate:null,       lat:36.8897, lng:126.6453 },
   { id:9,  plate:'경기 80바 1032', driver:'윤태경', phone:'010-1193-4428', type:'카고 5톤',    score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
   { id:10, plate:'경기 80바 1033', driver:'서동현', phone:'010-3375-8819', type:'윙바디 8톤',  score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
 ]
@@ -71,12 +73,17 @@ function buildRuntimeVehicle(apiVehicle, index) {
   const preset = DEMO_RUNNING_PRESETS[index % DEMO_RUNNING_PRESETS.length] || DEMO_RUNNING_PRESETS[0]
   const score = apiVehicle.fatigueScore ?? preset.score
   const level = apiVehicle.fatigueLevel ?? preset.level
-  const contMin = level === 'DANGER' ? Math.max(240, 180 + score * 2) :
-    level === 'CAUTION' ? Math.max(120, 90 + score * 2) :
-    Math.max(30, score * 3)
-  const dailyMin = Math.max(contMin, contMin + 120 + index * 18)
-  const nightMin = level === 'DANGER' ? Math.max(30, Math.round(contMin * 0.35)) :
-    level === 'CAUTION' ? Math.round(contMin * 0.2) : Math.round(contMin * 0.08)
+
+  // #2: 실제 운행 시간 사용, 없으면 점수 기반 추정
+  const contMin  = apiVehicle.continuousDrivingMinutes  ??
+    (level === 'DANGER' ? Math.max(240, 180 + score * 2) :
+     level === 'CAUTION' ? Math.max(120, 90 + score * 2) :
+     Math.max(30, score * 3))
+  const dailyMin = apiVehicle.dailyTotalDrivingMinutes  ??
+    Math.max(contMin, contMin + 120 + index * 18)
+  const nightMin = apiVehicle.nightDrivingMinutes       ??
+    (level === 'DANGER' ? Math.max(30, Math.round(contMin * 0.35)) :
+     level === 'CAUTION' ? Math.round(contMin * 0.2) : Math.round(contMin * 0.08))
 
   return {
     ...preset,
@@ -89,10 +96,8 @@ function buildRuntimeVehicle(apiVehicle, index) {
     level,
     status: apiVehicle.status ?? 'RUNNING',
     contMin, dailyMin, nightMin,
-    restValid: level === 'DANGER' ? 1 : 1 + (index % 2),
-    restSuff:  level === 'NORMAL' ? 1 : 0,
-    restInvalid: level === 'DANGER' ? 1 : 0,
-    restMiss: level === 'DANGER' ? 2 : level === 'CAUTION' ? 1 : 0,
+    // #4: restEvents는 selectedDetail에서 동적으로 계산 (buildRuntimeVehicle에서 제거)
+    restValid: 0, restSuff: 0, restInvalid: 0, restMiss: 0,
     startedAt: startedAtLabel(apiVehicle.startedAt, preset.startedAt),
     startedAtRaw: apiVehicle.startedAt ?? null,
     driveLogId: apiVehicle.driveLogId ?? null,
@@ -101,6 +106,7 @@ function buildRuntimeVehicle(apiVehicle, index) {
     lastRestGuideAt: apiVehicle.lastRestGuideAt ?? null,
     lastPhoneRecommendationAt: apiVehicle.lastPhoneRecommendationAt ?? null,
     lat: preset.lat, lng: preset.lng,
+    recognizedPlate: apiVehicle.recognizedPlateNo ?? null,
   }
 }
 
@@ -116,6 +122,15 @@ const phoneModal       = ref(null)   // null | { driver, phone, plate }
 const smsToast         = ref(null)   // null | { driver, phone, message, count }
 const localEvents      = ref([])     // SMS 시뮬레이션 이벤트 누적
 const isDemoBoard = computed(() => route.name === 'demoBoard')
+
+// 요약 API 실데이터 (#7)
+const summaryData = ref(null)
+// 주간 DANGER 통계 (#1)
+const weeklyStats = ref([])
+// 선택 차량 상세 (fatigueEvents + restEvents) (#4, #5)
+const selectedDetail = ref(null)
+// EVENT STREAM 실데이터 (#3)
+const apiEvents = ref([])
 
 /* ─── Kakao Maps ─── */
 const mapContainer = ref(null)
@@ -183,7 +198,14 @@ async function fetchData() {
   }
   try {
     const params = { date: selectedDate.value }
-    const [, vRes] = await Promise.all([dashboardApi.getSummary(params), dashboardApi.getVehicles(params)])
+    const [sRes, vRes, eRes] = await Promise.all([
+      dashboardApi.getSummary(params),
+      dashboardApi.getVehicles(params),
+      dashboardApi.getEvents(params),
+    ])
+    // #7: summary 실데이터 저장
+    summaryData.value = sRes.data ?? null
+    // vehicles
     const runtimeVehicles = Array.isArray(vRes.data)
       ? vRes.data.map((v, index) => buildRuntimeVehicle(v, index))
       : []
@@ -191,9 +213,23 @@ async function fetchData() {
     if (!vehicles.value.some(v => v.id === selectedId.value)) {
       selectedId.value = vehicles.value[0]?.id ?? null
     }
+    // #3: 이벤트 스트림 실데이터
+    apiEvents.value = Array.isArray(eRes.data) ? eRes.data : []
   } catch {
     vehicles.value = []
     selectedId.value = null
+    summaryData.value = null
+    apiEvents.value = []
+  }
+}
+
+async function fetchWeeklyStats() {
+  if (isDemoBoard.value) return
+  try {
+    const res = await fatigueStatsApi.getStats({ days: 7 })
+    weeklyStats.value = Array.isArray(res.data) ? res.data : []
+  } catch {
+    weeklyStats.value = []
   }
 }
 
@@ -204,7 +240,7 @@ async function refresh() {
 
 let timer = null
 onMounted(async () => {
-  await fetchData()
+  await Promise.all([fetchData(), fetchWeeklyStats()])
   await nextTick()
   initKakaoMap()
   timer = setInterval(fetchData, 5000)
@@ -215,9 +251,11 @@ onUnmounted(() => clearInterval(timer))
 watch(selectedId, () => renderKakaoMarkers())
 watch(mapTab,     () => renderKakaoMarkers())
 watch(vehicles,   () => renderKakaoMarkers())
+
 watch(selectedDate, async () => {
   selectedId.value = null
-  await refresh()
+  selectedDetail.value = null
+  await Promise.all([refresh(), fetchWeeklyStats()])
 })
 
 /* ─── 파생값 ─── */
@@ -241,10 +279,23 @@ const filteredVehicles = computed(() => {
 })
 const sortedFiltered = computed(() => filteredVehicles.value.slice().sort((a, b) => b.score - a.score))
 
+/* #4 #5: 선택 차량 상세 자동 로드 (selectedDetailId 선언 이후에 위치해야 함) */
+watch(selectedDetailId, async (id) => {
+  if (!id || isDemoBoard.value) { selectedDetail.value = null; return }
+  try {
+    const res = await driveHistoryApi.getDetail(id)
+    selectedDetail.value = res.data ?? null
+  } catch {
+    selectedDetail.value = null
+  }
+})
+
 const runningCount = computed(() => dashboardVehicles.value.length)
 const dangerCount  = computed(() => dashboardVehicles.value.filter(v => v.level === 'DANGER').length)
 const cautionCount = computed(() => dashboardVehicles.value.filter(v => v.level === 'CAUTION').length)
 const normalCount  = computed(() => dashboardVehicles.value.filter(v => v.level === 'NORMAL').length)
+// #7: summary API의 todayCompleted 실데이터 사용
+const todayCompleted = computed(() => summaryData.value?.todayCompleted ?? 0)
 const idleCount    = computed(() => isTodaySelected.value ? vehicles.value.length - runningCount.value : 0)
 
 const scores   = computed(() => dashboardVehicles.value.map(v => v.score))
@@ -280,19 +331,28 @@ const contGaugePct = computed(() => Math.min(100, (maxCont.value / 300) * 100))
 const contColor    = computed(() => maxCont.value >= 180 ? 'var(--danger)' : maxCont.value >= 90 ? 'var(--warn)' : 'var(--ok)')
 const contDelta    = computed(() => maxCont.value >= 180 ? 45 : maxCont.value >= 120 ? 25 : 10)
 
-/* ─── KPI Tile 3 ─── */
-const weeklyBase = [1, 2, 0, 2, 3, 1]
-const weeklyFull = computed(() => [...weeklyBase, dangerCount.value])
+/* ─── KPI Tile 3 (#1 주간 DANGER 실데이터) ─── */
+const weeklyFull = computed(() => {
+  if (weeklyStats.value.length >= 7) {
+    return weeklyStats.value.slice(-7).map(s => s.dangerEventCount ?? 0)
+  }
+  // 실데이터 부족 시 마지막 값을 오늘 dangerCount로 대체
+  const base = [1, 2, 0, 2, 3, 1]
+  return [...base, dangerCount.value]
+})
 const weeklyMax  = computed(() => Math.max(...weeklyFull.value, 1))
-const weeklyMean = 1.43
+const weeklyMean = computed(() => {
+  const arr = weeklyFull.value
+  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
+})
+const weeklyMeanY = computed(() => 36 - (weeklyMean.value / weeklyMax.value) * (36 - 4))
 const weeklyBars = computed(() => {
   const h = 36
   return weeklyFull.value.map((d, i) => {
     const bh = (d / weeklyMax.value) * (h - 4)
-    return { x: i * (200 / 7) + 1, y: h - bh, w: (200 / 7) - 4, h: bh, today: i === 6 }
+    return { x: i * (200 / 7) + 1, y: h - bh, w: (200 / 7) - 4, h: bh, today: i === weeklyFull.value.length - 1 }
   })
 })
-const weeklyMeanY = computed(() => 36 - (weeklyMean / weeklyMax.value) * (36 - 4))
 
 /* ─── KPI Tile 5 ─── */
 const DS = 78, DT = 11
@@ -390,9 +450,25 @@ function downloadCsv() {
 }
 
 async function sendRestGuide() {
-  if (!selectedDetailId.value) return
+  if (!selected.value) return
   if (!confirm(`${selected.value?.plate ?? '선택 차량'}에 휴게 안내를 기록할까요?`)) return
   actionSubmitting.value.rest = true
+
+  // #8: 데모 모드 로컬 시뮬레이션
+  if (isDemoBoard.value || !selectedDetailId.value) {
+    const v = selected.value
+    v.restGuideCount = (v.restGuideCount ?? 0) + 1
+    const driver = v.driver ?? ''
+    const phone  = v.driverPhone ?? ''
+    const msg    = `[한라물류 관제센터] ${driver} 기사님, 안전 운행을 위해 즉시 휴식을 취해주시기 바랍니다.`
+    const count  = v.restGuideCount
+    smsToast.value = { driver, phone, message: msg, count }
+    localEvents.value.unshift({ t: new Date().toTimeString().slice(0,5), kind:'info', plate: v.plate, text:`📱 SMS 발송 완료 · ${phone} · 휴게 안내 ${count}회차` })
+    setTimeout(() => { smsToast.value = null }, 5000)
+    actionSubmitting.value.rest = false
+    return
+  }
+
   try {
     const res = await dashboardApi.createAction({
       driveLogId: selectedDetailId.value,
@@ -423,17 +499,24 @@ async function sendRestGuide() {
 }
 
 async function sendPhoneRecommendation() {
-  if (!selectedDetailId.value) return
+  if (!selected.value) return
   if (!confirm(`${selected.value?.plate ?? '선택 차량'}에 전화 권고를 기록할까요?`)) return
   actionSubmitting.value.phone = true
+
+  // #8: 데모 모드 로컬 시뮬레이션
+  if (isDemoBoard.value || !selectedDetailId.value) {
+    const v = selected.value
+    phoneModal.value = { driver: v.driver ?? '', phone: v.driverPhone ?? '', plate: v.plate ?? '' }
+    actionSubmitting.value.phone = false
+    return
+  }
+
   try {
     await dashboardApi.createAction({
       driveLogId: selectedDetailId.value,
       actionType: 'PHONE_RECOMMENDATION',
-      note: '대시보드 전화 권고 기록',
     })
     await refresh()
-    // 기록 완료 후 전화/문자 모달 표시
     phoneModal.value = {
       driver: selected.value?.driver ?? '',
       phone:  selected.value?.driverPhone ?? '',
@@ -462,6 +545,25 @@ const drillFactors = computed(() => {
   ]
 })
 const restEvents = computed(() => {
+  // #4: selectedDetail의 실 restEvents 사용
+  if (selectedDetail.value?.restEvents?.length) {
+    const evs = selectedDetail.value.restEvents
+    const valid   = evs.filter(e => e.restType === 'VALID').length
+    const suff    = evs.filter(e => e.restType === 'SUFFICIENT').length
+    const invalid = evs.filter(e => e.restType === 'INVALID').length
+    const pending = evs.filter(e => e.restType === 'PENDING').length
+    // MISSED는 FatigueEvent의 restViolationCount 합산
+    const missed = selectedDetail.value.fatigueEvents
+      ? Math.max(0, ...selectedDetail.value.fatigueEvents.map(e => e.continuousDrivingMinutes ?? 0).filter(m => m >= 180).map(() => 1))
+      : 0
+    return [
+      { label:'VALID',   count: valid,   color:'var(--ok)',     hint:'15m+ · -10' },
+      { label:'SUFF.',   count: suff,    color:'var(--accent)', hint:'30m+ · -20' },
+      { label:'INVALID', count: invalid + pending, color:'var(--text-4)', hint:'<15m · ±0' },
+      { label:'MISSED',  count: missed,  color:'var(--danger)', hint:'2h+ · +10' },
+    ]
+  }
+  // 데모 fallback
   const v = selected.value
   if (!v) return []
   return [
@@ -472,10 +574,27 @@ const restEvents = computed(() => {
   ]
 })
 
-/* ─── Drive Timeline ─── */
+/* ─── Drive Timeline (#5 실데이터 연동) ─── */
 const timelinePoints = computed(() => {
   const v = selected.value
   if (!v) return []
+
+  // 실 FatigueEvent 데이터가 있을 때
+  const fEvents = selectedDetail.value?.fatigueEvents
+  if (fEvents?.length && v.startedAtRaw) {
+    const startMs = new Date(v.startedAtRaw).getTime()
+    return fEvents.map(e => {
+      const tMs  = new Date(e.occurredAt).getTime()
+      const tMin = Math.round((tMs - startMs) / 60000)
+      const lvl  = e.fatigueLevel
+      let evt = null
+      if (lvl === 'DANGER'  && !fEvents.slice(0, fEvents.indexOf(e)).some(x => x.fatigueLevel === 'DANGER'))  evt = '위험 진입'
+      if (lvl === 'CAUTION' && !fEvents.slice(0, fEvents.indexOf(e)).some(x => x.fatigueLevel === 'CAUTION')) evt = '주의 진입'
+      return { t: Math.max(0, tMin), score: e.fatigueScore ?? 0, event: evt }
+    })
+  }
+
+  // 시뮬레이션 fallback
   const pts = []
   for (let m = 0; m <= 720; m += 30) {
     const progress = Math.min(1, m / 600)
@@ -503,9 +622,31 @@ const tlScoreArea = computed(() => {
 const tlEvents = computed(() => timelinePoints.value.filter(p => p.event))
 function tlEventColor(e) { return e === '위험 진입' ? 'var(--danger)' : e === '주의 진입' ? 'var(--warn)' : 'var(--accent)' }
 
-/* ─── EventStream ─── */
-const liveEvents = computed(() =>
-  dashboardVehicles.value
+/* ─── EventStream (#3 실데이터 연동) ─── */
+function apiEventKind(level) {
+  return level === 'DANGER' ? 'danger' : level === 'CAUTION' ? 'warn' : 'info'
+}
+function apiEventText(ev) {
+  const cont  = ev.continuousDrivingMinutes != null ? `연속 ${(ev.continuousDrivingMinutes/60).toFixed(1)}h` : null
+  const daily = ev.dailyTotalDrivingMinutes != null ? `누적 ${(ev.dailyTotalDrivingMinutes/60).toFixed(1)}h` : null
+  const score = `점수 ${ev.fatigueScore}`
+  const level = ev.fatigueLevel === 'DANGER' ? '→ DANGER' : ev.fatigueLevel === 'CAUTION' ? '→ CAUTION' : '→ NORMAL'
+  const parts = [cont, daily, score, level].filter(Boolean)
+  return parts.join(' · ')
+}
+const liveEvents = computed(() => {
+  // 실데이터가 있으면 API 이벤트, 없으면 데모 차량 기반 fallback
+  if (apiEvents.value.length > 0) {
+    return apiEvents.value.map(ev => ({
+      t: ev.occurredAt ? String(ev.occurredAt).slice(11, 16) : '--:--',
+      kind: apiEventKind(ev.fatigueLevel),
+      plate: ev.plateNo,
+      id: null,
+      text: apiEventText(ev),
+    }))
+  }
+  // 데모 fallback
+  return dashboardVehicles.value
     .filter(v => v.level === 'DANGER' || v.level === 'CAUTION')
     .slice(0, 4)
     .map((v, i) => ({
@@ -516,7 +657,7 @@ const liveEvents = computed(() =>
         ? `연속 ${((v.contMin||0)/60).toFixed(1)}h · 야간 ${((v.nightMin||0)/60).toFixed(1)}h · 점수 ${v.score} → DANGER`
         : `연속 ${((v.contMin||0)/60).toFixed(1)}h · 점수 ${v.score} → CAUTION 유지`,
     }))
-)
+})
 const seedEvents = [
   { t:'12:55', kind:'info', plate:'경기 80바 1026', text:'충분 휴식(34분) · -20점 보정 · 점수 18 (NORMAL)' },
   { t:'12:14', kind:'info', plate:'경기 80바 1028', text:'DEPARTURE · OCR 0.99 · 차고지 출발' },
@@ -525,7 +666,12 @@ const seedEvents = [
   { t:'09:18', kind:'info', plate:'경기 80바 1029', text:'HIGHWAY_CCTV · 중부내륙 점촌 상행 · OCR 0.94' },
   { t:'08:50', kind:'info', plate:'경기 80바 1027', text:'DEPARTURE · 한라물류 출발 · 시나리오 A 시작' },
 ]
-const allEvents = computed(() => [...localEvents.value, ...liveEvents.value, ...seedEvents])
+// 실데이터가 있으면 seed 제거, 없으면 fallback 유지
+const allEvents = computed(() =>
+  apiEvents.value.length > 0
+    ? [...localEvents.value, ...liveEvents.value]
+    : [...localEvents.value, ...liveEvents.value, ...seedEvents]
+)
 function eventVehicleId(plate) { return vehicles.value.find(v => v.plate === plate)?.id ?? null }
 
 /* ─── AlertList ─── */
@@ -660,7 +806,7 @@ const rankingItems = computed(() =>
       <div class="kpi-tile">
         <div class="tile-hdr">
           <span class="tile-label" style="color:var(--danger);">DANGER UNITS</span>
-          <span class="tile-meta">7d μ=1.43</span>
+          <span class="tile-meta">7d μ={{ weeklyMean.toFixed(1) }}</span>
         </div>
         <div class="tile-val">
           <span style="font:700 30px/1 var(--font-mono);letter-spacing:-0.02em;color:var(--danger);font-variant-numeric:tabular-nums;">{{ dangerCount }}</span>
@@ -672,7 +818,7 @@ const rankingItems = computed(() =>
             <rect v-for="(b,i) in weeklyBars" :key="i" :x="b.x" :y="b.y" :width="b.w" :height="b.h"
               fill="var(--danger)" :opacity="b.today ? 1 : 0.42"/>
             <line x1="0" :y1="weeklyMeanY" x2="200" :y2="weeklyMeanY" stroke="var(--text-4)" stroke-dasharray="2 3" stroke-width="0.8"/>
-            <text x="198" :y="weeklyMeanY-2" text-anchor="end" font-family="var(--font-mono)" font-size="7" fill="var(--text-4)">μ=1.43</text>
+            <text x="198" :y="weeklyMeanY-2" text-anchor="end" font-family="var(--font-mono)" font-size="7" fill="var(--text-4)">μ={{ weeklyMean.toFixed(1) }}</text>
           </svg>
           <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:8.5px;color:var(--text-4);margin-top:2px;">
             <span v-for="(d,i) in ['월','화','수','목','금','토','오늘']" :key="i"
@@ -704,6 +850,7 @@ const rankingItems = computed(() =>
             <span style="color:var(--warn);">주의 {{ cautionCount }}</span>
             <span style="color:var(--danger);">위험 {{ dangerCount }}</span>
             <span style="color:var(--text-4);">대기 {{ idleCount }}</span>
+            <span style="color:var(--accent);">완료 {{ todayCompleted }}</span>
           </div>
         </div>
       </div>
@@ -753,16 +900,23 @@ const rankingItems = computed(() =>
 
           <!-- 드릴다운 헤더 -->
           <div style="border-bottom:1px solid var(--line-1);display:flex;align-items:stretch;">
-            <!-- 번호판 이미지 (왼쪽 끝, 헤더 전체 높이) -->
-            <div style="flex-shrink:0;aspect-ratio:200/130;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
-              <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
+            <!-- 번호판 썸네일 (왼쪽 끝, 헤더 전체 높이, max-width 제한) -->
+            <div style="flex-shrink:0;width:120px;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
+              <img
+                v-if="selected?.driveLogId"
+                :src="`/demo-plates/dl${selected.driveLogId}.jpg`"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;"
+                @error="(e) => e.target.style.display='none'"
+              />
+              <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice"
+                :style="`opacity:.4;display:${selected?.driveLogId ? 'none' : 'block'};`">
                 <rect width="200" height="130" fill="#E3E6EB"/>
                 <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
                 <circle cx="55" cy="98" r="8" fill="#747F95"/>
                 <circle cx="160" cy="98" r="8" fill="#747F95"/>
               </svg>
               <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 7px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#515F7A;white-space:nowrap;">
-                {{ selected ? selected.plate.split(' ').slice(-1)[0] : '—' }}
+                {{ selected ? (selected.recognizedPlate || selected.plate.split(' ').slice(-1)[0]) : '—' }}
               </div>
             </div>
             <!-- 텍스트 + 버튼 -->
@@ -791,15 +945,15 @@ const rankingItems = computed(() =>
               </div>
               <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
                 <button class="btn btn-ghost" style="font-size:11.5px;"
-                  :disabled="!selected || selected.level!=='DANGER' || !selectedDetailId || phoneRecommendationIssued || actionSubmitting.phone"
-                  :style="{opacity:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 1 : 0.45,cursor:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 'pointer' : 'not-allowed'}"
+                  :disabled="!selected || selected.level!=='DANGER' || phoneRecommendationIssued || actionSubmitting.phone"
+                  :style="{opacity:selected?.level==='DANGER' && !phoneRecommendationIssued ? 1 : 0.45,cursor:selected?.level==='DANGER' && !phoneRecommendationIssued ? 'pointer' : 'not-allowed'}"
                   @click="sendPhoneRecommendation">
                   <AppIcon name="phone" :size="12"/>
                   {{ phoneRecommendationIssued ? '전화 권고 완료' : actionSubmitting.phone ? '기록 중...' : '전화 권고' }}
                 </button>
                 <button class="btn btn-ghost" style="font-size:11.5px;"
-                  :disabled="!selected || !selectedDetailId || actionSubmitting.rest"
-                  :style="{opacity:selected && selectedDetailId ? 1 : 0.45,cursor:selected && selectedDetailId ? 'pointer' : 'not-allowed'}"
+                  :disabled="!selected || actionSubmitting.rest"
+                  :style="{opacity:selected ? 1 : 0.45,cursor:selected ? 'pointer' : 'not-allowed'}"
                   @click="sendRestGuide">
                   <AppIcon name="coffee" :size="12"/>
                   {{ actionSubmitting.rest ? '기록 중...' : restGuideCount > 0 ? `휴게 안내 (${restGuideCount}회)` : '휴게 안내' }}
@@ -960,13 +1114,21 @@ const rankingItems = computed(() =>
             <div v-for="v in sortedFiltered" :key="v.id" class="vrow" :class="{selected: selectedId===v.id}" @click="selectedId=v.id">
               <!-- 번호판 -->
               <div class="vrow-plate">
-                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
+                <img
+                  v-if="v.driveLogId"
+                  :src="`/demo-plates/dl${v.driveLogId}.jpg`"
+                  :alt="v.recognizedPlate || v.plate"
+                  style="width:100%;height:100%;object-fit:cover;display:block;"
+                  @error="(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }"
+                />
+                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice"
+                  :style="`opacity:.4;display:${v.driveLogId ? 'none' : 'block'};`">
                   <rect width="200" height="130" fill="#E3E6EB"/>
                   <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
                   <circle cx="55" cy="98" r="8" fill="#747F95"/>
                   <circle cx="160" cy="98" r="8" fill="#747F95"/>
                 </svg>
-                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.plate.split(' ').slice(-1)[0] }}</div>
+                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.recognizedPlate || v.plate.split(' ').slice(-1)[0] }}</div>
               </div>
               <!-- 중앙 정보 -->
               <div style="min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:space-between;">

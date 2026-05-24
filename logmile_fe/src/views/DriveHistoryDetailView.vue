@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { driveHistoryApi } from '@/api/driveHistoryApi'
@@ -7,20 +7,77 @@ import { driveHistoryApi } from '@/api/driveHistoryApi'
 const route  = useRoute()
 const router = useRouter()
 
-const log     = ref(null)
-const loading = ref(true)
-const error   = ref(null)
+const log        = ref(null)
+const loading    = ref(true)
+const error      = ref(null)
+const gpsPoints  = ref([])
+const mapContainer = ref(null)
+let kakaoMap     = null
+let kakaoLine    = null
 
 onMounted(async () => {
   try {
-    const res = await driveHistoryApi.getDetail(route.params.id)
-    log.value = res.data
+    const [detailRes, gpsRes] = await Promise.all([
+      driveHistoryApi.getDetail(route.params.id),
+      driveHistoryApi.getGps(route.params.id).catch(() => ({ data: [] })),
+    ])
+    log.value       = detailRes.data
+    gpsPoints.value = Array.isArray(gpsRes.data) ? gpsRes.data : []
   } catch (e) {
     error.value = '운행 상세 정보를 불러오는 중 오류가 발생했습니다.'
   } finally {
     loading.value = false
+    await nextTick()
+    initGpsMap()
   }
 })
+
+function initGpsMap() {
+  if (!gpsPoints.value.length || typeof window.kakao === 'undefined') return
+  window.kakao.maps.load(() => {
+    const container = mapContainer.value
+    if (!container) return
+    const first = gpsPoints.value[0]
+    kakaoMap = new window.kakao.maps.Map(container, {
+      center: new window.kakao.maps.LatLng(first.latitude, first.longitude),
+      level: 7,
+    })
+    kakaoMap.addControl(new window.kakao.maps.ZoomControl(), window.kakao.maps.ControlPosition.RIGHT)
+
+    // 경로 폴리라인
+    const path = gpsPoints.value.map(p => new window.kakao.maps.LatLng(p.latitude, p.longitude))
+    kakaoLine = new window.kakao.maps.Polyline({
+      path,
+      strokeWeight: 3,
+      strokeColor: '#4A8FC0',
+      strokeOpacity: 0.85,
+      strokeStyle: 'solid',
+    })
+    kakaoLine.setMap(kakaoMap)
+
+    // 시작 마커
+    new window.kakao.maps.CustomOverlay({
+      position: path[0],
+      content: '<div style="background:#5E8A6F;color:#fff;font-size:10px;font-family:monospace;padding:3px 7px;border-radius:10px;border:2px solid #fff;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">출발</div>',
+      yAnchor: 1.6,
+    }).setMap(kakaoMap)
+
+    // 종료 마커
+    if (path.length > 1) {
+      const lvlColor = log.value?.maxFatigueLevel === 'DANGER' ? '#B5544A' : log.value?.maxFatigueLevel === 'CAUTION' ? '#C58A3A' : '#515F7A'
+      new window.kakao.maps.CustomOverlay({
+        position: path[path.length - 1],
+        content: `<div style="background:${lvlColor};color:#fff;font-size:10px;font-family:monospace;padding:3px 7px;border-radius:10px;border:2px solid #fff;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.2)">도착</div>`,
+        yAnchor: 1.6,
+      }).setMap(kakaoMap)
+    }
+
+    // 지도 범위를 경로에 맞게 조정
+    const bounds = new window.kakao.maps.LatLngBounds()
+    path.forEach(p => bounds.extend(p))
+    kakaoMap.setBounds(bounds)
+  })
+}
 
 function fmtMin(m) {
   if (!m && m !== 0) return '—'
@@ -155,6 +212,18 @@ function fatigueColor(score) {
         <div class="band-nums mono">
           <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
         </div>
+      </div>
+
+      <!-- GPS 경로 지도 -->
+      <div v-if="gpsPoints.length" class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div style="padding:14px 18px 10px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;justify-content:space-between;">
+          <div class="card-title">GPS 운행 경로</div>
+          <span class="mono" style="font-size:10px;color:var(--text-4)">{{ gpsPoints.length }}포인트</span>
+        </div>
+        <div ref="mapContainer" style="width:100%;height:320px;"></div>
+      </div>
+      <div v-else-if="!loading" class="card" style="padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:var(--text-4);font-family:var(--font-mono);">GPS ROUTE · 기록된 GPS 데이터가 없습니다</span>
       </div>
 
       <div class="two-col">
