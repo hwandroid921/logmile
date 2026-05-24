@@ -346,4 +346,19 @@ VALUES
     (NULL, '01스 4684', 'ENTRY', 'HIGHWAY_GATE', 'OCR',
      '2026-05-24 12:00:00', 37.5520, 126.9726, 0.92, 0.96, FALSE);
 
+-- ===== 7. vehicle/driver 실제 차량 정보 반영 (2026-05-25) =====
+-- vehicle: 번호판·차종을 번호판 인식 사진 기준으로 수정
+UPDATE vehicle SET plate_no='01누 5936', type='현대 쏘나타'    WHERE id=1;
+UPDATE vehicle SET plate_no='01다 0673', type='아우디 A8'      WHERE id=2;
+UPDATE vehicle SET plate_no='03가 8742', type='KIA EV6'        WHERE id=3;  -- OCR 판독 불가
+UPDATE vehicle SET plate_no='01도 4663', type='현대 캐스퍼'   WHERE id=4;
+UPDATE vehicle SET plate_no='01스 4684', type='현대 아이오닉6' WHERE id=5;
+
+-- driver: 전화번호 현실적인 값으로 수정
+UPDATE driver SET phone='010-3821-4507' WHERE id=1;  -- 김철수
+UPDATE driver SET phone='010-5512-8834' WHERE id=2;  -- 이영희
+UPDATE driver SET phone='010-7743-2291' WHERE id=3;  -- 박민준
+UPDATE driver SET phone='010-2267-9104' WHERE id=4;  -- 최수진
+UPDATE driver SET phone='010-9934-6612' WHERE id=5;  -- 정우성
+
 COMMIT;

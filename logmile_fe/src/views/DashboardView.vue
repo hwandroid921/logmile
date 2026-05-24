@@ -11,14 +11,14 @@ const router = useRouter()
 
 /* ─── 시드 데이터 (lat/lng 추가) ─── */
 const SEED_VEHICLES = [
-  { id:1,  plate:'경기 80바 1024', driver:'김민수', phone:'010-3821-4507', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:'DL-2026-0438', lat:37.0078, lng:127.2714 },
-  { id:2,  plate:'경기 80바 1025', driver:'박정호', phone:'010-5512-8834', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:'DL-2026-0437', lat:36.7842, lng:126.4502 },
-  { id:3,  plate:'경기 80바 1026', driver:'이영준', phone:'010-7743-2291', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:'DL-2026-0436', lat:36.9357, lng:127.6882 },
-  { id:4,  plate:'경기 80바 1027', driver:'최성훈', phone:'010-2267-9104', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:'DL-2026-0435', lat:37.2986, lng:127.6374 },
-  { id:5,  plate:'경기 80바 1028', driver:'정우석', phone:'010-9934-6612', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:'DL-2026-0434', lat:35.1797, lng:128.1077 },
-  { id:6,  plate:'경기 80바 1029', driver:'강지훈', phone:'010-4418-7753', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:'DL-2026-0433', lat:36.3933, lng:128.1968 },
-  { id:7,  plate:'경기 80바 1030', driver:'한승연', phone:'010-6629-3380', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:'DL-2026-0432', lat:37.4875, lng:126.7657 },
-  { id:8,  plate:'경기 80바 1031', driver:'조영민', phone:'010-8801-5547', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:'DL-2026-0431', lat:36.8897, lng:126.6453 },
+  { id:1,  plate:'경기 80바 1024', driver:'김민수', phone:'010-3821-4507', type:'카고 5톤',    score:78, level:'DANGER',  status:'RUNNING', spd:87, contMin:384, dailyMin:672, nightMin:204, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'경부고속 · 안성IC',  startedAt:'03:18', scenario:'C', driveLogId:1,  recognizedPlate:'01누 5936', lat:37.0078, lng:127.2714 },
+  { id:2,  plate:'경기 80바 1025', driver:'박정호', phone:'010-5512-8834', type:'윙바디 11톤', score:56, level:'CAUTION', status:'RUNNING', spd:78, contMin:270, dailyMin:480, nightMin:108, restValid:2, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 서산IC',    startedAt:'06:11', scenario:'B', driveLogId:10, recognizedPlate:'01다 0673', lat:36.7842, lng:126.4502 },
+  { id:3,  plate:'경기 80바 1026', driver:'이영준', phone:'010-7743-2291', type:'카고 4.5톤',  score:18, level:'NORMAL',  status:'RUNNING', spd:92, contMin:108, dailyMin:186, nightMin:0,   restValid:0, restSuff:1, restInvalid:0, restMiss:0, loc:'중부고속 · 음성IC',  startedAt:'11:02', scenario:'A', driveLogId:11, recognizedPlate:null,        lat:36.9357, lng:127.6882 },
+  { id:4,  plate:'경기 80바 1027', driver:'최성훈', phone:'010-2267-9104', type:'윙바디 8톤',  score:32, level:'NORMAL',  status:'RUNNING', spd:81, contMin:180, dailyMin:342, nightMin:30,  restValid:1, restSuff:1, restInvalid:0, restMiss:0, loc:'영동고속 · 여주IC',  startedAt:'08:50', scenario:'A', driveLogId:12, recognizedPlate:'01도 4663', lat:37.2986, lng:127.6374 },
+  { id:5,  plate:'경기 80바 1028', driver:'정우석', phone:'010-9934-6612', type:'카고 5톤',    score:12, level:'NORMAL',  status:'RUNNING', spd:76, contMin:60,  dailyMin:114, nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'남해고속 · 진주IC',  startedAt:'12:39', scenario:'A', driveLogId:13, recognizedPlate:'01스 4684', lat:35.1797, lng:128.1077 },
+  { id:6,  plate:'경기 80바 1029', driver:'강지훈', phone:'010-4418-7753', type:'카고 5톤',    score:84, level:'DANGER',  status:'RUNNING', spd:64, contMin:342, dailyMin:618, nightMin:168, restValid:1, restSuff:0, restInvalid:1, restMiss:2, loc:'중부내륙 · 점촌IC',  startedAt:'04:02', scenario:'C', driveLogId:null, recognizedPlate:null,       lat:36.3933, lng:128.1968 },
+  { id:7,  plate:'경기 80바 1030', driver:'한승연', phone:'010-6629-3380', type:'카고 2.5톤',  score:48, level:'CAUTION', status:'RUNNING', spd:71, contMin:228, dailyMin:384, nightMin:72,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서울외곽 · 송내IC',  startedAt:'07:45', scenario:'B', driveLogId:null, recognizedPlate:null,       lat:37.4875, lng:126.7657 },
+  { id:8,  plate:'경기 80바 1031', driver:'조영민', phone:'010-8801-5547', type:'윙바디 11톤', score:41, level:'CAUTION', status:'RUNNING', spd:84, contMin:252, dailyMin:426, nightMin:48,  restValid:1, restSuff:0, restInvalid:0, restMiss:1, loc:'서해안 · 당진IC',    startedAt:'06:50', scenario:'B', driveLogId:null, recognizedPlate:null,       lat:36.8897, lng:126.6453 },
   { id:9,  plate:'경기 80바 1032', driver:'윤태경', phone:'010-1193-4428', type:'카고 5톤',    score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
   { id:10, plate:'경기 80바 1033', driver:'서동현', phone:'010-3375-8819', type:'윙바디 8톤',  score:0,  level:'NORMAL',  status:'IDLE',    spd:0,  contMin:0,   dailyMin:0,   nightMin:0,   restValid:0, restSuff:0, restInvalid:0, restMiss:0, loc:'한라물류 · 차고지',  startedAt:'—',     scenario:'—', driveLogId:null, lat:37.5665, lng:126.9780 },
 ]
@@ -900,16 +900,23 @@ const rankingItems = computed(() =>
 
           <!-- 드릴다운 헤더 -->
           <div style="border-bottom:1px solid var(--line-1);display:flex;align-items:stretch;">
-            <!-- 번호판 썸네일 (왼쪽 끝, 헤더 전체 높이) -->
-            <div style="flex-shrink:0;aspect-ratio:200/130;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
-              <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
+            <!-- 번호판 썸네일 (왼쪽 끝, 헤더 전체 높이, max-width 제한) -->
+            <div style="flex-shrink:0;width:120px;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
+              <img
+                v-if="selected?.driveLogId"
+                :src="`/demo-plates/dl${selected.driveLogId}.jpg`"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;"
+                @error="(e) => e.target.style.display='none'"
+              />
+              <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice"
+                :style="`opacity:.4;display:${selected?.driveLogId ? 'none' : 'block'};`">
                 <rect width="200" height="130" fill="#E3E6EB"/>
                 <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
                 <circle cx="55" cy="98" r="8" fill="#747F95"/>
                 <circle cx="160" cy="98" r="8" fill="#747F95"/>
               </svg>
               <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 7px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#515F7A;white-space:nowrap;">
-                {{ selected ? selected.plate.split(' ').slice(-1)[0] : '—' }}
+                {{ selected ? (selected.recognizedPlate || selected.plate.split(' ').slice(-1)[0]) : '—' }}
               </div>
             </div>
             <!-- 텍스트 + 버튼 -->
@@ -1121,7 +1128,7 @@ const rankingItems = computed(() =>
                   <circle cx="55" cy="98" r="8" fill="#747F95"/>
                   <circle cx="160" cy="98" r="8" fill="#747F95"/>
                 </svg>
-                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.plate.split(' ').slice(-1)[0] }}</div>
+                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.recognizedPlate || v.plate.split(' ').slice(-1)[0] }}</div>
               </div>
               <!-- 중앙 정보 -->
               <div style="min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:space-between;">
