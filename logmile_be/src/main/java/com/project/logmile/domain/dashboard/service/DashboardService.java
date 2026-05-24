@@ -6,6 +6,7 @@ import com.project.logmile.common.enums.FatigueLevel;
 import com.project.logmile.common.security.TenantAccessService;
 import com.project.logmile.domain.dashboard.entity.DashboardAction;
 import com.project.logmile.domain.dashboard.repository.DashboardActionRepository;
+import com.project.logmile.domain.dashboard.dto.DashboardEventResponse;
 import com.project.logmile.domain.dashboard.dto.DashboardSummaryResponse;
 import com.project.logmile.domain.dashboard.dto.VehicleStatusResponse;
 import com.project.logmile.domain.drivelog.entity.DriveLog;
@@ -14,6 +15,7 @@ import com.project.logmile.domain.fatigue.entity.FatigueEvent;
 import com.project.logmile.domain.fatigue.repository.FatigueEventRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +98,10 @@ public class DashboardService {
 			Integer score = resolveFatigueScore(log, latest);
 			FatigueLevel level = resolveFatigueLevel(log, latest);
 
+			Integer contMin  = latest != null ? latest.getContinuousDrivingMinutes() : null;
+			Integer dailyMin = latest != null ? latest.getDailyTotalDrivingMinutes() : null;
+			Integer nightMin = latest != null ? latest.getNightDrivingMinutes() : null;
+
 			return VehicleStatusResponse.of(
 				log.getId(),
 				log.getVehicle().getId(),
@@ -107,12 +113,37 @@ public class DashboardService {
 				score,
 				level,
 				log.getStatus(),
+				contMin, dailyMin, nightMin,
 				restGuideCountMap.getOrDefault(log.getId(), 0),
 				getActionTime(actionMap, log.getId(), DashboardActionType.REST_GUIDE),
 				getActionTime(actionMap, log.getId(), DashboardActionType.PHONE_RECOMMENDATION),
 				log.getStartedAt()
 			);
 		}).toList();
+	}
+
+	/**
+	 * 당일 피로도 이벤트 스트림 (최신 30건)
+	 */
+	@Transactional(readOnly = true)
+	public List<DashboardEventResponse> getRecentEvents(LocalDate date) {
+		Long companyId = tenantAccessService.getCurrentCompanyId();
+		LocalDate targetDate = resolveTargetDate(date);
+		LocalDateTime start = targetDate.atStartOfDay();
+		LocalDateTime end = start.plusDays(1);
+
+		List<FatigueEvent> events = fatigueEventRepository
+			.findByDriveLogCompanyIdAndOccurredAtBetweenOrderByOccurredAtAsc(companyId, start, end);
+
+		// 최신 30건을 DESC 순서로
+		int size = events.size();
+		List<FatigueEvent> recent = size > 30 ? events.subList(size - 30, size) : events;
+		List<FatigueEvent> reversed = new java.util.ArrayList<>(recent);
+		Collections.reverse(reversed);
+
+		return reversed.stream()
+			.map(DashboardEventResponse::from)
+			.toList();
 	}
 
 	private LocalDate resolveTargetDate(LocalDate date) {

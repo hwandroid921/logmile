@@ -2,6 +2,7 @@ package com.project.logmile.domain.drivelog.controller;
 
 import com.project.logmile.domain.drivelog.dto.DriveHistoryDetailResponse;
 import com.project.logmile.domain.drivelog.dto.DriveHistoryListResponse;
+import com.project.logmile.domain.drivelog.dto.GpsPointResponse;
 import com.project.logmile.domain.drivelog.service.DriveHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,5 +36,12 @@ public class DriveHistoryController {
 	@GetMapping("/{driveLogId}")
 	public ResponseEntity<DriveHistoryDetailResponse> findById(@PathVariable Long driveLogId) {
 		return ResponseEntity.ok(driveHistoryService.findById(driveLogId));
+	}
+
+	@Operation(summary = "운행 GPS 경로 조회",
+		description = "특정 운행의 GPS 포인트 목록을 시간 순으로 반환합니다.")
+	@GetMapping("/{driveLogId}/gps")
+	public ResponseEntity<List<GpsPointResponse>> getGpsRoute(@PathVariable Long driveLogId) {
+		return ResponseEntity.ok(driveHistoryService.getGpsRoute(driveLogId));
 	}
 }

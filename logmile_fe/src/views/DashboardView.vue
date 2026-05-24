@@ -3,6 +3,8 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { dashboardApi } from '@/api/dashboardApi'
+import { fatigueStatsApi } from '@/api/fatigueStatsApi'
+import { driveHistoryApi } from '@/api/driveHistoryApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,12 +73,17 @@ function buildRuntimeVehicle(apiVehicle, index) {
   const preset = DEMO_RUNNING_PRESETS[index % DEMO_RUNNING_PRESETS.length] || DEMO_RUNNING_PRESETS[0]
   const score = apiVehicle.fatigueScore ?? preset.score
   const level = apiVehicle.fatigueLevel ?? preset.level
-  const contMin = level === 'DANGER' ? Math.max(240, 180 + score * 2) :
-    level === 'CAUTION' ? Math.max(120, 90 + score * 2) :
-    Math.max(30, score * 3)
-  const dailyMin = Math.max(contMin, contMin + 120 + index * 18)
-  const nightMin = level === 'DANGER' ? Math.max(30, Math.round(contMin * 0.35)) :
-    level === 'CAUTION' ? Math.round(contMin * 0.2) : Math.round(contMin * 0.08)
+
+  // #2: 실제 운행 시간 사용, 없으면 점수 기반 추정
+  const contMin  = apiVehicle.continuousDrivingMinutes  ??
+    (level === 'DANGER' ? Math.max(240, 180 + score * 2) :
+     level === 'CAUTION' ? Math.max(120, 90 + score * 2) :
+     Math.max(30, score * 3))
+  const dailyMin = apiVehicle.dailyTotalDrivingMinutes  ??
+    Math.max(contMin, contMin + 120 + index * 18)
+  const nightMin = apiVehicle.nightDrivingMinutes       ??
+    (level === 'DANGER' ? Math.max(30, Math.round(contMin * 0.35)) :
+     level === 'CAUTION' ? Math.round(contMin * 0.2) : Math.round(contMin * 0.08))
 
   return {
     ...preset,
@@ -89,10 +96,8 @@ function buildRuntimeVehicle(apiVehicle, index) {
     level,
     status: apiVehicle.status ?? 'RUNNING',
     contMin, dailyMin, nightMin,
-    restValid: level === 'DANGER' ? 1 : 1 + (index % 2),
-    restSuff:  level === 'NORMAL' ? 1 : 0,
-    restInvalid: level === 'DANGER' ? 1 : 0,
-    restMiss: level === 'DANGER' ? 2 : level === 'CAUTION' ? 1 : 0,
+    // #4: restEvents는 selectedDetail에서 동적으로 계산 (buildRuntimeVehicle에서 제거)
+    restValid: 0, restSuff: 0, restInvalid: 0, restMiss: 0,
     startedAt: startedAtLabel(apiVehicle.startedAt, preset.startedAt),
     startedAtRaw: apiVehicle.startedAt ?? null,
     driveLogId: apiVehicle.driveLogId ?? null,
@@ -116,6 +121,15 @@ const phoneModal       = ref(null)   // null | { driver, phone, plate }
 const smsToast         = ref(null)   // null | { driver, phone, message, count }
 const localEvents      = ref([])     // SMS 시뮬레이션 이벤트 누적
 const isDemoBoard = computed(() => route.name === 'demoBoard')
+
+// 요약 API 실데이터 (#7)
+const summaryData = ref(null)
+// 주간 DANGER 통계 (#1)
+const weeklyStats = ref([])
+// 선택 차량 상세 (fatigueEvents + restEvents) (#4, #5)
+const selectedDetail = ref(null)
+// EVENT STREAM 실데이터 (#3)
+const apiEvents = ref([])
 
 /* ─── Kakao Maps ─── */
 const mapContainer = ref(null)
@@ -183,7 +197,14 @@ async function fetchData() {
   }
   try {
     const params = { date: selectedDate.value }
-    const [, vRes] = await Promise.all([dashboardApi.getSummary(params), dashboardApi.getVehicles(params)])
+    const [sRes, vRes, eRes] = await Promise.all([
+      dashboardApi.getSummary(params),
+      dashboardApi.getVehicles(params),
+      dashboardApi.getEvents(params),
+    ])
+    // #7: summary 실데이터 저장
+    summaryData.value = sRes.data ?? null
+    // vehicles
     const runtimeVehicles = Array.isArray(vRes.data)
       ? vRes.data.map((v, index) => buildRuntimeVehicle(v, index))
       : []
@@ -191,9 +212,23 @@ async function fetchData() {
     if (!vehicles.value.some(v => v.id === selectedId.value)) {
       selectedId.value = vehicles.value[0]?.id ?? null
     }
+    // #3: 이벤트 스트림 실데이터
+    apiEvents.value = Array.isArray(eRes.data) ? eRes.data : []
   } catch {
     vehicles.value = []
     selectedId.value = null
+    summaryData.value = null
+    apiEvents.value = []
+  }
+}
+
+async function fetchWeeklyStats() {
+  if (isDemoBoard.value) return
+  try {
+    const res = await fatigueStatsApi.getStats({ days: 7 })
+    weeklyStats.value = Array.isArray(res.data) ? res.data : []
+  } catch {
+    weeklyStats.value = []
   }
 }
 
@@ -204,7 +239,7 @@ async function refresh() {
 
 let timer = null
 onMounted(async () => {
-  await fetchData()
+  await Promise.all([fetchData(), fetchWeeklyStats()])
   await nextTick()
   initKakaoMap()
   timer = setInterval(fetchData, 5000)
@@ -215,9 +250,21 @@ onUnmounted(() => clearInterval(timer))
 watch(selectedId, () => renderKakaoMarkers())
 watch(mapTab,     () => renderKakaoMarkers())
 watch(vehicles,   () => renderKakaoMarkers())
+
+/* #4 #5: 선택 차량 상세 자동 로드 */
+watch(selectedDetailId, async (id) => {
+  if (!id || isDemoBoard.value) { selectedDetail.value = null; return }
+  try {
+    const res = await driveHistoryApi.getDetail(id)
+    selectedDetail.value = res.data ?? null
+  } catch {
+    selectedDetail.value = null
+  }
+})
 watch(selectedDate, async () => {
   selectedId.value = null
-  await refresh()
+  selectedDetail.value = null
+  await Promise.all([refresh(), fetchWeeklyStats()])
 })
 
 /* ─── 파생값 ─── */
@@ -245,6 +292,8 @@ const runningCount = computed(() => dashboardVehicles.value.length)
 const dangerCount  = computed(() => dashboardVehicles.value.filter(v => v.level === 'DANGER').length)
 const cautionCount = computed(() => dashboardVehicles.value.filter(v => v.level === 'CAUTION').length)
 const normalCount  = computed(() => dashboardVehicles.value.filter(v => v.level === 'NORMAL').length)
+// #7: summary API의 todayCompleted 실데이터 사용
+const todayCompleted = computed(() => summaryData.value?.todayCompleted ?? 0)
 const idleCount    = computed(() => isTodaySelected.value ? vehicles.value.length - runningCount.value : 0)
 
 const scores   = computed(() => dashboardVehicles.value.map(v => v.score))
@@ -280,19 +329,28 @@ const contGaugePct = computed(() => Math.min(100, (maxCont.value / 300) * 100))
 const contColor    = computed(() => maxCont.value >= 180 ? 'var(--danger)' : maxCont.value >= 90 ? 'var(--warn)' : 'var(--ok)')
 const contDelta    = computed(() => maxCont.value >= 180 ? 45 : maxCont.value >= 120 ? 25 : 10)
 
-/* ─── KPI Tile 3 ─── */
-const weeklyBase = [1, 2, 0, 2, 3, 1]
-const weeklyFull = computed(() => [...weeklyBase, dangerCount.value])
+/* ─── KPI Tile 3 (#1 주간 DANGER 실데이터) ─── */
+const weeklyFull = computed(() => {
+  if (weeklyStats.value.length >= 7) {
+    return weeklyStats.value.slice(-7).map(s => s.dangerEventCount ?? 0)
+  }
+  // 실데이터 부족 시 마지막 값을 오늘 dangerCount로 대체
+  const base = [1, 2, 0, 2, 3, 1]
+  return [...base, dangerCount.value]
+})
 const weeklyMax  = computed(() => Math.max(...weeklyFull.value, 1))
-const weeklyMean = 1.43
+const weeklyMean = computed(() => {
+  const arr = weeklyFull.value
+  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
+})
+const weeklyMeanY = computed(() => 36 - (weeklyMean.value / weeklyMax.value) * (36 - 4))
 const weeklyBars = computed(() => {
   const h = 36
   return weeklyFull.value.map((d, i) => {
     const bh = (d / weeklyMax.value) * (h - 4)
-    return { x: i * (200 / 7) + 1, y: h - bh, w: (200 / 7) - 4, h: bh, today: i === 6 }
+    return { x: i * (200 / 7) + 1, y: h - bh, w: (200 / 7) - 4, h: bh, today: i === weeklyFull.value.length - 1 }
   })
 })
-const weeklyMeanY = computed(() => 36 - (weeklyMean / weeklyMax.value) * (36 - 4))
 
 /* ─── KPI Tile 5 ─── */
 const DS = 78, DT = 11
@@ -390,9 +448,25 @@ function downloadCsv() {
 }
 
 async function sendRestGuide() {
-  if (!selectedDetailId.value) return
+  if (!selected.value) return
   if (!confirm(`${selected.value?.plate ?? '선택 차량'}에 휴게 안내를 기록할까요?`)) return
   actionSubmitting.value.rest = true
+
+  // #8: 데모 모드 로컬 시뮬레이션
+  if (isDemoBoard.value || !selectedDetailId.value) {
+    const v = selected.value
+    v.restGuideCount = (v.restGuideCount ?? 0) + 1
+    const driver = v.driver ?? ''
+    const phone  = v.driverPhone ?? ''
+    const msg    = `[한라물류 관제센터] ${driver} 기사님, 안전 운행을 위해 즉시 휴식을 취해주시기 바랍니다.`
+    const count  = v.restGuideCount
+    smsToast.value = { driver, phone, message: msg, count }
+    localEvents.value.unshift({ t: new Date().toTimeString().slice(0,5), kind:'info', plate: v.plate, text:`📱 SMS 발송 완료 · ${phone} · 휴게 안내 ${count}회차` })
+    setTimeout(() => { smsToast.value = null }, 5000)
+    actionSubmitting.value.rest = false
+    return
+  }
+
   try {
     const res = await dashboardApi.createAction({
       driveLogId: selectedDetailId.value,
@@ -423,17 +497,24 @@ async function sendRestGuide() {
 }
 
 async function sendPhoneRecommendation() {
-  if (!selectedDetailId.value) return
+  if (!selected.value) return
   if (!confirm(`${selected.value?.plate ?? '선택 차량'}에 전화 권고를 기록할까요?`)) return
   actionSubmitting.value.phone = true
+
+  // #8: 데모 모드 로컬 시뮬레이션
+  if (isDemoBoard.value || !selectedDetailId.value) {
+    const v = selected.value
+    phoneModal.value = { driver: v.driver ?? '', phone: v.driverPhone ?? '', plate: v.plate ?? '' }
+    actionSubmitting.value.phone = false
+    return
+  }
+
   try {
     await dashboardApi.createAction({
       driveLogId: selectedDetailId.value,
       actionType: 'PHONE_RECOMMENDATION',
-      note: '대시보드 전화 권고 기록',
     })
     await refresh()
-    // 기록 완료 후 전화/문자 모달 표시
     phoneModal.value = {
       driver: selected.value?.driver ?? '',
       phone:  selected.value?.driverPhone ?? '',
@@ -462,6 +543,25 @@ const drillFactors = computed(() => {
   ]
 })
 const restEvents = computed(() => {
+  // #4: selectedDetail의 실 restEvents 사용
+  if (selectedDetail.value?.restEvents?.length) {
+    const evs = selectedDetail.value.restEvents
+    const valid   = evs.filter(e => e.restType === 'VALID').length
+    const suff    = evs.filter(e => e.restType === 'SUFFICIENT').length
+    const invalid = evs.filter(e => e.restType === 'INVALID').length
+    const pending = evs.filter(e => e.restType === 'PENDING').length
+    // MISSED는 FatigueEvent의 restViolationCount 합산
+    const missed = selectedDetail.value.fatigueEvents
+      ? Math.max(0, ...selectedDetail.value.fatigueEvents.map(e => e.continuousDrivingMinutes ?? 0).filter(m => m >= 180).map(() => 1))
+      : 0
+    return [
+      { label:'VALID',   count: valid,   color:'var(--ok)',     hint:'15m+ · -10' },
+      { label:'SUFF.',   count: suff,    color:'var(--accent)', hint:'30m+ · -20' },
+      { label:'INVALID', count: invalid + pending, color:'var(--text-4)', hint:'<15m · ±0' },
+      { label:'MISSED',  count: missed,  color:'var(--danger)', hint:'2h+ · +10' },
+    ]
+  }
+  // 데모 fallback
   const v = selected.value
   if (!v) return []
   return [
@@ -472,10 +572,27 @@ const restEvents = computed(() => {
   ]
 })
 
-/* ─── Drive Timeline ─── */
+/* ─── Drive Timeline (#5 실데이터 연동) ─── */
 const timelinePoints = computed(() => {
   const v = selected.value
   if (!v) return []
+
+  // 실 FatigueEvent 데이터가 있을 때
+  const fEvents = selectedDetail.value?.fatigueEvents
+  if (fEvents?.length && v.startedAtRaw) {
+    const startMs = new Date(v.startedAtRaw).getTime()
+    return fEvents.map(e => {
+      const tMs  = new Date(e.occurredAt).getTime()
+      const tMin = Math.round((tMs - startMs) / 60000)
+      const lvl  = e.fatigueLevel
+      let evt = null
+      if (lvl === 'DANGER'  && !fEvents.slice(0, fEvents.indexOf(e)).some(x => x.fatigueLevel === 'DANGER'))  evt = '위험 진입'
+      if (lvl === 'CAUTION' && !fEvents.slice(0, fEvents.indexOf(e)).some(x => x.fatigueLevel === 'CAUTION')) evt = '주의 진입'
+      return { t: Math.max(0, tMin), score: e.fatigueScore ?? 0, event: evt }
+    })
+  }
+
+  // 시뮬레이션 fallback
   const pts = []
   for (let m = 0; m <= 720; m += 30) {
     const progress = Math.min(1, m / 600)
@@ -503,9 +620,31 @@ const tlScoreArea = computed(() => {
 const tlEvents = computed(() => timelinePoints.value.filter(p => p.event))
 function tlEventColor(e) { return e === '위험 진입' ? 'var(--danger)' : e === '주의 진입' ? 'var(--warn)' : 'var(--accent)' }
 
-/* ─── EventStream ─── */
-const liveEvents = computed(() =>
-  dashboardVehicles.value
+/* ─── EventStream (#3 실데이터 연동) ─── */
+function apiEventKind(level) {
+  return level === 'DANGER' ? 'danger' : level === 'CAUTION' ? 'warn' : 'info'
+}
+function apiEventText(ev) {
+  const cont  = ev.continuousDrivingMinutes != null ? `연속 ${(ev.continuousDrivingMinutes/60).toFixed(1)}h` : null
+  const daily = ev.dailyTotalDrivingMinutes != null ? `누적 ${(ev.dailyTotalDrivingMinutes/60).toFixed(1)}h` : null
+  const score = `점수 ${ev.fatigueScore}`
+  const level = ev.fatigueLevel === 'DANGER' ? '→ DANGER' : ev.fatigueLevel === 'CAUTION' ? '→ CAUTION' : '→ NORMAL'
+  const parts = [cont, daily, score, level].filter(Boolean)
+  return parts.join(' · ')
+}
+const liveEvents = computed(() => {
+  // 실데이터가 있으면 API 이벤트, 없으면 데모 차량 기반 fallback
+  if (apiEvents.value.length > 0) {
+    return apiEvents.value.map(ev => ({
+      t: ev.occurredAt ? String(ev.occurredAt).slice(11, 16) : '--:--',
+      kind: apiEventKind(ev.fatigueLevel),
+      plate: ev.plateNo,
+      id: null,
+      text: apiEventText(ev),
+    }))
+  }
+  // 데모 fallback
+  return dashboardVehicles.value
     .filter(v => v.level === 'DANGER' || v.level === 'CAUTION')
     .slice(0, 4)
     .map((v, i) => ({
@@ -516,7 +655,7 @@ const liveEvents = computed(() =>
         ? `연속 ${((v.contMin||0)/60).toFixed(1)}h · 야간 ${((v.nightMin||0)/60).toFixed(1)}h · 점수 ${v.score} → DANGER`
         : `연속 ${((v.contMin||0)/60).toFixed(1)}h · 점수 ${v.score} → CAUTION 유지`,
     }))
-)
+})
 const seedEvents = [
   { t:'12:55', kind:'info', plate:'경기 80바 1026', text:'충분 휴식(34분) · -20점 보정 · 점수 18 (NORMAL)' },
   { t:'12:14', kind:'info', plate:'경기 80바 1028', text:'DEPARTURE · OCR 0.99 · 차고지 출발' },
@@ -525,7 +664,12 @@ const seedEvents = [
   { t:'09:18', kind:'info', plate:'경기 80바 1029', text:'HIGHWAY_CCTV · 중부내륙 점촌 상행 · OCR 0.94' },
   { t:'08:50', kind:'info', plate:'경기 80바 1027', text:'DEPARTURE · 한라물류 출발 · 시나리오 A 시작' },
 ]
-const allEvents = computed(() => [...localEvents.value, ...liveEvents.value, ...seedEvents])
+// 실데이터가 있으면 seed 제거, 없으면 fallback 유지
+const allEvents = computed(() =>
+  apiEvents.value.length > 0
+    ? [...localEvents.value, ...liveEvents.value]
+    : [...localEvents.value, ...liveEvents.value, ...seedEvents]
+)
 function eventVehicleId(plate) { return vehicles.value.find(v => v.plate === plate)?.id ?? null }
 
 /* ─── AlertList ─── */
@@ -660,7 +804,7 @@ const rankingItems = computed(() =>
       <div class="kpi-tile">
         <div class="tile-hdr">
           <span class="tile-label" style="color:var(--danger);">DANGER UNITS</span>
-          <span class="tile-meta">7d μ=1.43</span>
+          <span class="tile-meta">7d μ={{ weeklyMean.toFixed(1) }}</span>
         </div>
         <div class="tile-val">
           <span style="font:700 30px/1 var(--font-mono);letter-spacing:-0.02em;color:var(--danger);font-variant-numeric:tabular-nums;">{{ dangerCount }}</span>
@@ -672,7 +816,7 @@ const rankingItems = computed(() =>
             <rect v-for="(b,i) in weeklyBars" :key="i" :x="b.x" :y="b.y" :width="b.w" :height="b.h"
               fill="var(--danger)" :opacity="b.today ? 1 : 0.42"/>
             <line x1="0" :y1="weeklyMeanY" x2="200" :y2="weeklyMeanY" stroke="var(--text-4)" stroke-dasharray="2 3" stroke-width="0.8"/>
-            <text x="198" :y="weeklyMeanY-2" text-anchor="end" font-family="var(--font-mono)" font-size="7" fill="var(--text-4)">μ=1.43</text>
+            <text x="198" :y="weeklyMeanY-2" text-anchor="end" font-family="var(--font-mono)" font-size="7" fill="var(--text-4)">μ={{ weeklyMean.toFixed(1) }}</text>
           </svg>
           <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:8.5px;color:var(--text-4);margin-top:2px;">
             <span v-for="(d,i) in ['월','화','수','목','금','토','오늘']" :key="i"
@@ -704,6 +848,7 @@ const rankingItems = computed(() =>
             <span style="color:var(--warn);">주의 {{ cautionCount }}</span>
             <span style="color:var(--danger);">위험 {{ dangerCount }}</span>
             <span style="color:var(--text-4);">대기 {{ idleCount }}</span>
+            <span style="color:var(--accent);">완료 {{ todayCompleted }}</span>
           </div>
         </div>
       </div>
@@ -791,15 +936,15 @@ const rankingItems = computed(() =>
               </div>
               <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
                 <button class="btn btn-ghost" style="font-size:11.5px;"
-                  :disabled="!selected || selected.level!=='DANGER' || !selectedDetailId || phoneRecommendationIssued || actionSubmitting.phone"
-                  :style="{opacity:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 1 : 0.45,cursor:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 'pointer' : 'not-allowed'}"
+                  :disabled="!selected || selected.level!=='DANGER' || phoneRecommendationIssued || actionSubmitting.phone"
+                  :style="{opacity:selected?.level==='DANGER' && !phoneRecommendationIssued ? 1 : 0.45,cursor:selected?.level==='DANGER' && !phoneRecommendationIssued ? 'pointer' : 'not-allowed'}"
                   @click="sendPhoneRecommendation">
                   <AppIcon name="phone" :size="12"/>
                   {{ phoneRecommendationIssued ? '전화 권고 완료' : actionSubmitting.phone ? '기록 중...' : '전화 권고' }}
                 </button>
                 <button class="btn btn-ghost" style="font-size:11.5px;"
-                  :disabled="!selected || !selectedDetailId || actionSubmitting.rest"
-                  :style="{opacity:selected && selectedDetailId ? 1 : 0.45,cursor:selected && selectedDetailId ? 'pointer' : 'not-allowed'}"
+                  :disabled="!selected || actionSubmitting.rest"
+                  :style="{opacity:selected ? 1 : 0.45,cursor:selected ? 'pointer' : 'not-allowed'}"
                   @click="sendRestGuide">
                   <AppIcon name="coffee" :size="12"/>
                   {{ actionSubmitting.rest ? '기록 중...' : restGuideCount > 0 ? `휴게 안내 (${restGuideCount}회)` : '휴게 안내' }}

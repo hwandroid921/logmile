@@ -38,6 +38,15 @@ public record VehicleStatusResponse(
 	@Schema(description = "운행 상태")
 	DriveLogStatus status,
 
+	@Schema(description = "현재 연속 운행 시간 (분)")
+	Integer continuousDrivingMinutes,
+
+	@Schema(description = "금일 누적 운행 시간 (분)")
+	Integer dailyTotalDrivingMinutes,
+
+	@Schema(description = "야간 운행 시간 (분)")
+	Integer nightDrivingMinutes,
+
 	@Schema(description = "휴게 안내 누적 횟수")
 	int restGuideCount,
 
@@ -55,6 +64,7 @@ public record VehicleStatusResponse(
 		Long driveLogId, Long vehicleId, String plateNo, String vehicleType,
 		Long driverId, String driverName, String driverPhone,
 		Integer fatigueScore, FatigueLevel fatigueLevel, DriveLogStatus status,
+		Integer continuousDrivingMinutes, Integer dailyTotalDrivingMinutes, Integer nightDrivingMinutes,
 		int restGuideCount,
 		LocalDateTime lastRestGuideAt, LocalDateTime lastPhoneRecommendationAt,
 		LocalDateTime startedAt) {
@@ -62,6 +72,7 @@ public record VehicleStatusResponse(
 			driveLogId, vehicleId, plateNo, vehicleType,
 			driverId, driverName, driverPhone,
 			fatigueScore, fatigueLevel, status,
+			continuousDrivingMinutes, dailyTotalDrivingMinutes, nightDrivingMinutes,
 			restGuideCount, lastRestGuideAt, lastPhoneRecommendationAt, startedAt);
 	}
 }
