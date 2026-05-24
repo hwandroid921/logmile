@@ -251,16 +251,6 @@ watch(selectedId, () => renderKakaoMarkers())
 watch(mapTab,     () => renderKakaoMarkers())
 watch(vehicles,   () => renderKakaoMarkers())
 
-/* #4 #5: 선택 차량 상세 자동 로드 */
-watch(selectedDetailId, async (id) => {
-  if (!id || isDemoBoard.value) { selectedDetail.value = null; return }
-  try {
-    const res = await driveHistoryApi.getDetail(id)
-    selectedDetail.value = res.data ?? null
-  } catch {
-    selectedDetail.value = null
-  }
-})
 watch(selectedDate, async () => {
   selectedId.value = null
   selectedDetail.value = null
@@ -287,6 +277,17 @@ const filteredVehicles = computed(() => {
   return r.filter(v => v.level === need)
 })
 const sortedFiltered = computed(() => filteredVehicles.value.slice().sort((a, b) => b.score - a.score))
+
+/* #4 #5: 선택 차량 상세 자동 로드 (selectedDetailId 선언 이후에 위치해야 함) */
+watch(selectedDetailId, async (id) => {
+  if (!id || isDemoBoard.value) { selectedDetail.value = null; return }
+  try {
+    const res = await driveHistoryApi.getDetail(id)
+    selectedDetail.value = res.data ?? null
+  } catch {
+    selectedDetail.value = null
+  }
+})
 
 const runningCount = computed(() => dashboardVehicles.value.length)
 const dangerCount  = computed(() => dashboardVehicles.value.filter(v => v.level === 'DANGER').length)
