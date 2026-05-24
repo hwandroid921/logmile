@@ -106,6 +106,7 @@ function buildRuntimeVehicle(apiVehicle, index) {
     lastRestGuideAt: apiVehicle.lastRestGuideAt ?? null,
     lastPhoneRecommendationAt: apiVehicle.lastPhoneRecommendationAt ?? null,
     lat: preset.lat, lng: preset.lng,
+    recognizedPlate: apiVehicle.recognizedPlateNo ?? null,
   }
 }
 
@@ -899,7 +900,7 @@ const rankingItems = computed(() =>
 
           <!-- 드릴다운 헤더 -->
           <div style="border-bottom:1px solid var(--line-1);display:flex;align-items:stretch;">
-            <!-- 번호판 이미지 (왼쪽 끝, 헤더 전체 높이) -->
+            <!-- 번호판 썸네일 (왼쪽 끝, 헤더 전체 높이) -->
             <div style="flex-shrink:0;aspect-ratio:200/130;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
               <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
                 <rect width="200" height="130" fill="#E3E6EB"/>
@@ -1106,7 +1107,15 @@ const rankingItems = computed(() =>
             <div v-for="v in sortedFiltered" :key="v.id" class="vrow" :class="{selected: selectedId===v.id}" @click="selectedId=v.id">
               <!-- 번호판 -->
               <div class="vrow-plate">
-                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
+                <img
+                  v-if="v.driveLogId"
+                  :src="`/demo-plates/dl${v.driveLogId}.jpg`"
+                  :alt="v.recognizedPlate || v.plate"
+                  style="width:100%;height:100%;object-fit:cover;display:block;"
+                  @error="(e) => { e.target.style.display='none'; e.target.nextElementSibling.style.display='block'; }"
+                />
+                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice"
+                  :style="`opacity:.4;display:${v.driveLogId ? 'none' : 'block'};`">
                   <rect width="200" height="130" fill="#E3E6EB"/>
                   <rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE" stroke-width="1"/>
                   <circle cx="55" cy="98" r="8" fill="#747F95"/>

@@ -57,7 +57,10 @@ public record VehicleStatusResponse(
 	LocalDateTime lastPhoneRecommendationAt,
 
 	@Schema(description = "운행 시작 시각")
-	LocalDateTime startedAt
+	LocalDateTime startedAt,
+
+	@Schema(description = "OCR 인식 번호판 (이미지 조회용, nullable)")
+	String recognizedPlateNo
 ) {
 
 	public static VehicleStatusResponse of(
@@ -67,12 +70,13 @@ public record VehicleStatusResponse(
 		Integer continuousDrivingMinutes, Integer dailyTotalDrivingMinutes, Integer nightDrivingMinutes,
 		int restGuideCount,
 		LocalDateTime lastRestGuideAt, LocalDateTime lastPhoneRecommendationAt,
-		LocalDateTime startedAt) {
+		LocalDateTime startedAt, String recognizedPlateNo) {
 		return new VehicleStatusResponse(
 			driveLogId, vehicleId, plateNo, vehicleType,
 			driverId, driverName, driverPhone,
 			fatigueScore, fatigueLevel, status,
 			continuousDrivingMinutes, dailyTotalDrivingMinutes, nightDrivingMinutes,
-			restGuideCount, lastRestGuideAt, lastPhoneRecommendationAt, startedAt);
+			restGuideCount, lastRestGuideAt, lastPhoneRecommendationAt,
+			startedAt, recognizedPlateNo);
 	}
 }

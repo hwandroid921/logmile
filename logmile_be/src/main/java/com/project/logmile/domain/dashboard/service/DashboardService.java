@@ -117,7 +117,8 @@ public class DashboardService {
 				restGuideCountMap.getOrDefault(log.getId(), 0),
 				getActionTime(actionMap, log.getId(), DashboardActionType.REST_GUIDE),
 				getActionTime(actionMap, log.getId(), DashboardActionType.PHONE_RECOMMENDATION),
-				log.getStartedAt()
+				log.getStartedAt(),
+				log.getRecognizedPlateNo()
 			);
 		}).toList();
 	}
