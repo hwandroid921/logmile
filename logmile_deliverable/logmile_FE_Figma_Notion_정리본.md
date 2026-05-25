@@ -1,7 +1,7 @@
 # Logmile Design System — Figma / Notion 정리본
 
-> 버전: v1.1.3 | 테마: Light Slate | 기준 파일: `tokens.css`, `main.css`
-> 변경 기준: Readability Rules 우선 배치, 폰트 종류 기준 추가, 스타일 가이드 페이지 폭/정렬 보정
+> 버전: v1.1.7 | 테마: Light Slate | 기준 파일: `tokens.css`, `main.css`
+> 변경 기준: 스타일 가이드 전용 한글 UI/타이틀 폰트를 LINE Seed Sans KR로 변경
 
 ---
 
@@ -109,14 +109,14 @@ Figma에서 Local Variables 패널에 아래 그룹으로 등록하세요.
 ### 📝 Text Style 설정
 
 Figma Text Styles에 아래와 같이 등록하세요.
-폰트: **Pretendard Variable** (기본) / **JetBrains Mono** (mono 계열)
+폰트: **LINE Seed Sans KR** (기본/타이틀 계열) / **IBM Plex Mono** (mono 계열)
 
 #### Font Family Usage
 
 | 폰트 | CSS 토큰 | 권장 사용처 | 제한 기준 |
 |---|---|---|---|
-| Pretendard Variable | `--font-sans` | 페이지 제목, 카드 제목, 본문, 버튼, 폼 라벨, 자연어 중심 UI | 숫자 정렬이 중요한 KPI/코드성 라벨에는 mono 우선 |
-| JetBrains Mono | `--font-mono` | KPI 숫자, 차량번호, 상태 chip, 테이블 헤더, 코드성 라벨 | 긴 한글 문장 본문에는 사용하지 않음 |
+| LINE Seed Sans KR | `--font-sans`, `--font-point` | 브랜드 타이틀, 페이지 제목, 카드 제목, 버튼, 폼 라벨, 본문 UI | 긴 숫자열, 차량번호, 코드성 라벨에는 mono 우선 |
+| IBM Plex Mono | `--font-mono` | KPI 숫자, 차량번호, 상태 chip, 테이블 헤더, 코드성 라벨 | 긴 한글 문장 본문에는 사용하지 않음 |
 
 - Readability Rules는 Typography보다 먼저 확인하는 기준 섹션으로 둔다.
 - 스타일 가이드 페이지는 동일한 본문 폭을 기준으로 preview box를 100% 정렬한다.
@@ -124,35 +124,36 @@ Figma Text Styles에 아래와 같이 등록하세요.
 
 | Style 이름 | 폰트 | 크기 | 굵기 | 자간 | 줄간 | 용도 |
 |---|---|---|---|---|---|---|
-| `Brand/Title` | Pretendard Variable | 32 | 800 | -2% | 125% | 로그인 브랜드 패널 제목 |
-| `Page/Title` | Pretendard Variable | 24 | 800 | 0 | 125% | 앱 주요 페이지 제목 |
-| `Section/Title` | Pretendard Variable | 18 | 800 | 0 | 130% | 페이지 섹션 제목 |
-| `Form/Title` | Pretendard Variable | 22 | 700 | -1% | auto | 폼 제목 |
-| `Card/Title` | Pretendard Variable | 16 | 700 | 0 | 135% | 카드, 패널 제목 |
-| `Body/Default` | Pretendard Variable | 14 | 400 | 0 | 155% | 기본 본문 |
-| `Body/Small` | Pretendard Variable | 14 | 400 | 0 | 150% | 보조 본문, 리스트 보조 텍스트 |
-| `Nav/Item` | Pretendard Variable | 14 | 600 | 0 | auto | 사이드바 메뉴 |
-| `Nav/Item-Topbar` | Pretendard Variable | 14 | 600 | 0 | auto | 탑바 nav |
-| `Button/Default` | Pretendard Variable | 14 | 600 | 0 | auto | 기본 버튼 |
-| `Button/Large` | Pretendard Variable | 14 | 600 | 0 | auto | submit 버튼 |
-| `Caption/Default` | Pretendard Variable | 14 | 400 | 0 | auto | 서브 텍스트 |
-| `Mono/KPI-Value` | JetBrains Mono | 28–32 | 800 | 0 | 100% | 대시보드 KPI 숫자 |
-| `Mono/Table-Header` | JetBrains Mono | 16 | 700 | 4% | auto | 테이블 헤더 |
-| `Mono/Chip` | JetBrains Mono | 14 | 700 | 2% | auto | chip 텍스트 |
-| `Mono/Label-SM` | JetBrains Mono | 14 | 700 | 10% | auto | 섹션 레이블 (UPPERCASE) |
-| `Mono/Nav-Section` | JetBrains Mono | 14 | 700 | 10% | auto | 사이드바 섹션 라벨 |
-| `Mono/Field-Label` | Pretendard Variable | 14 | 700 | 8% | auto | 폼 필드 라벨 (UPPERCASE) |
-| `Mono/Caption` | JetBrains Mono | 14 | 400 | 4–6% | auto | 코드/수치 캡션 |
+| `Brand/Title` | LINE Seed Sans KR | 32 | 700 | 0 | 125% | 로그인 브랜드 패널 제목 |
+| `Page/Title` | LINE Seed Sans KR | 24 | 700 | 0 | 125% | 앱 주요 페이지 제목 |
+| `Section/Title` | LINE Seed Sans KR | 18 | 700 | 0 | 130% | 페이지 섹션 제목 |
+| `Form/Title` | LINE Seed Sans KR | 22 | 700 | 0 | auto | 폼 제목 |
+| `Card/Title` | LINE Seed Sans KR | 16 | 700 | 0 | 135% | 카드, 패널 제목 |
+| `Body/Default` | LINE Seed Sans KR | 14 | 400 | 0 | 155% | 기본 본문 |
+| `Body/Small` | LINE Seed Sans KR | 14 | 400 | 0 | 150% | 보조 본문, 리스트 보조 텍스트 |
+| `Nav/Item` | LINE Seed Sans KR | 14 | 600 | 0 | auto | 사이드바 메뉴 |
+| `Nav/Item-Topbar` | LINE Seed Sans KR | 14 | 600 | 0 | auto | 탑바 nav |
+| `Button/Default` | LINE Seed Sans KR | 14 | 600 | 0 | auto | 기본 버튼 |
+| `Button/Large` | LINE Seed Sans KR | 14 | 600 | 0 | auto | submit 버튼 |
+| `Caption/Default` | LINE Seed Sans KR | 14 | 400 | 0 | auto | 서브 텍스트 |
+| `Mono/KPI-Value` | IBM Plex Mono | 28–32 | 800 | 0 | 100% | 대시보드 KPI 숫자 |
+| `Mono/Table-Header` | IBM Plex Mono | 16 | 700 | 4% | auto | 테이블 헤더 |
+| `Mono/Chip` | IBM Plex Mono | 14 | 700 | 2% | auto | chip 텍스트 |
+| `Mono/Label-SM` | IBM Plex Mono | 14 | 700 | 10% | auto | 섹션 레이블 (UPPERCASE) |
+| `Mono/Nav-Section` | IBM Plex Mono | 14 | 700 | 10% | auto | 사이드바 섹션 라벨 |
+| `Mono/Field-Label` | LINE Seed Sans KR | 14 | 700 | 8% | auto | 폼 필드 라벨 (UPPERCASE) |
+| `Mono/Caption` | IBM Plex Mono | 14 | 400 | 4–6% | auto | 코드/수치 캡션 |
 
 #### Typography Usage Rules
 
 - 스타일 가이드와 실제 앱 UI의 상세 항목 최소 폰트 크기는 `14px`로 둔다.
 - 항목 제목, 카드 제목, 핵심 텍스트는 `16px` 이상을 기준으로 한다.
 - 일반 본문, 보조 본문, 캡션은 모두 `14px` 이상을 기준으로 한다.
+- 브랜드/페이지/섹션/카드 제목은 `LINE Seed Sans KR`을 적용하여 정돈된 한글 UI 인상을 유지한다.
 - 카드 제목은 `16px / 700`을 기준으로 하며, 카드 내부에서 18px 이상의 제목은 사용하지 않는다.
-- KPI 값은 `28~32px / 800 / JetBrains Mono`를 사용한다.
+- KPI 값은 `28~32px / 800 / IBM Plex Mono`를 사용한다.
 - 버튼 텍스트는 `14px / 600`을 기본으로 한다.
-- 숫자, 상태값, 코드성 라벨, 테이블 헤더, chip은 `JetBrains Mono`를 우선 사용한다.
+- 숫자, 상태값, 코드성 라벨, 테이블 헤더, chip은 `IBM Plex Mono`를 우선 사용한다.
 
 #### Data UI Typography
 
@@ -223,7 +224,7 @@ Figma Number Variables 또는 Effect Styles로 등록:
 
 ### Chips
 
-> 모두 `border-radius: 999px`, `font-family: JetBrains Mono`, `font-size: 14px`, `font-weight: 700`
+> 모두 `border-radius: 999px`, `font-family: IBM Plex Mono`, `font-size: 14px`, `font-weight: 700`
 
 | 클래스 | 배경 | 글자색 | 테두리 |
 |---|---|---|---|
@@ -271,11 +272,11 @@ Figma Number Variables 또는 Effect Styles로 등록:
 ### Form Inputs
 
 - 배경: `--bg-0`, 테두리: `1px solid --line-2`, radius: `--r-md`
-- 폰트: `JetBrains Mono`, `font-size: 14px`, `color: --text-1`
+- 폰트: `IBM Plex Mono`, `font-size: 14px`, `color: --text-1`
 - 플레이스홀더: `color: --text-4`
 - Focus: `border-color: --accent-line`
 - 오류: `border-color: --danger`, `background: --danger-soft`
-- 라벨: Pretendard, 14px, weight 700, uppercase, `letter-spacing: 0.08em`, `color: --text-2`
+- 라벨: LINE Seed Sans KR, 14px, weight 700, uppercase, `letter-spacing: 0.08em`, `color: --text-2`
 
 ---
 
@@ -296,7 +297,7 @@ position: sticky top:0 z-index:50
 ```
 background: linear-gradient(135deg, #1A2230 0%, #2C3851 55%, #515F7A 100%)
 데코 원: border: 1px solid rgba(255,255,255,0.06), border-radius: 50%
-제목: 32px, weight 800, color: #FFFFFF
+제목: 32px, weight 700, font-sans, color: #FFFFFF
 서브: 14px, color: rgba(255,255,255,0.76)
 통계 숫자: 28px, weight 800, font-mono, color: #FFFFFF
 ```
@@ -306,7 +307,7 @@ background: linear-gradient(135deg, #1A2230 0%, #2C3851 55%, #515F7A 100%)
 ## 🔑 핵심 설계 원칙
 
 1. **Surface 계층**: bg-0(어두움)이 앱 배경 → bg-1(밝음)이 카드/콘텐츠. 보통의 라이트 테마와 반대 방향
-2. **Mono vs Sans 역할 분리**: 숫자/상태/코드/라벨은 JetBrains Mono, 나머지 UI 텍스트는 Pretendard
+2. **Sans / Mono 역할 분리**: 한글 UI와 타이틀은 LINE Seed Sans KR, 숫자/상태/코드/라벨은 IBM Plex Mono
 3. **상태 색상 쌍**: solid(강조 텍스트·도트) + soft(배경) 항상 쌍으로 사용
 4. **Accent 파생 토큰**: accent-soft(10% opacity), accent-line(28% opacity)으로 활성 상태 표현
 5. **피로도 기준**: NORMAL(0~39점, ok), CAUTION(40~69점, warn), DANGER(70점 이상, danger)

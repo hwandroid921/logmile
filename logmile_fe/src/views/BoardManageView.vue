@@ -27,7 +27,7 @@ function statusColor(s) {
   if (s === '답변 완료') return 'var(--ok)'
   if (s === '검토 중')   return 'var(--warn)'
   if (s === '접수')      return 'var(--accent)'
-  return 'var(--text-4)'
+  return 'var(--text-3)'
 }
 
 // 상세 / 답변 모달
@@ -75,7 +75,7 @@ const stats = computed(() => ({
     <!-- 페이지 헤더 -->
     <div class="pg-header">
       <div>
-        <div class="eyebrow">BOARD MANAGEMENT</div>
+        <div class="eyebrow">게시판 관리</div>
         <h1 class="pg-title">문의 관리</h1>
       </div>
     </div>
@@ -88,15 +88,15 @@ const stats = computed(() => ({
       </div>
       <div class="stat-card accent">
         <div class="stat-label mono">접수</div>
-        <div class="stat-val" style="color:var(--accent);">{{ stats.pending }}</div>
+        <div class="stat-val" style="color: var(--accent);">{{ stats.pending }}</div>
       </div>
       <div class="stat-card warn">
         <div class="stat-label mono">검토 중</div>
-        <div class="stat-val" style="color:var(--warn);">{{ stats.review }}</div>
+        <div class="stat-val" style="color: var(--warn);">{{ stats.review }}</div>
       </div>
       <div class="stat-card ok">
         <div class="stat-label mono">답변 완료</div>
-        <div class="stat-val" style="color:var(--ok);">{{ stats.answered }}</div>
+        <div class="stat-val" style="color: var(--ok);">{{ stats.answered }}</div>
       </div>
     </div>
 
@@ -122,7 +122,7 @@ const stats = computed(() => ({
           >{{ s }}</button>
         </div>
       </div>
-      <span class="mono" style="margin-left:auto;font-size:11px;color:var(--text-4);align-self:flex-end;">{{ filtered.length }}건</span>
+      <span class="mono" style="margin-left:auto;font-size: 14px;color: var(--text-3);align-self:flex-end;">{{ filtered.length }}건</span>
     </div>
 
     <!-- 목록 테이블 -->
@@ -166,10 +166,10 @@ const stats = computed(() => ({
           </span>
 
           <!-- 작성자 -->
-          <span style="width:60px;text-align:center;font-size:12px;color:var(--text-4);">{{ p.name }}</span>
+          <span style="width:60px;text-align:center;font-size: 14px;color: var(--text-3);">{{ p.name }}</span>
 
           <!-- 날짜 -->
-          <span class="mono" style="width:90px;text-align:right;font-size:11px;color:var(--text-4);">{{ p.date }}</span>
+          <span class="mono" style="width:90px;text-align:right;font-size: 14px;color: var(--text-3);">{{ p.date }}</span>
 
           <!-- 답변 버튼 -->
           <span style="width:70px;text-align:center;">
@@ -205,8 +205,8 @@ const stats = computed(() => ({
                   <option v-for="s in STATUS_LIST" :key="s" :value="s">● {{ s }}</option>
                 </select>
               </div>
-              <div style="font-size:17px;font-weight:700;color:var(--text-1);">{{ selected.subject }}</div>
-              <div class="mono" style="font-size:11px;color:var(--text-4);margin-top:5px;">
+              <div style="font-size:17px;font-weight:700;color: var(--text-1);">{{ selected.subject }}</div>
+              <div class="mono" style="font-size: 14px;color: var(--text-3);margin-top:5px;">
                 {{ selected.name }}
                 <span v-if="selected.email"> · {{ selected.email }}</span>
                 · {{ selected.date }}
@@ -216,14 +216,14 @@ const stats = computed(() => ({
           </div>
 
           <!-- 문의 내용 -->
-          <div style="padding:20px;font-size:14px;color:var(--text-2);line-height:1.75;white-space:pre-wrap;border-bottom:1px solid var(--line-1);">{{ selected.content }}</div>
+          <div style="padding:20px;font-size: 14px;color: var(--text-2);line-height:1.75;white-space:pre-wrap;border-bottom:1px solid var(--line-1);">{{ selected.content }}</div>
 
           <!-- 답변 작성 -->
           <div class="reply-area">
             <div class="reply-area-label mono">
               <AppIcon name="arrow" :size="12" />
               관리자 답변
-              <span v-if="selected.replyDate" style="margin-left:auto;font-size:10.5px;color:var(--text-4);">최종 수정 {{ selected.replyDate }}</span>
+              <span v-if="selected.replyDate" style="margin-left:auto;font-size: 14px;color: var(--text-3);">최종 수정 {{ selected.replyDate }}</span>
             </div>
             <textarea
               v-model="replyDraft"
@@ -249,9 +249,9 @@ const stats = computed(() => ({
 <style scoped>
 .view { padding: 32px 32px 40px; }
 
-.eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.eyebrow { font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
 .pg-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
-.pg-title  { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.022em; color: var(--text-1); }
+.pg-title  { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: 0; color: var(--text-1); }
 
 /* 통계 카드 */
 .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
@@ -262,16 +262,16 @@ const stats = computed(() => ({
 .stat-card.accent { background: var(--accent-soft); border-color: var(--accent-line); }
 .stat-card.warn   { background: var(--warn-soft);   border-color: rgba(197,138,58,0.25); }
 .stat-card.ok     { background: var(--ok-soft);     border-color: rgba(94,138,111,0.25); }
-.stat-label { font-size: 10.5px; letter-spacing: 0.1em; color: var(--text-4); text-transform: uppercase; }
+.stat-label { font-size: 14px; letter-spacing: 0.1em; color: var(--text-3); text-transform: uppercase; }
 .stat-val   { font-size: 28px; font-weight: 800; color: var(--text-1); line-height: 1; }
 
 /* 필터 */
 .filter-area  { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
 .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.filter-label { font-size: 10.5px; letter-spacing: 0.1em; color: var(--text-4); text-transform: uppercase; white-space: nowrap; }
+.filter-label { font-size: 14px; letter-spacing: 0.1em; color: var(--text-3); text-transform: uppercase; white-space: nowrap; }
 .filter-pills { display: flex; gap: 5px; flex-wrap: wrap; }
 .pill {
-  padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 500;
+  padding: 4px 11px; border-radius: 999px; font-size: 14px; font-weight: 500;
   color: var(--text-3); background: var(--bg-2); border: 1px solid var(--line-2);
   cursor: pointer; transition: all 0.15s;
 }
@@ -283,7 +283,7 @@ const stats = computed(() => ({
 .tbl-header {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 18px;
-  font-size: 10.5px; font-weight: 600; color: var(--text-4);
+  font-size: 16px; font-weight: 600; color: var(--text-3);
   font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
   border-bottom: 1px solid var(--line-1);
   background: var(--bg-3);
@@ -299,35 +299,35 @@ const stats = computed(() => ({
 .tbl-row.has-reply { border-left: 3px solid var(--ok); }
 
 .post-subject {
-  flex: 1; font-size: 13.5px; font-weight: 600; color: var(--text-1);
+  flex: 1; font-size: 14px; font-weight: 600; color: var(--text-1);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   cursor: pointer; display: flex; align-items: center; gap: 6px;
 }
 .post-subject:hover { color: var(--accent); }
-.reply-dot { color: var(--ok); font-size: 8px; flex-shrink: 0; }
+.reply-dot { color: var(--ok); font-size: 14px; flex-shrink: 0; }
 
 /* 상태 드롭다운 */
 .status-select {
   background: transparent; border: none; outline: none;
-  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-size: 14px; font-weight: 700; cursor: pointer;
   font-family: var(--font-mono); padding: 2px 4px;
 }
 
 /* Chips */
-.chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+.chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 14px; font-weight: 700; }
 .chip-mute { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--line-2); }
 
 /* 답변 버튼 */
 .btn-reply {
   padding: 4px 10px; border-radius: var(--r-sm);
-  font-size: 11.5px; font-weight: 600; cursor: pointer;
+  font-size: 14px; font-weight: 600; cursor: pointer;
   background: var(--accent-soft); color: var(--accent);
   border: 1px solid var(--accent-line);
   transition: all 0.15s; white-space: nowrap;
 }
 .btn-reply:hover { background: var(--accent); color: var(--accent-ink); }
 
-.empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 64px; color: var(--text-4); font-size: 13px; }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 64px; color: var(--text-3); font-size: 14px; }
 
 /* 모달 */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
@@ -344,28 +344,28 @@ const stats = computed(() => ({
 .reply-area { padding: 16px 20px; flex-shrink: 0; }
 .reply-area-label {
   display: flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 700; color: var(--accent);
+  font-size: 14px; font-weight: 700; color: var(--accent);
   margin-bottom: 10px; letter-spacing: 0.08em; text-transform: uppercase;
 }
 .reply-textarea {
   width: 100%; min-height: 120px; resize: vertical;
   background: var(--bg-1); border: 1px solid var(--line-2); border-radius: var(--r-md);
-  padding: 10px 12px; font-size: 13.5px; color: var(--text-1);
+  padding: 10px 12px; font-size: 14px; color: var(--text-1);
   font-family: var(--font-sans); outline: none; box-sizing: border-box;
   transition: border-color 0.15s;
 }
 .reply-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
-.reply-textarea::placeholder { color: var(--text-4); }
+.reply-textarea::placeholder { color: var(--text-3); }
 
 .btn-save {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 8px 18px; background: var(--accent); border: none;
-  border-radius: var(--r-md); font-size: 13px; font-weight: 600;
+  border-radius: var(--r-md); font-size: 14px; font-weight: 600;
   color: var(--accent-ink); cursor: pointer; transition: background 0.15s;
 }
 .btn-save:hover:not(:disabled) { background: var(--accent-hover); }
 .btn-save:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-cancel { display: inline-flex; align-items: center; padding: 8px 16px; background: transparent; border: 1px solid var(--line-2); border-radius: var(--r-md); font-size: 13px; font-weight: 500; color: var(--text-3); cursor: pointer; transition: background 0.15s; }
+.btn-cancel { display: inline-flex; align-items: center; padding: 8px 16px; background: transparent; border: 1px solid var(--line-2); border-radius: var(--r-md); font-size: 14px; font-weight: 500; color: var(--text-3); cursor: pointer; transition: background 0.15s; }
 .btn-cancel:hover { background: var(--bg-3); }
 
 .mono { font-family: var(--font-mono); }

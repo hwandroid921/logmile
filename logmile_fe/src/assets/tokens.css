@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/index.css');
+
 /* logmile — Design Tokens · 라이트 슬레이트 테마
    팔레트 베이스: #515F7A · #747F95 · #979EAE · #B8BFC9 · #DCDFE4 */
 :root {
@@ -52,8 +55,9 @@
   --info-soft:   rgba(116, 127, 149, 0.14);
 
   /* fonts */
-  --font-sans: "Pretendard Variable", "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --font-sans: "LINE Seed Sans KR", sans-serif;
+  --font-point: var(--font-sans);
+  --font-mono: "IBM Plex Mono", monospace;
 
   /* radii */
   --r-sm: 4px;

@@ -194,7 +194,7 @@ function scoreColor(s) {
   return s >= 70 ? C.danger : s >= 40 ? C.warn : C.ok
 }
 function scoreLevel(s) {
-  return s >= 70 ? 'DANGER 수준' : s >= 40 ? 'CAUTION 수준' : '정상 범위'
+  return s >= 70 ? '위험 수준' : s >= 40 ? '주의 수준' : '정상 범위'
 }
 function formatMinutes(v) {
   if (!v) return '0분'
@@ -218,7 +218,7 @@ const chartDefaults = {
   animation: { duration: 400 },
   plugins: {
     legend: {
-      labels: { color: C.text, font: { size: 11, family: 'ui-monospace, monospace' }, boxWidth: 10 },
+      labels: { color: C.text, font: { size: 11, family: '"IBM Plex Mono", "Roboto Mono", ui-monospace, monospace' }, boxWidth: 10 },
     },
     tooltip: {
       backgroundColor: 'rgba(20,22,28,0.92)',
@@ -340,7 +340,7 @@ function renderCharts() {
         labels,
         datasets: [
           { label: '휴식 위반', data: restMiss, backgroundColor: 'rgba(197,138,58,0.65)', borderRadius: 3 },
-          { label: 'DANGER',   data: dangers,  backgroundColor: 'rgba(181,84,74,0.65)',  borderRadius: 3 },
+          { label: '위험',     data: dangers,  backgroundColor: 'rgba(181,84,74,0.65)',  borderRadius: 3 },
         ],
       },
       options: {
@@ -413,7 +413,7 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 <template>
   <div class="view">
     <div class="breadcrumb mono">
-      ADMIN / STATS · API /api/fatigue/stats · RANGE {{ range.toUpperCase() }}
+      관리자 / 통계 · API /api/fatigue/stats · 기간 {{ range }}
     </div>
 
     <div class="page-header">
@@ -430,7 +430,7 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 
     <div v-if="error" class="notice error-box">{{ error }}</div>
     <div v-else-if="!loading && !hasStatsData" class="notice empty-notice mono">
-      NO DATA · 조회 기간 내 집계된 운행/피로도 데이터가 없습니다.
+      데이터 없음 · 조회 기간 내 집계된 운행/피로도 데이터가 없습니다.
     </div>
 
     <div v-if="loading" class="card state-card mono">통계 데이터를 불러오는 중입니다.</div>
@@ -517,17 +517,17 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
           </div>
           <div v-if="hasStatsData" class="level-bars score-level-bars">
             <div class="level-row">
-              <span class="mono level-label normal">NORMAL</span>
+              <span class="mono level-label normal">정상</span>
               <div class="level-track"><div class="level-fill normal" :style="{ width: statDays.length ? (normalDays / statDays.length * 100) + '%' : '0%' }" /></div>
               <strong>{{ normalDays }}일 <span class="level-range">0~39</span></strong>
             </div>
             <div class="level-row">
-              <span class="mono level-label caution">CAUTION</span>
+              <span class="mono level-label caution">주의</span>
               <div class="level-track"><div class="level-fill caution" :style="{ width: statDays.length ? (cautionDays / statDays.length * 100) + '%' : '0%' }" /></div>
               <strong>{{ cautionDays }}일 <span class="level-range">40~69</span></strong>
             </div>
             <div class="level-row">
-              <span class="mono level-label danger">DANGER</span>
+              <span class="mono level-label danger">위험</span>
               <div class="level-track"><div class="level-fill danger" :style="{ width: statDays.length ? (dangerDays / statDays.length * 100) + '%' : '0%' }" /></div>
               <strong>{{ dangerDays }}일 <span class="level-range">≥70</span></strong>
             </div>
@@ -616,17 +616,17 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
           </div>
           <div v-if="hasEventChartData" class="event-summary-grid">
             <div class="event-summary warn">
-              <span class="mono event-summary-label">REST VIOLATION</span>
+              <span class="mono event-summary-label">휴식 위반</span>
               <strong>{{ missingTotal }}</strong>
               <span>휴식 위반 누적</span>
             </div>
             <div class="event-summary danger">
-              <span class="mono event-summary-label">DANGER EVENT</span>
+              <span class="mono event-summary-label">위험 이벤트</span>
               <strong>{{ dangerTotal }}</strong>
               <span>위험 이벤트 누적</span>
             </div>
             <div class="event-summary peak">
-              <span class="mono event-summary-label">PEAK DAY</span>
+              <span class="mono event-summary-label">최다 발생일</span>
               <strong>{{ topEventDay?.label }}</strong>
               <span>{{ topEventDay?.totalEvents }}건 발생</span>
             </div>
@@ -652,24 +652,24 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 
 <style scoped>
 .view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
-.breadcrumb { font-size:11px; color:var(--text-4); letter-spacing:0.04em; }
+.breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; }
-.page-title  { font-size:24px; font-weight:700; color:var(--text-1); margin:0 0 4px; letter-spacing:-0.01em; }
-.page-sub    { font-size:12.5px; color:var(--text-3); margin:0; }
+.page-title  { font-size:24px; font-weight:700; color: var(--text-1); margin:0 0 4px; letter-spacing: 0; }
+.page-sub    { font-size: 14px; color: var(--text-3); margin:0; }
 .range-btns  { display:flex; gap:4px; }
 .range-btn {
-  padding:6px 14px; border-radius:var(--r-md); font-size:11.5px;
-  background:none; border:1px solid var(--line-2); color:var(--text-3);
+  padding:6px 14px; border-radius:var(--r-md); font-size: 14px;
+  background:none; border:1px solid var(--line-2); color: var(--text-3);
   cursor:pointer; transition:all .12s;
 }
-.range-btn.active { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:700; }
+.range-btn.active { background:var(--accent-soft); border-color: var(--accent-line); color: var(--accent); font-weight:700; }
 .range-btn:disabled { opacity:.45; cursor:wait; }
 
-.notice    { border-radius:var(--r-md); font-size:12px; padding:12px 14px; }
-.error-box { border:1px solid var(--danger); background:var(--danger-soft); color:var(--danger); }
-.empty-notice { border:1px solid var(--line-2); background:var(--bg-2); color:var(--text-3); }
-.state-card { min-height:180px; display:flex; align-items:center; justify-content:center; color:var(--text-3); font-size:13px; }
+.notice    { border-radius:var(--r-md); font-size: 14px; padding:12px 14px; }
+.error-box { border:1px solid var(--danger); background:var(--danger-soft); color: var(--danger); }
+.empty-notice { border:1px solid var(--line-2); background:var(--bg-2); color: var(--text-3); }
+.state-card { min-height:180px; display:flex; align-items:center; justify-content:center; color: var(--text-3); font-size: 14px; }
 
 .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 .kpi-card {
@@ -677,22 +677,22 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
   padding:16px 18px; display:flex; flex-direction:column; gap:4px;
   box-shadow:var(--shadow-1);
 }
-.kpi-label { font-size:12px; letter-spacing:0.04em; color:var(--text-3); font-weight:600; }
-.kpi-val   { font-size:32px; font-weight:800; color:var(--text-1); letter-spacing:-0.02em; line-height:1; }
+.kpi-label { font-size: 14px; letter-spacing:0.04em; color: var(--text-3); font-weight:600; }
+.kpi-val   { font-size:32px; font-weight:800; color: var(--text-1); letter-spacing: 0; line-height:1; }
 .kpi-unit  { font-size:16px; font-weight:400; margin-left:2px; }
-.kpi-sub   { font-size:11px; color:var(--text-4); }
-.kpi-sub strong { color:var(--text-2); font-weight:600; }
+.kpi-sub   { font-size: 14px; color: var(--text-3); }
+.kpi-sub strong { color: var(--text-2); font-weight:600; }
 .kpi-bar-wrap { height:3px; background:var(--bg-3); border-radius:2px; overflow:hidden; margin-top:8px; }
 .kpi-bar-fill { height:100%; border-radius:2px; transition:width .4s; }
-.text-warn { color:var(--warn); }
-.text-danger { color:var(--danger); }
+.text-warn { color: var(--warn); }
+.text-danger { color: var(--danger); }
 
 .chart-card { padding:20px; }
 .card-hdr   { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
 .card-hdr.compact { margin-bottom:12px; }
-.card-title { font-size:14px; font-weight:700; color:var(--text-1); }
-.card-sub { margin:3px 0 0; font-size:11px; color:var(--text-4); }
-.card-meta  { font-size:11px; color:var(--text-4); }
+.card-title { font-size: 16px; font-weight:700; color: var(--text-1); }
+.card-sub { margin:3px 0 0; font-size: 14px; color: var(--text-3); }
+.card-meta  { font-size: 14px; color: var(--text-3); }
 .insight-grid {
   display:grid; grid-template-columns:repeat(5,1fr); gap:10px;
 }
@@ -704,10 +704,10 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 .level-row {
   display:grid; grid-template-columns:72px 1fr 34px; gap:8px; align-items:center;
 }
-.level-label { font-size:9.5px; letter-spacing:0.06em; }
-.level-label.normal { color:var(--ok); }
-.level-label.caution { color:var(--warn); }
-.level-label.danger { color:var(--danger); }
+.level-label { font-size: 14px; letter-spacing:0.06em; }
+.level-label.normal { color: var(--ok); }
+.level-label.caution { color: var(--warn); }
+.level-label.danger { color: var(--danger); }
 .level-track {
   height:7px; background:var(--bg-3); border-radius:999px; overflow:hidden;
 }
@@ -715,23 +715,23 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 .level-fill.normal { background:var(--ok); }
 .level-fill.caution { background:var(--warn); }
 .level-fill.danger { background:var(--danger); }
-.level-row strong { font-size:11px; color:var(--text-2); text-align:right; }
-.insight-label { font-size:12px; letter-spacing:0.04em; color:var(--text-3); font-weight:600; }
+.level-row strong { font-size: 14px; color: var(--text-2); text-align:right; }
+.insight-label { font-size: 14px; letter-spacing:0.04em; color: var(--text-3); font-weight:600; }
 .insight-main {
-  font-size:24px; font-weight:800; color:var(--text-1); line-height:1.05;
+  font-size:24px; font-weight:800; color: var(--text-1); line-height:1.05;
 }
-.insight-main span { font-size:14px; font-weight:500; margin-left:2px; }
-.insight-main.up { color:var(--danger); }
-.insight-main.down { color:var(--ok); }
-.insight-sub { font-size:10.5px; color:var(--text-4); line-height:1.45; }
-.insight-sub strong { color:var(--text-2); font-weight:600; }
+.insight-main span { font-size: 14px; font-weight:500; margin-left:2px; }
+.insight-main.up { color: var(--danger); }
+.insight-main.down { color: var(--ok); }
+.insight-sub { font-size: 14px; color: var(--text-3); line-height:1.45; }
+.insight-sub strong { color: var(--text-2); font-weight:600; }
 
 .canvas-wrap { position:relative; }
 .canvas-wrap canvas { display:block; width:100% !important; }
 .chart-empty {
   height:180px; display:flex; align-items:center; justify-content:center;
   border:1px dashed var(--line-2); border-radius:var(--r-md);
-  color:var(--text-4); font-size:12px; background:var(--bg-2);
+  color: var(--text-3); font-size: 14px; background:var(--bg-2);
 }
 .event-summary-grid {
   display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;
@@ -743,10 +743,10 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 }
 .event-summary.warn { border-color:rgba(197,138,58,.25); background:var(--warn-soft); }
 .event-summary.danger { border-color:rgba(181,84,74,.25); background:var(--danger-soft); }
-.event-summary.peak { border-color:var(--accent-line); background:var(--accent-soft); }
-.event-summary-label { font-size:9px; letter-spacing:0.07em; color:var(--text-4); }
-.event-summary strong { font-size:22px; line-height:1; color:var(--text-1); }
-.event-summary span:last-child { font-size:10.5px; color:var(--text-4); }
+.event-summary.peak { border-color: var(--accent-line); background:var(--accent-soft); }
+.event-summary-label { font-size: 14px; letter-spacing:0.07em; color: var(--text-3); }
+.event-summary strong { font-size:22px; line-height:1; color: var(--text-1); }
+.event-summary span:last-child { font-size: 14px; color: var(--text-3); }
 .event-day-list {
   margin-top:12px; display:flex; flex-direction:column; gap:6px;
 }
@@ -754,7 +754,7 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
   display:flex; align-items:center; gap:8px; min-height:30px;
   padding:6px 8px; border-radius:var(--r-sm); background:var(--bg-2);
 }
-.event-day-date { width:44px; flex-shrink:0; font-size:10.5px; color:var(--text-4); }
+.event-day-date { width:44px; flex-shrink:0; font-size: 14px; color: var(--text-3); }
 .drive-legend-row {
   display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;
 }
@@ -765,14 +765,14 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
   display:grid; grid-template-columns:42px 1fr 38px; gap:8px; align-items:center;
   min-height:26px; padding:4px 0;
 }
-.night-day-date { font-size:10.5px; color:var(--text-4); }
+.night-day-date { font-size: 14px; color: var(--text-3); }
 .night-ratio-track {
   height:7px; background:var(--bg-3); border-radius:999px; overflow:hidden;
 }
 .night-ratio-fill {
   height:100%; background:var(--danger); border-radius:999px; transition:width .35s;
 }
-.night-day-row strong { font-size:10.5px; color:var(--danger); text-align:right; }
+.night-day-row strong { font-size: 14px; color: var(--danger); text-align:right; }
 .drive-log-list {
   margin-top:14px; display:flex; flex-direction:column; gap:6px;
 }
@@ -784,26 +784,26 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 .drive-log-main {
   display:flex; align-items:center; gap:8px; min-width:0;
 }
-.drive-log-main strong { color:var(--text-1); font-size:12.5px; white-space:nowrap; }
+.drive-log-main strong { color: var(--text-1); font-size: 14px; white-space:nowrap; }
 .drive-log-main span:last-child {
-  color:var(--text-3); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color: var(--text-3); font-size: 14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.drive-log-date { color:var(--text-4); font-size:10.5px; width:42px; flex-shrink:0; }
+.drive-log-date { color: var(--text-3); font-size: 14px; width:42px; flex-shrink:0; }
 .drive-log-metrics {
   display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:8px;
-  color:var(--text-4); font-size:10.5px;
+  color: var(--text-3); font-size: 14px;
 }
-.night-metric { color:var(--danger); }
+.night-metric { color: var(--danger); }
 .chart-note {
   margin-top:12px; padding:10px 12px; border:1px dashed var(--line-2); border-radius:var(--r-md);
-  color:var(--text-4); background:var(--bg-2); font-size:11.5px;
+  color: var(--text-3); background:var(--bg-2); font-size: 14px;
 }
 
 .score-level-bars {
   margin-top:14px; gap:8px;
 }
 .level-range {
-  font-size:9.5px; font-weight:400; color:var(--text-4); margin-left:3px;
+  font-size: 14px; font-weight:400; color: var(--text-3); margin-left:3px;
 }
 
 .top5-list { display:flex; flex-direction:column; gap:8px; }
@@ -812,13 +812,13 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
   padding:10px 12px; border:1px solid var(--line-1); border-radius:var(--r-md);
   background:var(--bg-2);
 }
-.top5-rank { font-size:11px; color:var(--text-4); text-align:center; }
+.top5-rank { font-size: 14px; color: var(--text-3); text-align:center; }
 .top5-score { font-size:26px; font-weight:800; line-height:1; }
 .top5-info { min-width:0; }
-.top5-meta { font-size:10.5px; color:var(--text-4); }
+.top5-meta { font-size: 14px; color: var(--text-3); }
 .top5-vehicle { display:flex; align-items:center; gap:6px; margin-top:3px; }
-.top5-vehicle strong { font-size:12.5px; color:var(--text-1); white-space:nowrap; }
-.top5-vehicle span { font-size:12px; color:var(--text-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.top5-vehicle strong { font-size: 14px; color: var(--text-1); white-space:nowrap; }
+.top5-vehicle span { font-size: 14px; color: var(--text-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 

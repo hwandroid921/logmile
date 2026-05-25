@@ -226,22 +226,22 @@ async function handleSignup() {
   font-weight: 700;
   color: var(--text-1);
   margin: 0 0 4px;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .auth-sub {
-  font-size: 12px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   margin: 0 0 24px;
 }
 
 /* 섹션 레이블 */
 .form-section-label {
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-4);
+  color: var(--text-3);
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line-1);
   margin-bottom: 4px;
@@ -268,7 +268,7 @@ async function handleSignup() {
 }
 
 .field-label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-3);
   letter-spacing: 0.04em;
@@ -283,24 +283,24 @@ async function handleSignup() {
   border: 1px solid var(--line-2);
   border-radius: var(--r-md);
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-1);
   font-family: var(--font-sans);
   outline: none;
   transition: border-color 0.15s;
   box-sizing: border-box;
 }
-.field-input::placeholder { color: var(--text-4); }
+.field-input::placeholder { color: var(--text-3); }
 .field-input:focus { border-color: var(--accent-line); }
 .field-input--error { border-color: var(--danger) !important; }
 
 .field-hint-error {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--danger);
 }
 
 .auth-error {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   margin: 0;
   padding: 8px 12px;
@@ -319,8 +319,8 @@ async function handleSignup() {
 
 .auth-footer-text {
   margin: 20px 0 0;
-  font-size: 12.5px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   text-align: center;
 }
 .auth-link {

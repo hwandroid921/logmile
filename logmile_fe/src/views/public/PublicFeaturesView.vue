@@ -17,13 +17,13 @@ const features = [
     num: '01',
     name: 'demoBoard',
     title: '관제 대시보드',
-    desc: '차량별 실시간 피로도 점수, Fleet Map, 드릴다운 분석, 14일 트렌드, 히트맵을 한 화면에서 확인합니다. 위험(70점+) 차량은 전화 권고가 활성화됩니다.',
-    tags: ['KPI 6종', 'Fleet Map', '드라이브 타임라인', '히트맵', 'Scatter'],
+    desc: '차량별 실시간 피로도 점수, 차량 지도, 드릴다운 분석, 14일 트렌드, 히트맵을 한 화면에서 확인합니다. 위험(70점+) 차량은 전화 권고가 활성화됩니다.',
+    tags: ['주요 지표 6종', '차량 지도', '드라이브 타임라인', '히트맵', '분포 차트'],
     color: '#515F7A',
     preview: [
-      { l: 'RUNNING',  v: '8',  c: 'var(--accent)' },
-      { l: 'CAUTION',  v: '3',  c: 'var(--warn)' },
-      { l: 'DANGER',   v: '2',  c: 'var(--danger)' },
+      { l: '운행중', v: '8', c: 'var(--accent)' },
+      { l: '주의',   v: '3', c: 'var(--warn)' },
+      { l: '위험',   v: '2', c: 'var(--danger)' },
     ],
   },
   {
@@ -34,9 +34,9 @@ const features = [
     tags: ['파라미터 조정', '1분 단위 엔진', '이벤트 로그', 'OCR 인식 이벤트'],
     color: '#747F95',
     preview: [
-      { l: 'PEAK',  v: '84', c: 'var(--danger)' },
-      { l: 'FINAL', v: '61', c: 'var(--warn)' },
-      { l: 'EVENTS',v: '9',  c: 'var(--accent)' },
+      { l: '최고', v: '84', c: 'var(--danger)' },
+      { l: '최종', v: '61', c: 'var(--warn)' },
+      { l: '이벤트', v: '9', c: 'var(--accent)' },
     ],
   },
   {
@@ -61,14 +61,14 @@ const features = [
     <!-- ══ HEADER ══ -->
     <section class="section-border" style="padding:72px 0 48px;">
       <div class="page-inner">
-        <div class="eyebrow" style="margin-bottom:14px;">FEATURES · DEMO</div>
-        <h1 style="font-size:48px;font-weight:800;margin:0;line-height:1.08;letter-spacing:-0.028em;max-width:820px;color:var(--text-1);">
+        <div class="eyebrow" style="margin-bottom:14px;">기능 데모</div>
+        <h1 style="font-size:48px;font-weight:700;margin:0;line-height:1.08;letter-spacing: 0;max-width:820px;color: var(--text-1);">
           실제 화면으로<br />
-          <span style="color:var(--text-3);">기능을 직접 확인</span>하세요.
+          <span style="color: var(--text-3);">기능을 직접 확인</span>하세요.
         </h1>
-        <p style="font-size:15px;color:var(--text-2);line-height:1.75;margin:24px 0 20px;max-width:680px;">
+        <p style="font-size:15px;color: var(--text-2);line-height:1.75;margin:24px 0 20px;max-width:680px;">
           로그인 없이 실제 관제 화면을 체험할 수 있습니다.
-          대시보드·시뮬레이터·임계값 설정 모두 <strong style="color:var(--text-1);">mock 데이터로 완전히 동작</strong>합니다.
+          대시보드·시뮬레이터·임계값 설정 모두 <strong style="color: var(--text-1);">mock 데이터로 완전히 동작</strong>합니다.
         </p>
         <div class="demo-notice">
           <AppIcon name="info" :size="13" />
@@ -108,15 +108,15 @@ const features = [
                 <span class="dot-btn" style="background:#FEBC2E;" />
                 <span class="dot-btn" style="background:#28C840;" />
               </div>
-              <div class="mono" style="flex:1;text-align:center;font-size:10px;color:var(--text-4);">
+              <div class="mono" style="flex:1;text-align:center;font-size: 14px;color: var(--text-3);">
                 logmile / demo / {{ f.num === '01' ? 'dashboard' : f.num === '02' ? 'simulation' : 'thresholds' }}
               </div>
             </div>
             <!-- KPI 미리보기 -->
             <div class="preview-kpi">
               <div v-for="k in f.preview" :key="k.l" class="preview-kpi-item">
-                <div class="mono" style="font-size:9.5px;color:var(--text-4);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">{{ k.l }}</div>
-                <div class="mono" style="font-size:24px;font-weight:800;letter-spacing:-0.015em;" :style="{ color: k.c }">{{ k.v }}</div>
+                <div class="mono" style="font-size: 14px;color: var(--text-3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">{{ k.l }}</div>
+                <div class="mono" style="font-size:24px;font-weight:800;letter-spacing: 0;" :style="{ color: k.c }">{{ k.v }}</div>
               </div>
             </div>
             <!-- 더미 바 차트 -->
@@ -155,7 +155,7 @@ const features = [
               <span class="dot-btn" style="background:#FEBC2E;" />
               <span class="dot-btn" style="background:#28C840;" />
             </div>
-            <span class="mono" style="font-size:11px;color:var(--text-4);">
+            <span class="mono" style="font-size: 14px;color: var(--text-3);">
               logmile / demo / {{ modalTarget?.title }}
             </span>
           </div>
@@ -182,8 +182,8 @@ const features = [
 .section-alt   { background: var(--bg-0); }
 .section-border { border-bottom: 1px solid var(--line-1); }
 .mono          { font-family: var(--font-mono); }
-.eyebrow       { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
-.section-title { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.022em; line-height: 1.2; color: var(--text-1); }
+.eyebrow       { font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.section-title { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 0; line-height: 1.2; color: var(--text-1); }
 .body-text     { font-size: 14.5px; color: var(--text-2); line-height: 1.8; margin: 0; }
 
 /* 데모 안내 */
@@ -191,7 +191,7 @@ const features = [
   display: inline-flex; align-items: center; gap: 8px;
   padding: 8px 14px; background: var(--info-soft);
   border: 1px solid rgba(125,179,199,0.3); border-radius: var(--r-md);
-  font-size: 12.5px; color: var(--info);
+  font-size: 14px; color: var(--info);
 }
 
 /* 기능 row */
@@ -260,13 +260,13 @@ const features = [
 /* 클릭 유도 */
 .preview-cta {
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px; font-size: 12px; color: var(--accent);
+  padding: 10px; font-size: 14px; color: var(--accent);
   font-weight: 600; background: var(--accent-soft);
   font-family: var(--font-mono); letter-spacing: 0.02em;
 }
 
 /* Chips */
-.chip { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+.chip { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 14px; font-weight: 700; }
 .chip-mute { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--line-2); }
 
 .fade-up { animation: fade-up 0.4s ease both; }

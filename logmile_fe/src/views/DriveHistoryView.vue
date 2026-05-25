@@ -87,9 +87,9 @@ function scoreColor(s) {
   return 'var(--ok)'
 }
 function statusBadge(s) {
-  if (s === 'RUNNING')   return { label: 'RUNNING',   color: 'var(--accent)' }
-  if (s === 'COMPLETED') return { label: 'COMPLETED', color: 'var(--text-3)' }
-  if (s === 'STOPPED')   return { label: 'STOPPED',   color: 'var(--danger)' }
+  if (s === 'RUNNING')   return { label: '운행중', color: 'var(--accent)' }
+  if (s === 'COMPLETED') return { label: '완료',   color: 'var(--text-3)' }
+  if (s === 'STOPPED')   return { label: '중단',   color: 'var(--danger)' }
   return { label: s ?? '—', color: 'var(--text-3)' }
 }
 function scenarioBadge(s) {
@@ -99,16 +99,16 @@ function scenarioBadge(s) {
   return { label: s ?? '—', color: 'var(--text-3)' }
 }
 function restTypeBadge(t) {
-  if (t === 'SUFFICIENT') return { label: 'SUFFICIENT', color: 'var(--ok)',     bg: 'rgba(94,138,111,.14)' }
-  if (t === 'VALID')      return { label: 'VALID',      color: 'var(--accent)', bg: 'rgba(81,95,122,.16)'  }
-  return                         { label: 'INVALID',    color: 'var(--danger)', bg: 'rgba(181,84,74,.14)'  }
+  if (t === 'SUFFICIENT') return { label: '충분 휴식', color: 'var(--ok)',     bg: 'rgba(94,138,111,.14)' }
+  if (t === 'VALID')      return { label: '유효 휴식', color: 'var(--accent)', bg: 'rgba(81,95,122,.16)'  }
+  return                         { label: '휴식 부족', color: 'var(--danger)', bg: 'rgba(181,84,74,.14)'  }
 }
 </script>
 
 <template>
   <div class="view">
     <div class="breadcrumb mono">
-      ADMIN / DRIVE_LOG · {{ logs.length }} record(s)
+      관리자 / 운행 이력 · {{ logs.length }}건
     </div>
 
     <div class="page-header">
@@ -124,7 +124,7 @@ function restTypeBadge(t) {
 
     <!-- 로딩 / 에러 -->
     <div v-if="loading" class="state-row mono">운행 이력 로드 중...</div>
-    <div v-else-if="error" class="state-row" style="color:var(--danger)">{{ error }}</div>
+    <div v-else-if="error" class="state-row" style="color: var(--danger)">{{ error }}</div>
 
     <template v-else>
       <!-- 필터 -->
@@ -135,7 +135,7 @@ function restTypeBadge(t) {
           <div class="filter-btns">
             <button v-for="s in ['ALL','RUNNING','COMPLETED','STOPPED']" :key="s"
               class="filter-btn mono" :class="{ active: filters.status===s }"
-              @click="filters.status=s">{{ s }}</button>
+              @click="filters.status=s">{{ s === 'ALL' ? '전체' : statusBadge(s).label }}</button>
           </div>
         </div>
         <div class="filter-group">
@@ -143,7 +143,7 @@ function restTypeBadge(t) {
           <div class="filter-btns">
             <button v-for="l in ['ALL','NORMAL','CAUTION','DANGER']" :key="l"
               class="filter-btn mono" :class="{ active: filters.level===l }"
-              @click="filters.level=l">{{ l }}</button>
+              @click="filters.level=l">{{ l === 'ALL' ? '전체' : l === 'NORMAL' ? '정상' : l === 'CAUTION' ? '주의' : '위험' }}</button>
           </div>
         </div>
       </div>
@@ -203,19 +203,19 @@ function restTypeBadge(t) {
         <div class="card detail-card" v-if="selected">
           <div class="detail-header">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-              <span class="mono" style="font-size:11px;color:var(--text-4)">#{{ selected.id }}</span>
+              <span class="mono" style="font-size: 14px;color: var(--text-3)">#{{ selected.id }}</span>
               <span class="st-badge mono" :style="{ borderColor: statusBadge(selected.status).color, color: statusBadge(selected.status).color }">
                 {{ statusBadge(selected.status).label }}
               </span>
             </div>
             <div style="display:flex;align-items:flex-end;gap:14px;">
               <div>
-                <div style="font-size:18px;font-weight:700;color:var(--text-1)">{{ selected.plate }}</div>
+                <div style="font-size:18px;font-weight:700;color: var(--text-1)">{{ selected.plate }}</div>
                 <div class="sub-txt">{{ selected.driver }} · 시작 {{ fmtDate(selected.startedAt) }}</div>
               </div>
               <div style="margin-left:auto;text-align:right;">
                 <div class="mono" style="font-size:30px;font-weight:800;line-height:1" :style="{ color: scoreColor(selected.peak) }">{{ selected.peak }}</div>
-                <div class="mono" style="font-size:10.5px;margin-top:2px" :style="{ color: scoreColor(selected.peak) }">PEAK · {{ selected.level }}</div>
+                <div class="mono" style="font-size: 14px;margin-top:2px" :style="{ color: scoreColor(selected.peak) }">최고 · {{ selected.level === 'DANGER' ? '위험' : selected.level === 'CAUTION' ? '주의' : '정상' }}</div>
               </div>
             </div>
           </div>
@@ -223,44 +223,44 @@ function restTypeBadge(t) {
           <!-- 메타 -->
           <div class="detail-meta">
             <div>
-              <div class="meta-lbl">SCENARIO</div>
-              <div class="mono" style="font-size:12px;font-weight:700;margin-top:4px" :style="{ color: scenarioBadge(selected.scenario).color }">
+              <div class="meta-lbl">시나리오</div>
+              <div class="mono" style="font-size: 14px;font-weight:700;margin-top:4px" :style="{ color: scenarioBadge(selected.scenario).color }">
                 {{ scenarioBadge(selected.scenario).label }}
               </div>
             </div>
             <div>
-              <div class="meta-lbl">TOTAL</div>
-              <div class="mono" style="font-size:12px;font-weight:700;color:var(--text-1);margin-top:4px">{{ fmtMin(selected.totalMin) }}</div>
+              <div class="meta-lbl">총 운행</div>
+              <div class="mono" style="font-size: 14px;font-weight:700;color: var(--text-1);margin-top:4px">{{ fmtMin(selected.totalMin) }}</div>
             </div>
             <div>
-              <div class="meta-lbl">ENDED</div>
-              <div class="mono" style="font-size:11px;font-weight:600;color:var(--text-2);margin-top:4px">{{ fmtDate(selected.endedAt) || '운행중' }}</div>
+              <div class="meta-lbl">종료 시각</div>
+              <div class="mono" style="font-size: 14px;font-weight:600;color: var(--text-2);margin-top:4px">{{ fmtDate(selected.endedAt) || '운행중' }}</div>
             </div>
           </div>
 
           <!-- 로딩 -->
-          <div v-if="detailLoading" class="detail-section mono" style="font-size:11.5px;color:var(--text-4)">상세 정보 로드 중...</div>
+          <div v-if="detailLoading" class="detail-section mono" style="font-size: 14px;color: var(--text-3)">상세 정보 로드 중...</div>
 
           <!-- 휴식 이벤트 -->
           <div v-else-if="detail" class="detail-section">
             <div class="section-title">
               휴식 이벤트
-              <span class="mono" style="font-size:10px;color:var(--text-4);margin-left:6px">
+              <span class="mono" style="font-size: 14px;color: var(--text-3);margin-left:6px">
                 {{ detail.restEvents?.length ?? 0 }}건
               </span>
             </div>
             <template v-if="detail.restEvents?.length">
               <div v-for="r in detail.restEvents" :key="r.id" class="rest-row">
-                <span class="mono" style="color:var(--text-2);flex:1;font-size:11px">
+                <span class="mono" style="color: var(--text-2);flex:1;font-size: 14px">
                   {{ fmtDate(r.restStartedAt) }} → {{ fmtDate(r.restEndedAt) }}
                 </span>
-                <span class="mono" style="font-weight:700;color:var(--text-1)">{{ r.restMinutes }}m</span>
+                <span class="mono" style="font-weight:700;color: var(--text-1)">{{ r.restMinutes }}m</span>
                 <span class="rest-badge mono" :style="{ color: restTypeBadge(r.restType).color, background: restTypeBadge(r.restType).bg }">
                   {{ restTypeBadge(r.restType).label }}
                 </span>
               </div>
             </template>
-            <div v-else class="mono" style="font-size:11px;color:var(--text-4);padding:10px 0">
+            <div v-else class="mono" style="font-size: 14px;color: var(--text-3);padding:10px 0">
               기록된 휴식 이벤트가 없습니다.
             </div>
           </div>
@@ -280,60 +280,60 @@ function restTypeBadge(t) {
 
 <style scoped>
 .view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
-.breadcrumb { font-size:11px; color:var(--text-4); letter-spacing:0.04em; }
+.breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-.page-title  { font-size:24px; font-weight:700; color:var(--text-1); margin:0 0 4px; letter-spacing:-0.01em; }
-.page-sub    { font-size:12.5px; color:var(--text-3); margin:0; }
-.small-btn   { font-size:12.5px; padding:7px 12px; display:flex; align-items:center; gap:5px; }
+.page-title  { font-size:24px; font-weight:700; color: var(--text-1); margin:0 0 4px; letter-spacing: 0; }
+.page-sub    { font-size: 14px; color: var(--text-3); margin:0; }
+.small-btn   { font-size: 14px; padding:7px 12px; display:flex; align-items:center; gap:5px; }
 
-.state-row { padding:40px; text-align:center; font-size:13px; color:var(--text-4); }
+.state-row { padding:40px; text-align:center; font-size: 14px; color: var(--text-3); }
 
 .filter-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .search-inp {
   flex:1; min-width:220px; padding:8px 12px;
   border:1px solid var(--line-2); border-radius:var(--r-md);
-  background:var(--bg-1); color:var(--text-1); font-size:13px; outline:none;
+  background:var(--bg-1); color: var(--text-1); font-size: 14px; outline:none;
 }
-.search-inp:focus { border-color:var(--accent-line); }
+.search-inp:focus { border-color: var(--accent-line); }
 .filter-group { display:flex; align-items:center; gap:6px; }
-.filter-lbl   { font-size:10px; color:var(--text-4); letter-spacing:0.06em; white-space:nowrap; }
+.filter-lbl   { font-size: 14px; color: var(--text-3); letter-spacing:0.06em; white-space:nowrap; }
 .filter-btns  { display:flex; gap:3px; }
 .filter-btn {
-  padding:4px 9px; border-radius:var(--r-sm); font-size:10.5px;
-  background:none; border:1px solid var(--line-2); color:var(--text-3); cursor:pointer; transition:all .12s;
+  padding:4px 9px; border-radius:var(--r-sm); font-size: 14px;
+  background:none; border:1px solid var(--line-2); color: var(--text-3); cursor:pointer; transition:all .12s;
 }
-.filter-btn.active { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:600; }
+.filter-btn.active { background:var(--accent-soft); border-color: var(--accent-line); color: var(--accent); font-weight:600; }
 
 .content-grid { display:grid; grid-template-columns:1.35fr 1fr; gap:20px; align-items:start; }
 
 .table-card { padding:0; overflow:hidden; }
 .table-wrap { overflow-x:auto; }
-.tbl { width:100%; border-collapse:collapse; font-size:12.5px; }
+.tbl { width:100%; border-collapse:collapse; font-size: 14px; }
 .tbl th {
   padding:10px 14px; text-align:left;
-  font-size:10px; font-weight:500; letter-spacing:0.04em;
-  font-family:var(--font-mono); color:var(--text-4); background:var(--bg-2); border-bottom:1px solid var(--line-1);
+  font-size: 16px; font-weight: 700; letter-spacing:0.04em;
+  font-family:var(--font-mono); color: var(--text-3); background:var(--bg-2); border-bottom:1px solid var(--line-1);
 }
-.tbl td { padding:12px 14px; color:var(--text-2); border-bottom:1px solid var(--line-1); vertical-align:middle; }
+.tbl td { padding:12px 14px; color: var(--text-2); border-bottom:1px solid var(--line-1); vertical-align:middle; }
 .tbl tbody tr:last-child td { border-bottom:none; }
 .log-row { cursor:pointer; transition:background .1s; }
 .log-row:hover td  { background:var(--bg-3); }
 .log-row.active td { background:var(--bg-2); }
 
-.id-txt    { font-size:11.5px; font-weight:600; color:var(--text-1); }
-.cell-name { font-size:13px; font-weight:600; color:var(--text-1); }
-.sub-txt   { font-size:10.5px; color:var(--text-4); margin-top:2px; }
-.cell-sm   { font-size:11.5px; color:var(--text-2); }
+.id-txt    { font-size: 14px; font-weight:600; color: var(--text-1); }
+.cell-name { font-size: 16px; font-weight:600; color: var(--text-1); }
+.sub-txt   { font-size: 14px; color: var(--text-3); margin-top:2px; }
+.cell-sm   { font-size: 14px; color: var(--text-2); }
 
-.sc-badge { font-size:10.5px; font-weight:700; }
+.sc-badge { font-size: 14px; font-weight:700; }
 .st-badge {
-  display:inline-block; font-size:10px; padding:2px 7px;
+  display:inline-block; font-size: 14px; padding:2px 7px;
   border-radius:2px; border:1px solid; letter-spacing:0.04em;
 }
 .peak-score { font-size:15px; font-weight:800; }
-.peak-label { font-size:9.5px; margin-top:1px; }
-.empty-row  { padding:40px; text-align:center; color:var(--text-4); font-size:13px; }
+.peak-label { font-size: 14px; margin-top:1px; }
+.empty-row  { padding:40px; text-align:center; color: var(--text-3); font-size: 14px; }
 
 .detail-card { padding:0; overflow:hidden; position:sticky; top:24px; }
 .detail-header { padding:18px 20px; background:var(--bg-2); border-bottom:1px solid var(--line-1); }
@@ -343,18 +343,18 @@ function restTypeBadge(t) {
   padding:14px 20px; border-bottom:1px solid var(--line-1);
   font-family:var(--font-mono);
 }
-.meta-lbl { font-size:10px; color:var(--text-4); letter-spacing:0.04em; }
+.meta-lbl { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .detail-section { padding:16px 20px; border-bottom:1px solid var(--line-1); }
-.section-title  { font-size:12px; font-weight:700; color:var(--text-2); margin-bottom:10px; }
+.section-title  { font-size: 16px; font-weight:700; color: var(--text-2); margin-bottom:10px; }
 
 .rest-row {
   display:flex; align-items:center; gap:10px;
   padding:6px 0; border-top:1px dashed var(--line-1);
-  font-family:var(--font-mono); font-size:11px;
+  font-family:var(--font-mono); font-size: 14px;
 }
 .rest-badge {
-  padding:2px 8px; border-radius:2px; font-size:9.5px; font-weight:700;
+  padding:2px 8px; border-radius:2px; font-size: 14px; font-weight:700;
   letter-spacing:0.04em; text-align:center;
 }
 .detail-footer { padding:14px 20px; background:var(--bg-2); border-top:1px solid var(--line-1); }

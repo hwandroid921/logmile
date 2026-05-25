@@ -28,9 +28,9 @@ defineProps({
   user-select: none;
 }
 .logo-text {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 17px;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
   color: var(--text-1);
 }
 </style>

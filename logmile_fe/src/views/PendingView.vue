@@ -110,11 +110,11 @@ function goLogin() {
   font-weight: 700;
   color: var(--text-1);
   margin: 0 0 10px;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .pending-desc {
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--text-3);
   line-height: 1.7;
   margin: 0 0 24px;
@@ -139,20 +139,20 @@ function goLogin() {
 }
 
 .info-key {
-  font-size: 10.5px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   min-width: 36px;
   letter-spacing: 0.04em;
 }
 
 .info-val {
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--text-2);
 }
 
 .pending-btn {
   width: 100%;
   padding: 10px;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 </style>

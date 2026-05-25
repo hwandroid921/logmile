@@ -89,9 +89,9 @@ function fmtDate(dt) {
   return String(dt).slice(0, 16).replace('T', ' ')
 }
 function levelOf(l) {
-  if (l === 'DANGER')  return { label: 'DANGER',  color: 'var(--danger)', bg: 'var(--danger-soft)' }
-  if (l === 'CAUTION') return { label: 'CAUTION', color: 'var(--warn)',   bg: 'var(--warn-soft)' }
-  return                      { label: 'NORMAL',  color: 'var(--ok)',     bg: 'var(--ok-soft)' }
+  if (l === 'DANGER')  return { label: '위험', color: 'var(--danger)', bg: 'var(--danger-soft)' }
+  if (l === 'CAUTION') return { label: '주의', color: 'var(--warn)',   bg: 'var(--warn-soft)' }
+  return                      { label: '정상', color: 'var(--ok)',     bg: 'var(--ok-soft)' }
 }
 
 const level    = computed(() => levelOf(log.value?.maxFatigueLevel))
@@ -102,6 +102,18 @@ function restTypeStyle(t) {
   if (t === 'SUFFICIENT') return { color:'var(--ok)',     bg:'var(--ok-soft)',     border:'rgba(94,138,111,.3)' }
   if (t === 'VALID')      return { color:'#5B8FA8',       bg:'rgba(91,143,168,.12)', border:'rgba(91,143,168,.35)' }
   return                         { color:'var(--warn)',   bg:'var(--warn-soft)',   border:'rgba(197,138,58,.3)' }
+}
+function restTypeLabel(t) {
+  if (t === 'SUFFICIENT') return '충분 휴식'
+  if (t === 'VALID') return '유효 휴식'
+  if (t === 'INVALID') return '휴식 부족'
+  return t ?? '—'
+}
+function fatigueLevelLabel(l) {
+  if (l === 'DANGER') return '위험'
+  if (l === 'CAUTION') return '주의'
+  if (l === 'NORMAL') return '정상'
+  return l ?? '—'
 }
 function scenarioColor(s) {
   return s === 'C' ? 'var(--danger)' : s === 'B' ? 'var(--warn)' : 'var(--ok)'
@@ -123,12 +135,12 @@ function fatigueColor(score) {
 
     <!-- 로딩 / 에러 -->
     <div v-if="loading" class="state-row mono">운행 상세 정보 로드 중...</div>
-    <div v-else-if="error" class="state-row" style="color:var(--danger)">{{ error }}</div>
+    <div v-else-if="error" class="state-row" style="color: var(--danger)">{{ error }}</div>
 
     <template v-else-if="log">
       <!-- 헤더 -->
       <div class="breadcrumb mono">
-        ADMIN / DRIVE_HISTORY / #{{ log.driveLogId }} · {{ log.plateNo }} · {{ log.driverName }}
+        관리자 / 운행 상세 / #{{ log.driveLogId }} · {{ log.plateNo }} · {{ log.driverName }}
       </div>
 
       <div class="page-header">
@@ -147,7 +159,7 @@ function fatigueColor(score) {
             {{ statusStyle(log.status).label }}
           </span>
           <span v-if="log.scenarioType" class="scenario-chip mono" :style="{ color: scenarioColor(log.scenarioType) }">
-            SCENARIO {{ log.scenarioType }}
+            시나리오 {{ log.scenarioType }}
           </span>
         </div>
       </div>
@@ -156,40 +168,40 @@ function fatigueColor(score) {
       <div class="card meta-card">
         <div class="meta-grid">
           <div class="meta-item">
-            <div class="meta-lbl mono">STARTED_AT</div>
+            <div class="meta-lbl mono">시작 시각</div>
             <div class="meta-val">{{ fmtDate(log.startedAt) }}</div>
           </div>
           <div class="meta-item">
-            <div class="meta-lbl mono">ENDED_AT</div>
+            <div class="meta-lbl mono">종료 시각</div>
             <div class="meta-val">{{ fmtDate(log.endedAt) }}</div>
           </div>
           <div class="meta-item">
-            <div class="meta-lbl mono">TOTAL_DRIVE</div>
+            <div class="meta-lbl mono">총 운행</div>
             <div class="meta-val">{{ fmtMin(log.totalDrivingMinutes) }}</div>
           </div>
           <div class="meta-item">
-            <div class="meta-lbl mono">NIGHT_DRIVE</div>
+            <div class="meta-lbl mono">야간 운행</div>
             <div class="meta-val">{{ fmtMin(log.nightDrivingMinutes) }}</div>
           </div>
           <div class="meta-item">
-            <div class="meta-lbl mono">REST_COUNT</div>
+            <div class="meta-lbl mono">휴식 횟수</div>
             <div class="meta-val">{{ log.totalRestCount ?? 0 }}회</div>
           </div>
           <div class="meta-item">
-            <div class="meta-lbl mono">PEAK_SCORE</div>
+            <div class="meta-lbl mono">최고 점수</div>
             <div class="meta-val" :style="{ color: level.color }">{{ log.maxFatigueScore ?? 0 }}</div>
           </div>
           <div class="meta-item">
-            <div class="meta-lbl mono">LEVEL</div>
+            <div class="meta-lbl mono">피로도 등급</div>
             <div class="meta-val">
               <span class="level-chip mono" :style="{ color: level.color }">{{ level.label }}</span>
             </div>
           </div>
           <div class="meta-item">
-            <div class="meta-lbl mono">OCR_CONF</div>
+            <div class="meta-lbl mono">OCR 신뢰도</div>
             <div class="meta-val">{{ confPct }}%
-              <span v-if="log.manualInput" class="manual-badge mono">MANUAL</span>
-              <span v-else-if="confPct < 85" class="manual-badge mono" style="background:var(--warn-soft);color:var(--warn);border-color:rgba(197,138,58,.3)">low</span>
+              <span v-if="log.manualInput" class="manual-badge mono">수동 입력</span>
+              <span v-else-if="confPct < 85" class="manual-badge mono" style="background:var(--warn-soft);color: var(--warn);border-color:rgba(197,138,58,.3)">낮음</span>
             </div>
           </div>
         </div>
@@ -205,9 +217,9 @@ function fatigueColor(score) {
           <div class="score-band band-n" /><div class="score-band band-c" /><div class="score-band band-d" />
           <div class="score-needle" :style="{ left: scorePct + '%' }" />
           <div class="score-tick" style="left:40%" /><div class="score-tick" style="left:70%" />
-          <span class="band-lbl" style="left:5%;color:var(--ok)">NORMAL</span>
-          <span class="band-lbl" style="left:42%;color:var(--warn)">CAUTION</span>
-          <span class="band-lbl" style="left:72%;color:var(--danger)">DANGER</span>
+          <span class="band-lbl" style="left:5%;color: var(--ok)">정상</span>
+          <span class="band-lbl" style="left:42%;color: var(--warn)">주의</span>
+          <span class="band-lbl" style="left:72%;color: var(--danger)">위험</span>
         </div>
         <div class="band-nums mono">
           <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
@@ -231,7 +243,7 @@ function fatigueColor(score) {
         <div class="card timeline-card">
           <div class="card-hdr">
             <div class="card-title">피로도 이벤트</div>
-            <span class="mono" style="font-size:11px;color:var(--text-4)">{{ log.fatigueEvents?.length ?? 0 }}건</span>
+            <span class="mono" style="font-size: 14px;color: var(--text-3)">{{ log.fatigueEvents?.length ?? 0 }}건</span>
           </div>
           <div v-if="!log.fatigueEvents?.length" class="empty-txt">피로도 이벤트가 없습니다.</div>
           <div v-else class="timeline-list">
@@ -243,9 +255,9 @@ function fatigueColor(score) {
               <div class="tl-body">
                 <div class="tl-top">
                   <span class="mono tl-time">{{ fmtDate(ev.occurredAt).slice(11) }}</span>
-                  <span class="mono" style="font-size:12px;font-weight:700"
+                  <span class="mono" style="font-size: 14px;font-weight:700"
                     :style="{ color: fatigueColor(ev.fatigueScore) }">{{ ev.fatigueScore }}점</span>
-                  <span class="mono" style="font-size:10px;color:var(--text-4)">{{ ev.fatigueLevel }}</span>
+                  <span class="mono" style="font-size: 14px;color: var(--text-3)">{{ fatigueLevelLabel(ev.fatigueLevel) }}</span>
                 </div>
                 <div v-if="ev.reason" class="tl-loc">{{ ev.reason }}</div>
               </div>
@@ -257,7 +269,7 @@ function fatigueColor(score) {
         <div class="card rest-card">
           <div class="card-hdr">
             <div class="card-title">휴식 이벤트</div>
-            <span class="mono" style="font-size:11px;color:var(--text-4)">{{ log.restEvents?.length ?? 0 }}건</span>
+            <span class="mono" style="font-size: 14px;color: var(--text-3)">{{ log.restEvents?.length ?? 0 }}건</span>
           </div>
           <div v-if="!log.restEvents?.length" class="empty-txt">해당 운행의 휴식 이벤트가 없습니다.</div>
           <div v-else class="rest-list">
@@ -265,7 +277,7 @@ function fatigueColor(score) {
               <div class="rest-top">
                 <span class="rest-type-chip mono"
                   :style="{ color: restTypeStyle(r.restType).color, background: restTypeStyle(r.restType).bg, borderColor: restTypeStyle(r.restType).border }">
-                  {{ r.restType }}
+                  {{ restTypeLabel(r.restType) }}
                 </span>
                 <span class="mono rest-dur">{{ r.restMinutes }}분</span>
               </div>
@@ -280,36 +292,36 @@ function fatigueColor(score) {
 
 <style scoped>
 .view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
-.breadcrumb { font-size:11px; color:var(--text-4); letter-spacing:0.04em; }
-.state-row  { padding:40px; text-align:center; font-size:13px; color:var(--text-4); }
+.breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
+.state-row  { padding:40px; text-align:center; font-size: 14px; color: var(--text-3); }
 
 .page-header { display:flex; align-items:center; justify-content:space-between; }
-.page-title  { font-size:22px; font-weight:700; color:var(--text-1); margin:0 0 2px; letter-spacing:-0.01em; }
-.plate-sub   { font-size:12px; color:var(--text-3); }
-.back-btn    { display:flex; align-items:center; gap:5px; font-size:12.5px; padding:7px 13px; }
+.page-title  { font-size:22px; font-weight:700; color: var(--text-1); margin:0 0 2px; letter-spacing: 0; }
+.plate-sub   { font-size: 14px; color: var(--text-3); }
+.back-btn    { display:flex; align-items:center; gap:5px; font-size: 14px; padding:7px 13px; }
 
 .status-chip {
   display:inline-block; padding:3px 10px; border-radius:var(--r-sm);
-  font-size:10.5px; font-weight:700; letter-spacing:0.06em;
+  font-size: 14px; font-weight:700; letter-spacing:0.06em;
 }
-.scenario-chip { font-size:12px; font-weight:800; }
-.level-chip { font-size:12px; font-weight:700; }
+.scenario-chip { font-size: 14px; font-weight:800; }
+.level-chip { font-size: 14px; font-weight:700; }
 .manual-badge {
-  display:inline-block; font-size:9px; padding:1px 6px;
-  background:var(--warn-soft); color:var(--warn); border:1px solid rgba(197,138,58,.3);
+  display:inline-block; font-size: 14px; padding:1px 6px;
+  background:var(--warn-soft); color: var(--warn); border:1px solid rgba(197,138,58,.3);
   border-radius:var(--r-sm); margin-left:6px; vertical-align:middle;
 }
 
 .meta-card  { padding:20px; }
 .meta-grid  { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
 .meta-item  { display:flex; flex-direction:column; gap:4px; }
-.meta-lbl   { font-size:9.5px; letter-spacing:0.07em; color:var(--text-4); }
-.meta-val   { font-size:14px; font-weight:600; color:var(--text-1); }
+.meta-lbl   { font-size: 14px; letter-spacing:0.07em; color: var(--text-3); }
+.meta-val   { font-size: 14px; font-weight:600; color: var(--text-1); }
 
 .score-card { padding:20px; }
 .score-hdr  { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.card-title { font-size:14px; font-weight:700; color:var(--text-1); }
-.score-num  { font-size:28px; font-weight:800; letter-spacing:-0.02em; }
+.card-title { font-size: 16px; font-weight:700; color: var(--text-1); }
+.score-num  { font-size:28px; font-weight:800; letter-spacing: 0; }
 .score-bar-bg {
   position:relative; height:28px; border-radius:3px; overflow:visible; display:flex;
 }
@@ -326,11 +338,11 @@ function fatigueColor(score) {
 }
 .band-lbl {
   position:absolute; top:50%; transform:translateY(-50%);
-  font-family:var(--font-mono); font-size:10.5px; font-weight:700;
+  font-family:var(--font-mono); font-size: 14px; font-weight:700;
 }
 .band-nums {
   display:flex; justify-content:space-between;
-  margin-top:6px; font-size:10px; color:var(--text-4);
+  margin-top:6px; font-size: 14px; color: var(--text-3);
 }
 
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -344,12 +356,12 @@ function fatigueColor(score) {
   width:10px; height:10px; border-radius:50%; flex-shrink:0;
   background:var(--bg-3); border:2px solid var(--line-2);
 }
-.tl-dot.matched { background:var(--warn); border-color:var(--warn); }
+.tl-dot.matched { background:var(--warn); border-color: var(--warn); }
 .tl-line { flex:1; width:1px; background:var(--line-2); min-height:12px; }
 .tl-body { padding-bottom:16px; flex:1; }
 .tl-top  { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.tl-time { font-size:12px; font-weight:700; color:var(--text-1); }
-.tl-loc  { font-size:12px; color:var(--text-3); margin-top:3px; }
+.tl-time { font-size: 14px; font-weight:700; color: var(--text-1); }
+.tl-loc  { font-size: 14px; color: var(--text-3); margin-top:3px; }
 
 .rest-card { padding:20px; }
 .rest-list { display:flex; flex-direction:column; gap:10px; }
@@ -357,9 +369,9 @@ function fatigueColor(score) {
 .rest-top  { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
 .rest-type-chip {
   display:inline-block; padding:2px 8px; border-radius:var(--r-sm);
-  font-size:10px; font-weight:700; letter-spacing:0.05em; border:1px solid;
+  font-size: 14px; font-weight:700; letter-spacing:0.05em; border:1px solid;
 }
-.rest-dur  { font-size:13px; font-weight:700; color:var(--text-1); }
-.rest-time { font-size:11.5px; color:var(--text-3); }
-.empty-txt { font-size:12.5px; color:var(--text-4); padding:20px 0; text-align:center; }
+.rest-dur  { font-size: 14px; font-weight:700; color: var(--text-1); }
+.rest-time { font-size: 14px; color: var(--text-3); }
+.empty-txt { font-size: 14px; color: var(--text-3); padding:20px 0; text-align:center; }
 </style>

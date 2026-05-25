@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Logmile — Design Tokens</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/index.css');
+
 :root {
   --slate-900: #515F7A; --slate-700: #747F95; --slate-500: #979EAE;
   --slate-300: #B8BFC9; --slate-100: #DCDFE4; --slate-50: #E6E9EE;
@@ -18,8 +21,9 @@
   --warn: #C58A3A; --warn-soft: rgba(197,138,58,0.12);
   --danger: #B5544A; --danger-soft: rgba(181,84,74,0.12);
   --info: #747F95; --info-soft: rgba(116,127,149,0.14);
-  --font-sans: "Pretendard Variable","Pretendard","Noto Sans KR",-apple-system,sans-serif;
-  --font-mono: "JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
+  --font-sans: "LINE Seed Sans KR",sans-serif;
+  --font-point: var(--font-sans);
+  --font-mono: "IBM Plex Mono",monospace;
   --r-sm: 4px; --r-md: 8px; --r-lg: 14px; --r-xl: 20px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -150,7 +154,7 @@ body {
   <div class="doc-header-inner">
     <div class="doc-badge">DESIGN TOKENS REFERENCE</div>
     <div class="doc-title">Logmile Design Tokens</div>
-    <div class="doc-sub">tokens.css · main.css · 변수명 · 값 · 용도 전체 정리 · v1.1.3</div>
+    <div class="doc-sub">tokens.css · main.css · 변수명 · 값 · 용도 전체 정리 · v1.1.7</div>
   </div>
 </div>
 
@@ -311,10 +315,11 @@ body {
     <table class="tok-table">
       <thead><tr><th>Token / Role</th><th>Value</th><th>Category</th><th>용도</th></tr></thead>
       <tbody>
-        <tr><td><span class="tok-name">--font-sans</span></td><td><span class="tok-value" style="white-space:normal;">"Pretendard Variable", "Pretendard", "Noto Sans KR", -apple-system, …</span></td><td><span class="tok-category">Font</span></td><td class="tok-usage">기본 폰트 · UI 전체 (body, button, nav)</td></tr>
-        <tr><td><span class="tok-name">--font-mono</span></td><td><span class="tok-value">"JetBrains Mono", "SF Mono", ui-monospace, …</span></td><td><span class="tok-category">Font</span></td><td class="tok-usage">숫자/코드/라벨 · KPI값, chip, label-sm, 인풋, nav-section</td></tr>
-        <tr><td><span class="tok-name">brand-title</span></td><td><span class="tok-value">32px · weight 800 · ls -0.02em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">로그인 브랜드 패널 제목</td></tr>
-        <tr><td><span class="tok-name">section-title</span></td><td><span class="tok-value">22px · weight 800 · ls -0.02em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">페이지 섹션 제목</td></tr>
+        <tr><td><span class="tok-name">--font-sans</span></td><td><span class="tok-value" style="white-space:normal;">"LINE Seed Sans KR", sans-serif</span></td><td><span class="tok-category">Font</span></td><td class="tok-usage">기본 폰트 · UI 전체 (body, button, nav)</td></tr>
+        <tr><td><span class="tok-name">--font-point</span></td><td><span class="tok-value">var(--font-sans)</span></td><td><span class="tok-category">Font</span></td><td class="tok-usage">한글 UI/타이틀 · 브랜드/페이지/섹션/카드 제목</td></tr>
+        <tr><td><span class="tok-name">--font-mono</span></td><td><span class="tok-value">"IBM Plex Mono", monospace</span></td><td><span class="tok-category">Font</span></td><td class="tok-usage">숫자/코드/라벨 · KPI값, chip, label-sm, 인풋, nav-section</td></tr>
+        <tr><td><span class="tok-name">brand-title</span></td><td><span class="tok-value">32px · weight 700 · ls 0</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">로그인 브랜드 패널 제목</td></tr>
+        <tr><td><span class="tok-name">section-title</span></td><td><span class="tok-value">22px · weight 700 · ls 0</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">페이지 섹션 제목</td></tr>
         <tr><td><span class="tok-name">form-title</span></td><td><span class="tok-value">22px · weight 700 · ls -0.01em</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">폼 제목 (로그인)</td></tr>
         <tr><td><span class="tok-name">body-default</span></td><td><span class="tok-value">14px · weight 400 · lh 1.55</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">html, body 기본 텍스트</td></tr>
         <tr><td><span class="tok-name">nav-item</span></td><td><span class="tok-value">14px · weight 600</span></td><td><span class="tok-category">Scale</span></td><td class="tok-usage">사이드바 메뉴, 탑바 nav</td></tr>

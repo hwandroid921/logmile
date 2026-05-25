@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Logmile Dashboard Style Guide Example</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/index.css');
+
 :root {
   --slate-900: #515F7A;
   --slate-700: #747F95;
@@ -40,8 +43,9 @@
   --danger-soft: rgba(181,84,74,0.12);
   --info: var(--slate-700);
   --info-soft: rgba(116,127,149,0.14);
-  --font-sans: "Pretendard Variable", "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --font-sans: "LINE Seed Sans KR", sans-serif;
+  --font-point: var(--font-sans);
+  --font-mono: "IBM Plex Mono", monospace;
   --r-sm: 4px;
   --r-md: 8px;
   --r-lg: 14px;
@@ -81,7 +85,7 @@ button { font-family: inherit; border: none; background: none; color: inherit; c
   margin-bottom: 6px;
 }
 h1 {
-  font: 800 24px/1.25 var(--font-sans);
+  font: 700 24px/1.25 var(--font-point);
   letter-spacing: -0.02em;
   color: var(--text-1);
 }
