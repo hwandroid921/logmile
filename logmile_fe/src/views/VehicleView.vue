@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { vehicleApi } from '@/api/vehicleApi'
 import { driverApi } from '@/api/driverApi'
@@ -10,6 +10,10 @@ const loading     = ref(true)
 const error       = ref(null)
 const search      = ref('')
 const statusFilter = ref('ALL')
+
+const pageSize    = ref(10)
+const currentPage = ref(1)
+watch([search, statusFilter, pageSize], () => { currentPage.value = 1 })
 
 async function fetchData() {
   loading.value = true
@@ -37,12 +41,28 @@ async function fetchData() {
 
 onMounted(fetchData)
 
-const filtered = computed(() => list.value.filter(v => {
+const filteredAll = computed(() => list.value.filter(v => {
   if (statusFilter.value === 'ACTIVE'   && !v.active)  return false
   if (statusFilter.value === 'INACTIVE' &&  v.active)  return false
   if (search.value && !(v.plate.includes(search.value) || v.driverName.includes(search.value))) return false
   return true
 }))
+
+const totalPages    = computed(() => Math.max(1, Math.ceil(filteredAll.value.length / pageSize.value)))
+const paginated     = computed(() => {
+  const s = (currentPage.value - 1) * pageSize.value
+  return filteredAll.value.slice(s, s + pageSize.value)
+})
+const visiblePages  = computed(() => {
+  const total = totalPages.value
+  const cur   = currentPage.value
+  let start = Math.max(1, cur - 2)
+  let end   = Math.min(total, start + 4)
+  if (end - start < 4) start = Math.max(1, end - 4)
+  const pages = []
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
+})
 
 const activeCount   = computed(() => list.value.filter(v =>  v.active).length)
 const inactiveCount = computed(() => list.value.filter(v => !v.active).length)
@@ -170,6 +190,11 @@ async function removeItem(v) {
             @click="statusFilter=s">{{ s === 'ALL' ? '전체' : s === 'ACTIVE' ? '운행 가능' : '비활성' }}</button>
         </div>
       </div>
+      <select v-model.number="pageSize" class="pg-sel mono">
+        <option :value="10">10개</option>
+        <option :value="20">20개</option>
+        <option :value="50">50개</option>
+      </select>
     </div>
 
     <!-- 로딩 / 에러 -->
@@ -192,7 +217,7 @@ async function removeItem(v) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="v in filtered" :key="v.id">
+            <tr v-for="v in paginated" :key="v.id">
               <td>
                 <div class="mono plate">{{ v.plate }}</div>
                 <div class="sub-txt">ID {{ v.id }}</div>
@@ -216,7 +241,21 @@ async function removeItem(v) {
             </tr>
           </tbody>
         </table>
-        <div v-if="filtered.length===0" class="empty-row">조건에 맞는 차량이 없습니다.</div>
+        <div v-if="filteredAll.length===0" class="empty-row">조건에 맞는 차량이 없습니다.</div>
+      </div>
+      <!-- 페이지네이션 -->
+      <div v-if="filteredAll.length > 0" class="pg-footer">
+        <span class="pg-info mono">총 {{ filteredAll.length }}건</span>
+        <div class="pg-nav">
+          <button class="pg-btn mono" :disabled="currentPage===1" @click="currentPage=1">«</button>
+          <button class="pg-btn mono" :disabled="currentPage===1" @click="currentPage--">‹</button>
+          <button v-for="p in visiblePages" :key="p"
+            class="pg-btn mono" :class="{ active: p===currentPage }"
+            @click="currentPage=p">{{ p }}</button>
+          <button class="pg-btn mono" :disabled="currentPage===totalPages" @click="currentPage++">›</button>
+          <button class="pg-btn mono" :disabled="currentPage===totalPages" @click="currentPage=totalPages">»</button>
+        </div>
+        <span class="pg-info mono">{{ (currentPage-1)*pageSize+1 }}–{{ Math.min(currentPage*pageSize, filteredAll.length) }}</span>
       </div>
     </div>
 
@@ -336,6 +375,28 @@ async function removeItem(v) {
 .act-del:hover     { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color: var(--danger); }
 
 .empty-row { padding:40px; text-align:center; color: var(--text-3); font-size: 14px; }
+
+/* 페이지네이션 */
+.pg-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; border-top:1px solid var(--line-1); background:var(--bg-2);
+}
+.pg-info { font-size:11px; color:var(--text-4); }
+.pg-nav  { display:flex; align-items:center; gap:4px; }
+.pg-btn  {
+  min-width:28px; height:26px; padding:0 6px;
+  border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--bg-1); color:var(--text-2); font-size:11px;
+  cursor:pointer; transition:all .12s; font-family:var(--font-mono);
+}
+.pg-btn:hover:not(:disabled) { border-color:var(--accent-line); color:var(--accent); background:var(--accent-soft); }
+.pg-btn:disabled { opacity:.35; cursor:default; }
+.pg-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+.pg-sel {
+  padding:3px 8px; border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--bg-1); color:var(--text-2); font-size:11px; cursor:pointer; outline:none;
+}
+.pg-sel:focus { border-color:var(--accent-line); }
 
 /* 모달 */
 .modal-backdrop {

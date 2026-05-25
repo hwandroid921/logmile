@@ -896,7 +896,7 @@ const rankingItems = computed(() =>
       <div class="left-col">
 
         <!-- 피로도 산출 요인 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
 
           <!-- 드릴다운 헤더 -->
           <div style="border-bottom:1px solid var(--line-1);display:flex;align-items:stretch;">
@@ -1017,7 +1017,7 @@ const rankingItems = computed(() =>
         </div>
 
         <!-- 운행 타임라인 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;">
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
           <div style="padding:14px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div class="label-sm">운행 타임라인</div>
@@ -1034,7 +1034,7 @@ const rankingItems = computed(() =>
               </div>
             </div>
           </div>
-          <div style="padding:12px 14px;">
+          <div style="padding:12px 14px;height:340px;display:flex;align-items:center;">
             <svg width="100%" height="160" viewBox="0 0 760 200" preserveAspectRatio="none">
               <rect x="30" y="10" width="720" height="66" fill="rgba(181,84,74,.07)"/>
               <rect x="30" y="76" width="720" height="54" fill="rgba(197,138,58,.07)"/>
@@ -1071,7 +1071,7 @@ const rankingItems = computed(() =>
       <div class="center-col">
 
         <!-- 차량 위치 지도 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
           <div style="padding:12px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
             <div>
               <div class="label-sm" style="display:flex;align-items:center;gap:6px;"><span class="dot dot-brand blink"/>차량 위치 지도 · 실시간</div>
@@ -1085,8 +1085,8 @@ const rankingItems = computed(() =>
           </div>
 
           <!-- Kakao Maps 컨테이너 -->
-          <div style="position:relative;flex:1;display:flex;flex-direction:column;min-height:300px;">
-            <div ref="mapContainer" style="width:100%;flex:1;min-height:320px;overflow:hidden;"></div>
+          <div style="position:relative;display:flex;flex-direction:column;">
+            <div ref="mapContainer" class="map-box"></div>
             <!-- 운행 현황 오버레이 -->
             <div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:10;pointer-events:none;">
               <span class="chip chip-info"><span class="dot dot-brand"/>{{ runningCount }}대 운행중</span>
@@ -1104,13 +1104,13 @@ const rankingItems = computed(() =>
         </div>
 
         <!-- Running Vehicles 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;">
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
           <div style="padding:10px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div class="label-sm">운행 중 차량 · {{ sortedFiltered.length }}대</div>
             <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">점수 높은 순</span>
           </div>
-          <div style="padding:10px;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;">
-            <div v-if="sortedFiltered.length===0" style="padding:20px;text-align:center;color: var(--text-3);font-size: 14px;">해당 등급의 차량이 없습니다</div>
+          <div class="vehicle-scroll">
+            <div v-if="sortedFiltered.length===0" style="padding:20px;text-align:center;color:var(--text-3);font-size:14px;">해당 등급의 차량이 없습니다</div>
             <div v-for="v in sortedFiltered" :key="v.id" class="vrow" :class="{selected: selectedId===v.id}" @click="selectedId=v.id">
               <!-- 번호판 -->
               <div class="vrow-plate">
@@ -1171,13 +1171,13 @@ const rankingItems = computed(() =>
       <div class="right-col">
 
         <!-- 활성 알림 -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
           <div style="padding:12px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-danger pulse-ring"/>활성 알림</div>
             <span class="chip chip-danger">{{ alertList.length }}건</span>
           </div>
-          <div style="padding:10px;display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;">
-            <div v-if="alertList.length===0" style="padding:20px;text-align:center;color: var(--text-3);font-size: 14px;">현재 활성 알림이 없습니다</div>
+          <div class="alert-scroll">
+            <div v-if="alertList.length===0" style="padding:20px;text-align:center;color:var(--text-3);font-size:14px;">현재 활성 알림이 없습니다</div>
             <div v-for="a in alertList" :key="a.id" @click="selectedId=a.id"
               :style="`padding:10px 12px;border-left:3px solid var(--${a.sev});background:var(--${a.sev}-soft);border-radius:0 4px 4px 0;cursor:pointer;`">
               <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1201,8 +1201,8 @@ const rankingItems = computed(() =>
             </div>
             <span class="chip chip-info">{{ allEvents.length }}건</span>
           </div>
-          <div style="flex:1;overflow-y:auto;">
-            <table style="width:100%;border-collapse:collapse;font-size: 14px;">
+          <div class="event-scroll">
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
               <tbody>
                 <tr v-for="(e,i) in allEvents" :key="i"
                   @click="()=>{ const id=eventVehicleId(e.plate); if(id) selectedId=id; }"
@@ -1364,7 +1364,7 @@ const rankingItems = computed(() =>
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
 /* 페이지 */
-.view { padding: 20px 8px 32px; max-width:100%; }
+.view { padding: 20px 20px 32px; max-width: 100%; }
 
 /* 페이지 헤더 */
 .page-hdr { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px; gap:16px; flex-wrap:wrap; }
@@ -1422,9 +1422,9 @@ const rankingItems = computed(() =>
   margin-bottom: 14px;
   align-items: stretch;
 }
-.left-col   { display:flex; flex-direction:column; gap:12px; height:100%; }
-.center-col { display:flex; flex-direction:column; gap:12px; height:100%; }
-.right-col  { display:flex; flex-direction:column; gap:12px; height:100%; }
+.left-col   { display:flex; flex-direction:column; gap:12px; }
+.center-col { display:flex; flex-direction:column; gap:12px; }
+.right-col  { display:flex; flex-direction:column; gap:12px; }
 
 /* 하단 그리드 */
 .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
@@ -1569,5 +1569,40 @@ const rankingItems = computed(() =>
 @keyframes sms-slide-in {
   from { opacity:0; transform:translateX(-50%) translateY(-16px); }
   to   { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+
+/* ─── 반응형 레이아웃 컴포넌트 ─── */
+.map-box      { width: 100%; height: 340px; overflow: hidden; }
+.alert-scroll { padding: 10px; display: flex; flex-direction: column; gap: 6px; max-height: 420px; overflow-y: auto; }
+
+/* event-scroll: 카드(flex:1)를 꽉 채워 여백 제거. 넘치면 스크롤 */
+.event-scroll { height: 340px; overflow-y: auto; }
+
+/* vehicle-scroll: 3건 고정 노출 (vrow≈71px × 3 + gap×2 + padding = 245px), 초과 시 스크롤 */
+.vehicle-scroll { padding: 10px; display: flex; flex-direction: column; gap: 6px; height: 340px; overflow-y: auto; }
+
+/* 1440px — Mac 풀스크린 */
+@media (min-width: 1360px) {
+  .view         { padding: 24px 32px 40px; }
+  .map-box      { height: 360px; }
+  .alert-scroll { max-height: 440px; }
+}
+
+/* 1720px — Windows 중간 ~ 1920px 풀스크린 */
+@media (min-width: 1720px) {
+  .view         { padding: 28px 56px 48px; }
+  .main-grid    { gap: 18px; }
+  .kpi-strip    { margin-bottom: 16px; }
+  .kpi-tile     { padding: 16px 20px; }
+  .map-box      { height: 440px; }
+  .alert-scroll { max-height: 520px; }
+}
+
+/* 1860px — 1920px 풀스크린 최적화 */
+@media (min-width: 1860px) {
+  .view         { padding: 32px 64px 56px; }
+  .main-grid    { gap: 20px; }
+  .map-box      { height: 480px; }
+  .alert-scroll { max-height: 560px; }
 }
 </style>

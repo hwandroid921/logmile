@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { driveHistoryApi } from '@/api/driveHistoryApi'
@@ -14,6 +14,10 @@ const detailLoading = ref(false)
 const error       = ref(null)
 
 const filters = ref({ q: '', status: 'ALL', level: 'ALL' })
+
+const pageSize    = ref(10)
+const currentPage = ref(1)
+watch([filters, pageSize], () => { currentPage.value = 1 }, { deep: true })
 
 function fmtMin(m) {
   if (!m && m !== 0) return '—'
@@ -72,12 +76,28 @@ async function selectLog(id) {
 
 onMounted(fetchList)
 
-const filtered = computed(() => logs.value.filter(l => {
+const filteredAll = computed(() => logs.value.filter(l => {
   if (filters.value.status !== 'ALL' && l.status !== filters.value.status) return false
   if (filters.value.level  !== 'ALL' && l.level  !== filters.value.level)  return false
   if (filters.value.q && !(l.plate.includes(filters.value.q) || l.driver.includes(filters.value.q) || String(l.id).includes(filters.value.q))) return false
   return true
 }))
+
+const totalPages    = computed(() => Math.max(1, Math.ceil(filteredAll.value.length / pageSize.value)))
+const paginated     = computed(() => {
+  const s = (currentPage.value - 1) * pageSize.value
+  return filteredAll.value.slice(s, s + pageSize.value)
+})
+const visiblePages  = computed(() => {
+  const total = totalPages.value
+  const cur   = currentPage.value
+  let start = Math.max(1, cur - 2)
+  let end   = Math.min(total, start + 4)
+  if (end - start < 4) start = Math.max(1, end - 4)
+  const pages = []
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
+})
 
 const selected = computed(() => logs.value.find(l => l.id === selectedId.value) || logs.value[0])
 
@@ -146,6 +166,11 @@ function restTypeBadge(t) {
               @click="filters.level=l">{{ l === 'ALL' ? '전체' : l === 'NORMAL' ? '정상' : l === 'CAUTION' ? '주의' : '위험' }}</button>
           </div>
         </div>
+        <select v-model.number="pageSize" class="pg-sel mono">
+          <option :value="10">10개</option>
+          <option :value="20">20개</option>
+          <option :value="50">50개</option>
+        </select>
       </div>
 
       <!-- 테이블 + 상세 -->
@@ -166,7 +191,7 @@ function restTypeBadge(t) {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="l in filtered" :key="l.id"
+                <tr v-for="l in paginated" :key="l.id"
                   class="log-row" :class="{ active: l.id === selectedId }"
                   @click="selectLog(l.id)">
                   <td>
@@ -195,7 +220,21 @@ function restTypeBadge(t) {
                 </tr>
               </tbody>
             </table>
-            <div v-if="filtered.length===0" class="empty-row">조건에 맞는 운행 기록이 없습니다.</div>
+            <div v-if="filteredAll.length===0" class="empty-row">조건에 맞는 운행 기록이 없습니다.</div>
+          </div>
+          <!-- 페이지네이션 -->
+          <div v-if="filteredAll.length > 0" class="pg-footer">
+            <span class="pg-info mono">총 {{ filteredAll.length }}건</span>
+            <div class="pg-nav">
+              <button class="pg-btn mono" :disabled="currentPage===1" @click="currentPage=1">«</button>
+              <button class="pg-btn mono" :disabled="currentPage===1" @click="currentPage--">‹</button>
+              <button v-for="p in visiblePages" :key="p"
+                class="pg-btn mono" :class="{ active: p===currentPage }"
+                @click="currentPage=p">{{ p }}</button>
+              <button class="pg-btn mono" :disabled="currentPage===totalPages" @click="currentPage++">›</button>
+              <button class="pg-btn mono" :disabled="currentPage===totalPages" @click="currentPage=totalPages">»</button>
+            </div>
+            <span class="pg-info mono">{{ (currentPage-1)*pageSize+1 }}–{{ Math.min(currentPage*pageSize, filteredAll.length) }}</span>
           </div>
         </div>
 
@@ -334,6 +373,28 @@ function restTypeBadge(t) {
 .peak-score { font-size:15px; font-weight:800; }
 .peak-label { font-size: 14px; margin-top:1px; }
 .empty-row  { padding:40px; text-align:center; color: var(--text-3); font-size: 14px; }
+
+/* 페이지네이션 */
+.pg-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; border-top:1px solid var(--line-1); background:var(--bg-2);
+}
+.pg-info { font-size:11px; color:var(--text-4); }
+.pg-nav  { display:flex; align-items:center; gap:4px; }
+.pg-btn  {
+  min-width:28px; height:26px; padding:0 6px;
+  border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--bg-1); color:var(--text-2); font-size:11px;
+  cursor:pointer; transition:all .12s; font-family:var(--font-mono);
+}
+.pg-btn:hover:not(:disabled) { border-color:var(--accent-line); color:var(--accent); background:var(--accent-soft); }
+.pg-btn:disabled { opacity:.35; cursor:default; }
+.pg-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+.pg-sel {
+  padding:3px 8px; border:1px solid var(--line-2); border-radius:var(--r-sm);
+  background:var(--bg-1); color:var(--text-2); font-size:11px; cursor:pointer; outline:none;
+}
+.pg-sel:focus { border-color:var(--accent-line); }
 
 .detail-card { padding:0; overflow:hidden; position:sticky; top:24px; }
 .detail-header { padding:18px 20px; background:var(--bg-2); border-bottom:1px solid var(--line-1); }
