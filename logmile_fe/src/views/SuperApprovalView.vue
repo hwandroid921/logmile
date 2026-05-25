@@ -103,6 +103,17 @@ function statusStyle(s) {
   if (s === 'SUSPENDED') return { color: 'var(--danger)',  bg: 'var(--danger-soft)',  border: 'rgba(181,84,74,.3)' }
   return                        { color: 'var(--text-3)',  bg: 'var(--bg-4)',         border: 'var(--line-2)' }
 }
+function roleLabel(r) {
+  if (r === 'SUPER_ADMIN') return '최상위 관리자'
+  if (r === 'ADMIN') return '업체 관리자'
+  return '전체'
+}
+function statusLabel(s) {
+  if (s === 'ACTIVE') return '활성'
+  if (s === 'INACTIVE') return '비활성'
+  if (s === 'SUSPENDED') return '정지'
+  return '전체'
+}
 
 onMounted(fetchList)
 </script>
@@ -111,10 +122,10 @@ onMounted(fetchList)
   <div class="view">
     <!-- 브레드크럼 -->
     <div class="breadcrumb mono">
-      <span>SUPER_ADMIN</span>
+      <span>최상위 관리자</span>
       <AppIcon name="chevronR" :size="11" class="bc-sep" />
-      <span>ADMIN_TABLE</span>
-      <span class="bc-count">· {{ filtered.length }} record(s)</span>
+      <span>관리자 목록</span>
+      <span class="bc-count">· {{ filtered.length }}건</span>
     </div>
 
     <!-- 헤더 -->
@@ -139,17 +150,17 @@ onMounted(fetchList)
     <div class="summary-row">
       <div class="sum-card">
         <span class="sum-dot dot-ok" />
-        <span class="sum-label mono">ACTIVE</span>
+        <span class="sum-label mono">활성</span>
         <span class="sum-val mono ok-val">{{ activeCount }}</span>
       </div>
       <div class="sum-card">
         <span class="sum-dot dot-gray" />
-        <span class="sum-label mono">INACTIVE</span>
+        <span class="sum-label mono">비활성</span>
         <span class="sum-val mono">{{ inactiveCount }}</span>
       </div>
       <div class="sum-card">
         <span class="sum-dot dot-danger" />
-        <span class="sum-label mono">SUSPENDED</span>
+        <span class="sum-label mono">정지</span>
         <span class="sum-val mono danger-val">{{ suspendedCount }}</span>
       </div>
     </div>
@@ -158,7 +169,7 @@ onMounted(fetchList)
     <div class="filter-row">
       <!-- ROLE 필터 -->
       <div class="filter-group">
-        <span class="filter-label mono">ROLE</span>
+        <span class="filter-label mono">역할</span>
         <div class="filter-btns">
           <button
             v-for="r in ['ALL', 'ADMIN', 'SUPER_ADMIN']"
@@ -166,13 +177,13 @@ onMounted(fetchList)
             class="filter-btn mono"
             :class="{ active: roleFilter === r }"
             @click="roleFilter = r"
-          >{{ r }}</button>
+          >{{ roleLabel(r) }}</button>
         </div>
       </div>
 
       <!-- STATUS 필터 -->
       <div class="filter-group">
-        <span class="filter-label mono">STATUS</span>
+        <span class="filter-label mono">상태</span>
         <div class="filter-btns">
           <button
             v-for="s in ['ALL', 'ACTIVE', 'INACTIVE', 'SUSPENDED']"
@@ -180,7 +191,7 @@ onMounted(fetchList)
             class="filter-btn mono"
             :class="{ active: statusFilter === s }"
             @click="statusFilter = s"
-          >{{ s }}</button>
+          >{{ statusLabel(s) }}</button>
         </div>
       </div>
     </div>
@@ -206,9 +217,9 @@ onMounted(fetchList)
               <th>ID</th>
               <th>이름 / 이메일</th>
               <th>전화</th>
-              <th>ROLE</th>
-              <th>COMPANY</th>
-              <th>STATUS</th>
+              <th>역할</th>
+              <th>업체</th>
+              <th>상태</th>
               <th>등록일</th>
             </tr>
           </thead>
@@ -226,7 +237,7 @@ onMounted(fetchList)
                 <span
                   class="role-badge mono"
                   :class="admin.role === 'SUPER_ADMIN' ? 'role-super' : 'role-admin'"
-                >{{ admin.role === 'SUPER_ADMIN' ? 'SUPER' : 'ADMIN' }}</span>
+                >{{ admin.role === 'SUPER_ADMIN' ? '최상위' : '업체' }}</span>
               </td>
               <td class="cell-company">{{ admin.companyName ?? '-' }}</td>
               <td>
@@ -240,7 +251,7 @@ onMounted(fetchList)
                   }"
                   :disabled="admin.role === 'SUPER_ADMIN'"
                   @click="toggleStatus(admin)"
-                >{{ admin.status }}</button>
+                >{{ statusLabel(admin.status) }}</button>
               </td>
               <td class="cell-mono cell-date">{{ formatDate(admin.createdAt) }}</td>
             </tr>
@@ -317,12 +328,12 @@ onMounted(fetchList)
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   letter-spacing: 0.07em;
 }
 .bc-sep { opacity: .5; }
-.bc-count { color: var(--text-4); margin-left: 4px; }
+.bc-count { color: var(--text-3); margin-left: 4px; }
 
 /* 헤더 */
 .view-header {
@@ -336,14 +347,14 @@ onMounted(fetchList)
   font-weight: 700;
   color: var(--text-1);
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 .header-actions { display: flex; gap: 8px; }
 .hdr-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12.5px;
+  font-size: 14px;
   padding: 7px 13px;
 }
 
@@ -353,7 +364,7 @@ onMounted(fetchList)
   background: var(--danger-soft);
   border: 1px solid rgba(181,84,74,.25);
   border-radius: var(--r-md);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--danger);
 }
 
@@ -379,9 +390,9 @@ onMounted(fetchList)
   flex-shrink: 0;
 }
 .dot-ok      { background: var(--ok); }
-.dot-gray    { background: var(--text-4); }
+.dot-gray    { background: var(--text-3); }
 .dot-danger  { background: var(--danger); }
-.sum-label { font-size: 10px; letter-spacing: 0.08em; color: var(--text-4); flex: 1; }
+.sum-label { font-size: 14px; letter-spacing: 0.08em; color: var(--text-3); flex: 1; }
 .sum-val   { font-size: 20px; font-weight: 700; color: var(--text-2); }
 .ok-val     { color: var(--ok); }
 .danger-val { color: var(--danger); }
@@ -398,8 +409,8 @@ onMounted(fetchList)
   gap: 8px;
 }
 .filter-label {
-  font-size: 10px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
@@ -407,7 +418,7 @@ onMounted(fetchList)
 .filter-btn {
   padding: 4px 9px;
   border-radius: var(--r-sm);
-  font-size: 10.5px;
+  font-size: 14px;
   background: none;
   border: 1px solid var(--line-2);
   color: var(--text-3);
@@ -429,9 +440,9 @@ onMounted(fetchList)
   align-items: center;
   gap: 10px;
   padding: 56px 24px;
-  color: var(--text-4);
+  color: var(--text-3);
 }
-.empty-title { font-size: 13px; margin: 0; }
+.empty-title { font-size: 14px; margin: 0; }
 .spinner {
   width: 26px; height: 26px;
   border: 2px solid var(--line-2);
@@ -444,15 +455,15 @@ onMounted(fetchList)
 /* 테이블 */
 .table-card { padding: 0; overflow: hidden; }
 .table-wrap { overflow-x: auto; }
-.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th {
   padding: 10px 14px;
   text-align: left;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--text-4);
+  color: var(--text-3);
   background: var(--bg-3);
   border-bottom: 1px solid var(--line-1);
   white-space: nowrap;
@@ -466,24 +477,24 @@ onMounted(fetchList)
 .table tbody tr:last-child td { border-bottom: none; }
 .table tbody tr:hover td { background: var(--bg-3); }
 
-.cell-mono  { font-family: var(--font-mono); font-size: 11.5px; }
-.cell-id    { color: var(--text-4); }
-.cell-date  { color: var(--text-4); }
-.cell-company { color: var(--text-3); font-size: 12.5px; }
+.cell-mono  { font-family: var(--font-mono); font-size: 14px; }
+.cell-id    { color: var(--text-3); }
+.cell-date  { color: var(--text-3); }
+.cell-company { color: var(--text-3); font-size: 14px; }
 
 .name-cell {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.cell-name  { font-weight: 500; color: var(--text-1); font-size: 13px; }
-.cell-email { font-size: 11px; color: var(--text-4); }
+.cell-name  { font-weight: 600; color: var(--text-1); font-size: 16px; }
+.cell-email { font-size: 14px; color: var(--text-3); }
 
 .role-badge {
   display: inline-block;
   padding: 2px 7px;
   border-radius: var(--r-sm);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.07em;
   font-weight: 600;
   border: 1px solid;
@@ -494,7 +505,7 @@ onMounted(fetchList)
 .status-btn {
   padding: 3px 9px;
   border-radius: var(--r-sm);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.06em;
   font-weight: 600;
   border: 1px solid;
@@ -534,7 +545,7 @@ onMounted(fetchList)
   width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--r-sm);
-  color: var(--text-4);
+  color: var(--text-3);
   transition: background .12s, color .12s;
 }
 .modal-close:hover { background: var(--bg-3); color: var(--text-2); }
@@ -553,14 +564,14 @@ onMounted(fetchList)
   background: var(--danger-soft);
   border: 1px solid rgba(181,84,74,.25);
   border-radius: var(--r-sm);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--danger);
   margin: 0;
 }
 
 .field { display: flex; flex-direction: column; gap: 5px; }
 .field-label {
-  font-size: 10.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-3);
   letter-spacing: 0.07em;
@@ -574,7 +585,7 @@ onMounted(fetchList)
   border: 1px solid var(--line-2);
   border-radius: var(--r-md);
   padding: 8px 11px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-1);
   outline: none;
   transition: border-color .15s;
@@ -593,9 +604,9 @@ onMounted(fetchList)
   flex: 1;
   padding: 6px 10px;
   border-radius: var(--r-sm);
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-4);
+  color: var(--text-3);
   background: none;
   border: none;
   cursor: pointer;

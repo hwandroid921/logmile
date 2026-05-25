@@ -70,7 +70,7 @@ function logout() {
           <AppLogo />
         </router-link>
         <span v-if="isLoggedIn" class="topbar-env mono">
-          {{ isSuperAdmin ? 'SUPER_ADMIN' : 'ADMIN · 한라물류센터' }}
+          {{ isSuperAdmin ? '최상위 관리자' : '업체 관리자 · 한라물류센터' }}
         </span>
       </div>
 
@@ -111,7 +111,7 @@ function logout() {
         <template v-else>
           <div class="live-badge">
             <span class="dot dot-ok blink" />
-            <span class="mono">SYSTEM ONLINE</span>
+            <span class="mono">시스템 정상</span>
           </div>
 
           <div class="divider" />
@@ -123,7 +123,7 @@ function logout() {
           <div class="user-chip">
             <div class="user-avatar">{{ adminName.charAt(0) }}</div>
             <span class="user-name">{{ adminName }}</span>
-            <AppIcon name="chevronD" :size="13" style="color: var(--text-4)" />
+            <AppIcon name="chevronD" :size="13" style="color: var(--text-3)" />
           </div>
 
           <button class="icon-btn logout-btn" title="로그아웃" @click="logout">
@@ -172,9 +172,9 @@ function logout() {
 }
 
 .topbar-env {
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.08em;
-  color: var(--text-4);
+  color: var(--text-3);
   padding: 2px 7px;
   background: var(--bg-3);
   border: 1px solid var(--line-2);
@@ -192,7 +192,7 @@ function logout() {
 
 .nav-item {
   padding: 7px 13px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   border-radius: var(--r-sm);
   color: var(--text-3);
@@ -222,7 +222,7 @@ function logout() {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--ok);
   letter-spacing: 0.06em;
 }
@@ -263,10 +263,10 @@ function logout() {
   width: 24px; height: 24px; border-radius: 50%;
   background: var(--accent-soft); border: 1px solid var(--accent-line);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: var(--accent);
+  font-size: 14px; font-weight: 700; color: var(--accent);
 }
 
-.user-name { font-size: 13px; font-weight: 500; color: var(--text-2); }
+.user-name { font-size: 14px; font-weight: 500; color: var(--text-2); }
 
 .btn-login {
   display: inline-flex;
@@ -276,7 +276,7 @@ function logout() {
   background: var(--accent-soft);
   border: 1px solid var(--accent-line);
   border-radius: var(--r-md);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--accent);
   text-decoration: none;
@@ -291,7 +291,7 @@ function logout() {
   background: transparent;
   border: 1px solid var(--line-2);
   border-radius: var(--r-md);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-2);
   text-decoration: none;

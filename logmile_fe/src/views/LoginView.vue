@@ -126,7 +126,7 @@ function onKey(e) { if (e.key === 'Enter') submit() }
             <span class="mono seed-val">{{ SEED[role].email }}</span>
             <button class="seed-fill" @click="fillSeed">자동 입력</button>
           </div>
-          <div class="mono seed-pw">pw: {{ SEED[role].pw }}</div>
+          <div class="mono seed-pw">비밀번호: {{ SEED[role].pw }}</div>
         </div>
       </div>
     </div>
@@ -143,12 +143,12 @@ function onKey(e) { if (e.key === 'Enter') submit() }
   overflow: hidden; padding: 48px;
 }
 .brand-inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 32px; }
-.brand-title { font-size: 32px; font-weight: 800; color: #FFFFFF; line-height: 1.25; letter-spacing: -0.02em; margin: 0 0 12px; }
+.brand-title { font-size: 32px; font-weight: 700; color: #FFFFFF; line-height: 1.25; letter-spacing: 0; margin: 0 0 12px; }
 .brand-sub { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.65; margin: 0; }
 .brand-stats { display: flex; gap: 24px; }
 .bs-item { display: flex; flex-direction: column; gap: 3px; }
 .bs-val { font-size: 28px; font-weight: 800; color: #FFFFFF; line-height: 1; }
-.bs-lbl { font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; }
+.bs-lbl { font-size: 14px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; }
 .brand-deco-1, .brand-deco-2 { position: absolute; border-radius: 50%; pointer-events: none; }
 .brand-deco-1 { width: 400px; height: 400px; border: 1px solid rgba(255,255,255,0.06); bottom: -80px; right: -80px; }
 .brand-deco-2 { width: 240px; height: 240px; border: 1px solid rgba(255,255,255,0.06); top: 40px; left: -60px; }
@@ -157,32 +157,32 @@ function onKey(e) { if (e.key === 'Enter') submit() }
 .form-card { width: 100%; max-width: 380px; }
 
 .role-tabs { display: flex; gap: 4px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 3px; margin-bottom: 28px; }
-.role-tab { flex: 1; padding: 7px 12px; border-radius: var(--r-sm); font-size: 12px; font-weight: 500; color: var(--text-4); background: none; border: none; cursor: pointer; transition: background .12s, color .12s; font-family: inherit; }
+.role-tab { flex: 1; padding: 7px 12px; border-radius: var(--r-sm); font-size: 14px; font-weight: 500; color: var(--text-3); background: none; border: none; cursor: pointer; transition: background .12s, color .12s; font-family: inherit; }
 .role-tab.active { background: var(--bg-1); color: var(--accent); font-weight: 600; box-shadow: 0 1px 3px rgba(81,95,122,0.12); }
 
-.form-title { font-size: 22px; font-weight: 700; color: var(--text-1); margin: 0 0 4px; letter-spacing: -0.01em; }
-.form-sub { font-size: 12px; color: var(--text-4); margin: 0 0 28px; font-family: var(--font-mono); letter-spacing: 0.02em; }
+.form-title { font-size: 22px; font-weight: 700; color: var(--text-1); margin: 0 0 4px; letter-spacing: 0; }
+.form-sub { font-size: 14px; color: var(--text-3); margin: 0 0 28px; font-family: var(--font-mono); letter-spacing: 0.02em; }
 
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.field-label { font-size: 10.5px; font-weight: 600; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; }
-.field-input { width: 100%; box-sizing: border-box; background: var(--bg-0); border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 9px 12px; font-size: 13px; color: var(--text-1); font-family: var(--font-mono); outline: none; transition: border-color .15s; }
-.field-input::placeholder { color: var(--text-4); }
+.field-label { font-size: 14px; font-weight: 600; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; }
+.field-input { width: 100%; box-sizing: border-box; background: var(--bg-0); border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 9px 12px; font-size: 14px; color: var(--text-1); font-family: var(--font-mono); outline: none; transition: border-color .15s; }
+.field-input::placeholder { color: var(--text-3); }
 .field-input:focus { border-color: var(--accent-line); }
 .pw-wrap { position: relative; }
 .pw-wrap .field-input { padding-right: 60px; }
-.pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10.5px; color: var(--text-4); cursor: pointer; font-family: var(--font-sans); transition: color .12s; }
+.pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-3); cursor: pointer; font-family: var(--font-sans); transition: color .12s; }
 .pw-toggle:hover { color: var(--text-2); }
 
-.err-msg { font-size: 12px; color: var(--danger); margin: 0 0 12px; padding: 8px 12px; background: var(--danger-soft); border-radius: var(--r-sm); border: 1px solid rgba(181,84,74,0.2); }
+.err-msg { font-size: 14px; color: var(--danger); margin: 0 0 12px; padding: 8px 12px; background: var(--danger-soft); border-radius: var(--r-sm); border: 1px solid rgba(181,84,74,0.2); }
 
 .submit-btn { width: 100%; padding: 11px; font-size: 14px; justify-content: center; margin-bottom: 20px; gap: 8px; }
 .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .seed-box { background: var(--bg-2); border: 1px solid var(--line-1); border-radius: var(--r-md); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
-.seed-label { font-size: 9.5px; letter-spacing: 0.12em; color: var(--text-4); text-transform: uppercase; }
+.seed-label { font-size: 14px; letter-spacing: 0.12em; color: var(--text-3); text-transform: uppercase; }
 .seed-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.seed-val { font-size: 11.5px; color: var(--text-2); }
-.seed-fill { font-size: 10.5px; color: var(--accent); cursor: pointer; font-family: var(--font-sans); transition: color .12s; white-space: nowrap; }
+.seed-val { font-size: 14px; color: var(--text-2); }
+.seed-fill { font-size: 14px; color: var(--accent); cursor: pointer; font-family: var(--font-sans); transition: color .12s; white-space: nowrap; }
 .seed-fill:hover { color: var(--accent-hover); }
-.seed-pw { font-size: 11px; color: var(--text-4); }
+.seed-pw { font-size: 14px; color: var(--text-3); }
 </style>

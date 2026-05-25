@@ -142,7 +142,7 @@ function makeMarkerEl(v) {
   const isSel = v.id === selectedId.value
   const size = isSel ? 18 : 13
   const pulse   = isSel ? `<div style="position:absolute;inset:-6px;border-radius:50%;border:2px solid ${c};opacity:.55;animation:kakao-pulse 1.4s ease-out infinite;pointer-events:none"></div>` : ''
-  const tooltip = isSel ? `<div style="position:absolute;left:50%;bottom:calc(100%+6px);transform:translateX(-50%);background:#F1F3F6;border:1px solid ${c};border-radius:4px;padding:3px 7px;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#1F2630;box-shadow:0 2px 6px rgba(0,0,0,.15);pointer-events:none"><span style="color:${c}">${v.score}점</span> ${v.plate}</div>` : ''
+  const tooltip = isSel ? `<div style="position:absolute;left:50%;bottom:calc(100%+6px);transform:translateX(-50%);background:#F1F3F6;border:1px solid ${c};border-radius:4px;padding:3px 7px;white-space:nowrap;font-family:'IBM Plex Mono','Roboto Mono',monospace;font-size: 14px;font-weight:700;color:#1F2630;box-shadow:0 2px 6px rgba(0,0,0,.15);pointer-events:none"><span style="color:${c}">${v.score}점</span> ${v.plate}</div>` : ''
   const el = document.createElement('div')
   el.style.cssText = `position:relative;width:${size*2}px;height:${size*2}px;cursor:pointer`
   el.innerHTML = `${pulse}<div style="position:absolute;inset:0;border-radius:50%;background:${c};opacity:.18"></div><div style="position:absolute;inset:${size-6}px;border-radius:50%;background:${c};border:2px solid #F1F3F6;box-shadow:0 1px 4px rgba(0,0,0,.25)"></div>${tooltip}`
@@ -412,7 +412,7 @@ function vDelta(v) {
   const d = Math.round(v.score - 5)
   if (d > 0) return { txt: `▲ +${d}`, color: 'var(--danger)' }
   if (d < 0) return { txt: `▼ ${d}`,  color: 'var(--ok)' }
-  return { txt: '→ 0', color: 'var(--text-4)' }
+  return { txt: '→ 0', color: 'var(--text-3)' }
 }
 
 function downloadCsv() {
@@ -567,10 +567,10 @@ const restEvents = computed(() => {
   const v = selected.value
   if (!v) return []
   return [
-    { label:'VALID',   count:v.restValid||0,   color:'var(--ok)',     hint:'15m+ · -10' },
-    { label:'SUFF.',   count:v.restSuff||0,    color:'var(--accent)', hint:'30m+ · -20' },
-    { label:'INVALID', count:v.restInvalid||0, color:'var(--text-4)', hint:'<15m · ±0' },
-    { label:'MISSED',  count:v.restMiss||0,    color:'var(--danger)', hint:'2h+ · +10' },
+    { label:'유효',    count:v.restValid||0,   color:'var(--ok)',     hint:'15분+ · -10' },
+    { label:'충분',    count:v.restSuff||0,    color:'var(--accent)', hint:'30분+ · -20' },
+    { label:'부족',    count:v.restInvalid||0, color:'var(--text-3)', hint:'15분 미만 · ±0' },
+    { label:'누락',    count:v.restMiss||0,    color:'var(--danger)', hint:'2시간+ · +10' },
   ]
 })
 
@@ -654,17 +654,17 @@ const liveEvents = computed(() => {
       kind: v.level === 'DANGER' ? 'danger' : 'warn',
       plate: v.plate, id: v.id,
       text: v.level === 'DANGER'
-        ? `연속 ${((v.contMin||0)/60).toFixed(1)}h · 야간 ${((v.nightMin||0)/60).toFixed(1)}h · 점수 ${v.score} → DANGER`
-        : `연속 ${((v.contMin||0)/60).toFixed(1)}h · 점수 ${v.score} → CAUTION 유지`,
+        ? `연속 ${((v.contMin||0)/60).toFixed(1)}h · 야간 ${((v.nightMin||0)/60).toFixed(1)}h · 점수 ${v.score} → 위험`
+        : `연속 ${((v.contMin||0)/60).toFixed(1)}h · 점수 ${v.score} → 주의 유지`,
     }))
 })
 const seedEvents = [
-  { t:'12:55', kind:'info', plate:'경기 80바 1026', text:'충분 휴식(34분) · -20점 보정 · 점수 18 (NORMAL)' },
-  { t:'12:14', kind:'info', plate:'경기 80바 1028', text:'DEPARTURE · OCR 0.99 · 차고지 출발' },
-  { t:'11:42', kind:'info', plate:'경기 80바 1027', text:'연속 3h 도달 · CAUTION 근접' },
-  { t:'10:33', kind:'info', plate:'경기 80바 1025', text:'REST_AREA_CCTV · 입장 휴게소 진입' },
-  { t:'09:18', kind:'info', plate:'경기 80바 1029', text:'HIGHWAY_CCTV · 중부내륙 점촌 상행 · OCR 0.94' },
-  { t:'08:50', kind:'info', plate:'경기 80바 1027', text:'DEPARTURE · 한라물류 출발 · 시나리오 A 시작' },
+  { t:'12:55', kind:'info', plate:'경기 80바 1026', text:'충분 휴식(34분) · -20점 보정 · 점수 18 (정상)' },
+  { t:'12:14', kind:'info', plate:'경기 80바 1028', text:'출발 인식 · OCR 0.99 · 차고지 출발' },
+  { t:'11:42', kind:'info', plate:'경기 80바 1027', text:'연속 3h 도달 · 주의 근접' },
+  { t:'10:33', kind:'info', plate:'경기 80바 1025', text:'휴게소 CCTV · 입장 휴게소 진입' },
+  { t:'09:18', kind:'info', plate:'경기 80바 1029', text:'고속도로 CCTV · 중부내륙 점촌 상행 · OCR 0.94' },
+  { t:'08:50', kind:'info', plate:'경기 80바 1027', text:'출발 인식 · 한라물류 출발 · 시나리오 A 시작' },
 ]
 // 실데이터가 있으면 seed 제거, 없으면 fallback 유지
 const allEvents = computed(() =>
@@ -728,13 +728,13 @@ const rankingItems = computed(() =>
     <!-- ── 페이지 헤더 ── -->
     <div class="page-hdr">
       <div>
-        <div style="font:600 10.5px/1.4 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">OPERATIONS / LIVE</div>
-        <h1 style="font:800 24px/1.25 var(--font-sans);letter-spacing:-0.02em;color:var(--text-1);margin:0;">관제 대시보드</h1>
-        <div style="font-size:12px;color:var(--text-3);margin-top:3px;">조회일 · {{ formatSelectedDateLabel(selectedDate) }} · 한라물류센터 · 가상 시뮬레이션 환경</div>
+        <div style="font:600 14px/1.4 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color: var(--accent);margin-bottom:6px;">실시간 관제</div>
+        <h1 style="font:700 24px/1.25 var(--font-point);letter-spacing: 0;color: var(--text-1);margin:0;">관제 대시보드</h1>
+        <div style="font-size: 14px;color: var(--text-3);margin-top:3px;">조회일 · {{ formatSelectedDateLabel(selectedDate) }} · 한라물류센터 · 가상 시뮬레이션 환경</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-3);display:flex;align-items:center;gap:6px;">
-          <span class="dot dot-ok blink"/>connected · {{ now }}
+        <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);display:flex;align-items:center;gap:6px;">
+          <span class="dot dot-ok blink"/>연결됨 · {{ now }}
         </span>
         <div style="width:1px;height:18px;background:var(--line-2);"/>
         <label class="date-filter">
@@ -751,15 +751,15 @@ const rankingItems = computed(() =>
     <!-- ── KPI Strip ── -->
     <div class="kpi-strip">
 
-      <!-- Tile 1: AVG FATIGUE -->
+      <!-- Tile 1: 평균 피로도 -->
       <div class="kpi-tile" style="border-top:2px solid var(--accent);">
         <div class="tile-hdr">
-          <span class="tile-label" style="color:var(--accent);">AVG FATIGUE</span>
+          <span class="tile-label" style="color: var(--accent);">평균 피로도</span>
           <span class="tile-meta">n={{ runningCount }} · σ={{ stdev.toFixed(1) }}</span>
         </div>
         <div class="tile-val">
-          <span style="font:700 30px/1 var(--font-mono);letter-spacing:-0.02em;color:var(--text-1);font-variant-numeric:tabular-nums;">{{ avgScore.toFixed(1) }}</span>
-          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">/100</span>
+          <span style="font:700 30px/1 var(--font-mono);letter-spacing: 0;color: var(--text-1);font-variant-numeric:tabular-nums;">{{ avgScore.toFixed(1) }}</span>
+          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">/100</span>
           <span class="tile-delta bad">▲ +3.4 (vs 24h)</span>
         </div>
         <div style="margin-top:10px;">
@@ -771,21 +771,21 @@ const rankingItems = computed(() =>
             <line :x1="meanX" y1="0" :x2="meanX" y2="36" stroke="var(--accent)" stroke-width="1.6"/>
             <polygon :points="`${meanX},-1 ${meanX-4},-5 ${meanX+4},-5`" fill="var(--accent)"/>
           </svg>
-          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--text-4);margin-top:3px;">
-            <span>0</span><span style="color:var(--warn);">40</span><span style="color:var(--danger);">70</span><span>100</span>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);margin-top:3px;">
+            <span>0</span><span style="color: var(--warn);">40</span><span style="color: var(--danger);">70</span><span>100</span>
           </div>
         </div>
       </div>
 
-      <!-- Tile 2: MAX CONT. DRIVE -->
+      <!-- Tile 2: 최장 연속 운행 -->
       <div class="kpi-tile">
         <div class="tile-hdr">
-          <span class="tile-label">MAX CONT. DRIVE</span>
-          <span class="tile-meta">limit 240m</span>
+          <span class="tile-label">최장 연속 운행</span>
+          <span class="tile-meta">기준 240분</span>
         </div>
         <div class="tile-val">
-          <span :style="`font:700 30px/1 var(--font-mono);letter-spacing:-0.02em;color:${contColor};font-variant-numeric:tabular-nums;`">{{ maxContH }}:{{ String(maxContM).padStart(2,'0') }}</span>
-          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">h:m</span>
+          <span :style="`font:700 30px/1 var(--font-mono);letter-spacing: 0;color:${contColor};font-variant-numeric:tabular-nums;`">{{ maxContH }}:{{ String(maxContM).padStart(2,'0') }}</span>
+          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">h:m</span>
           <span class="tile-delta bad">+{{ contDelta }}점</span>
         </div>
         <div style="margin-top:10px;">
@@ -796,46 +796,46 @@ const rankingItems = computed(() =>
             <div style="position:absolute;top:-2px;bottom:-2px;left:80%;width:1.5px;background:var(--danger);"/>
             <div :style="`position:absolute;top:-3px;bottom:-3px;left:calc(${contGaugePct}% - 1px);width:2px;background:var(--text-1);`"/>
           </div>
-          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--text-4);margin-top:3px;">
-            <span>0</span><span style="color:var(--warn);">90m</span><span style="color:var(--danger);">180m</span><span style="color:var(--danger);">240m</span>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);margin-top:3px;">
+            <span>0</span><span style="color: var(--warn);">90m</span><span style="color: var(--danger);">180m</span><span style="color: var(--danger);">240m</span>
           </div>
         </div>
       </div>
 
-      <!-- Tile 3: DANGER UNITS -->
+      <!-- Tile 3: 위험 차량 -->
       <div class="kpi-tile">
         <div class="tile-hdr">
-          <span class="tile-label" style="color:var(--danger);">DANGER UNITS</span>
+          <span class="tile-label" style="color: var(--danger);">위험 차량</span>
           <span class="tile-meta">7d μ={{ weeklyMean.toFixed(1) }}</span>
         </div>
         <div class="tile-val">
-          <span style="font:700 30px/1 var(--font-mono);letter-spacing:-0.02em;color:var(--danger);font-variant-numeric:tabular-nums;">{{ dangerCount }}</span>
-          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">/ {{ vehicles.length }}</span>
+          <span style="font:700 30px/1 var(--font-mono);letter-spacing: 0;color: var(--danger);font-variant-numeric:tabular-nums;">{{ dangerCount }}</span>
+          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">/ {{ vehicles.length }}</span>
           <span class="tile-delta bad">▲ +1 (24h)</span>
         </div>
         <div style="margin-top:10px;">
           <svg viewBox="0 0 200 36" preserveAspectRatio="none" style="width:100%;height:34px;display:block;">
             <rect v-for="(b,i) in weeklyBars" :key="i" :x="b.x" :y="b.y" :width="b.w" :height="b.h"
               fill="var(--danger)" :opacity="b.today ? 1 : 0.42"/>
-            <line x1="0" :y1="weeklyMeanY" x2="200" :y2="weeklyMeanY" stroke="var(--text-4)" stroke-dasharray="2 3" stroke-width="0.8"/>
-            <text x="198" :y="weeklyMeanY-2" text-anchor="end" font-family="var(--font-mono)" font-size="7" fill="var(--text-4)">μ={{ weeklyMean.toFixed(1) }}</text>
+            <line x1="0" :y1="weeklyMeanY" x2="200" :y2="weeklyMeanY" stroke="var(--text-3)" stroke-dasharray="2 3" stroke-width="0.8"/>
+            <text x="198" :y="weeklyMeanY-2" text-anchor="end" font-family="var(--font-mono)" font-size="7" fill="var(--text-3)">μ={{ weeklyMean.toFixed(1) }}</text>
           </svg>
-          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:8.5px;color:var(--text-4);margin-top:2px;">
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);margin-top:2px;">
             <span v-for="(d,i) in ['월','화','수','목','금','토','오늘']" :key="i"
-              :style="i===6 ? 'color:var(--text-2);font-weight:700;' : ''">{{ d }}</span>
+              :style="i===6 ? 'color: var(--text-2);font-weight:700;' : ''">{{ d }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Tile 4: FLEET COMPOSITION -->
+      <!-- Tile 4: 차량 상태 구성 -->
       <div class="kpi-tile">
         <div class="tile-hdr">
-          <span class="tile-label">FLEET COMPOSITION</span>
-          <span class="tile-meta">{{ runningCount }}/{{ vehicles.length }} run</span>
+          <span class="tile-label">차량 상태 구성</span>
+          <span class="tile-meta">{{ runningCount }}/{{ vehicles.length }} 운행</span>
         </div>
         <div class="tile-val">
-          <span style="font:700 30px/1 var(--font-mono);letter-spacing:-0.02em;color:var(--text-1);font-variant-numeric:tabular-nums;">{{ runningCount ? ((normalCount/runningCount)*100).toFixed(1) : '0.0' }}</span>
-          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">% NORMAL</span>
+          <span style="font:700 30px/1 var(--font-mono);letter-spacing: 0;color: var(--text-1);font-variant-numeric:tabular-nums;">{{ runningCount ? ((normalCount/runningCount)*100).toFixed(1) : '0.0' }}</span>
+          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">% 정상</span>
           <span class="tile-delta good">정상 비중</span>
         </div>
         <div style="margin-top:10px;">
@@ -843,24 +843,24 @@ const rankingItems = computed(() =>
             <div :style="`width:${runningCount?(normalCount/vehicles.length*100):0}%;background:var(--ok);`"/>
             <div :style="`width:${runningCount?(cautionCount/vehicles.length*100):0}%;background:var(--warn);`"/>
             <div :style="`width:${runningCount?(dangerCount/vehicles.length*100):0}%;background:var(--danger);`"/>
-            <div :style="`width:${(idleCount/vehicles.length*100)}%;background:var(--text-4);opacity:0.35;`"/>
+            <div :style="`width:${(idleCount/vehicles.length*100)}%;background:var(--text-3);opacity:0.35;`"/>
           </div>
-          <div style="display:flex;justify-content:space-between;margin-top:5px;font-family:var(--font-mono);font-size:9px;">
-            <span style="color:var(--ok);">정상 {{ normalCount }}</span>
-            <span style="color:var(--warn);">주의 {{ cautionCount }}</span>
-            <span style="color:var(--danger);">위험 {{ dangerCount }}</span>
-            <span style="color:var(--text-4);">대기 {{ idleCount }}</span>
-            <span style="color:var(--accent);">완료 {{ todayCompleted }}</span>
+          <div style="display:flex;justify-content:space-between;margin-top:5px;font-family:var(--font-mono);font-size: 14px;">
+            <span style="color: var(--ok);">정상 {{ normalCount }}</span>
+            <span style="color: var(--warn);">주의 {{ cautionCount }}</span>
+            <span style="color: var(--danger);">위험 {{ dangerCount }}</span>
+            <span style="color: var(--text-3);">대기 {{ idleCount }}</span>
+            <span style="color: var(--accent);">완료 {{ todayCompleted }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Tile 5: FLEET HEALTH -->
+      <!-- Tile 5: 운행 안정도 -->
       <div class="kpi-tile" style="border-right:none;">
         <div class="tile-hdr">
-          <span class="tile-label" style="color:var(--accent);">FLEET HEALTH</span>
-          <span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:9px;color:var(--text-4);">
-            <span class="dot dot-brand blink"/>LIVE
+          <span class="tile-label" style="color: var(--accent);">운행 안정도</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">
+            <span class="dot dot-brand blink"/>실시간
           </span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
@@ -874,15 +874,15 @@ const rankingItems = computed(() =>
             </svg>
             <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
               <span :style="`font-family:var(--font-mono);font-size:18px;font-weight:800;color:${avgColor};line-height:1;`">{{ avgScore.toFixed(1) }}</span>
-              <span style="font-family:var(--font-mono);font-size:8px;color:var(--text-4);letter-spacing:.1em;margin-top:2px;">AVG /100</span>
+              <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);letter-spacing:.1em;margin-top:2px;">평균 /100</span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;">
             <div v-for="r in [{label:'정상',value:normalCount,color:'#5E8A6F'},{label:'주의',value:cautionCount,color:'#C58A3A'},{label:'위험',value:dangerCount,color:'#B5544A'}]"
               :key="r.label" style="display:grid;grid-template-columns:10px 1fr auto;gap:6px;align-items:center;">
               <span :style="`width:10px;height:10px;border-radius:2px;background:${r.color};display:block;`"/>
-              <span style="font-size:11px;color:var(--text-2);">{{ r.label }}</span>
-              <span :style="`font-family:var(--font-mono);font-size:13px;font-weight:800;color:${r.color};`">{{ r.value }}</span>
+              <span style="font-size: 14px;color: var(--text-2);">{{ r.label }}</span>
+              <span :style="`font-family:var(--font-mono);font-size: 14px;font-weight:800;color:${r.color};`">{{ r.value }}</span>
             </div>
           </div>
         </div>
@@ -892,10 +892,10 @@ const rankingItems = computed(() =>
     <!-- ── 메인 3컬럼 그리드 ── -->
     <div class="main-grid">
 
-      <!-- ── 좌: FATIGUE BREAKDOWN + DRIVE TIMELINE ── -->
+      <!-- ── 좌: 피로도 산출 요인 + 운행 타임라인 ── -->
       <div class="left-col">
 
-        <!-- FATIGUE BREAKDOWN 카드 -->
+        <!-- 피로도 산출 요인 카드 -->
         <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
 
           <!-- 드릴다운 헤더 -->
@@ -915,7 +915,7 @@ const rankingItems = computed(() =>
                 <circle cx="55" cy="98" r="8" fill="#747F95"/>
                 <circle cx="160" cy="98" r="8" fill="#747F95"/>
               </svg>
-              <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 7px;font-family:var(--font-mono);font-size:10px;font-weight:700;color:#515F7A;white-space:nowrap;">
+              <div style="position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 7px;font-family:var(--font-mono);font-size: 14px;font-weight:700;color:#515F7A;white-space:nowrap;">
                 {{ selected ? (selected.recognizedPlate || selected.plate.split(' ').slice(-1)[0]) : '—' }}
               </div>
             </div>
@@ -923,42 +923,42 @@ const rankingItems = computed(() =>
             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1;padding:14px 16px;flex-wrap:wrap;min-width:0;">
               <div style="min-width:0;">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-                  <span style="font-family:var(--font-mono);font-size:15px;font-weight:800;color:var(--text-1);">{{ selected ? selected.plate : '—' }}</span>
+                  <span style="font-family:var(--font-mono);font-size:15px;font-weight:800;color: var(--text-1);">{{ selected ? selected.plate : '—' }}</span>
                   <span v-if="selected" :class="levelChipCls(selected.level)">{{ levelLabel(selected.level) }} · {{ selected.score }}점</span>
                   <span v-if="selected" class="chip chip-mute"><AppIcon name="user" :size="10"/> {{ selected.driver }}</span>
                   <span v-if="selected" class="chip chip-info">{{ selectedDetailId ?? '운행 ID 없음' }}</span>
                 </div>
-                <div style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-3);">
+                <div style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">
                   {{ selected ? `${selected.loc} · 시작 ${selected.startedAt} · ${selected.spd}km/h · ${selected.type}` : '차량을 선택하세요' }}
                 </div>
                 <div v-if="selected && (restGuideCount > 0 || phoneRecommendationIssued)"
-                  style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-4);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                  style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                   <span v-if="restGuideCount > 0" style="display:flex;align-items:center;gap:4px;">
-                    ☕ 휴게 안내 <strong style="color:var(--warn);">{{ restGuideCount }}회</strong> · 마지막 {{ actionTimeLabel(selected.lastRestGuideAt) }}
+                    ☕ 휴게 안내 <strong style="color: var(--warn);">{{ restGuideCount }}회</strong> · 마지막 {{ actionTimeLabel(selected.lastRestGuideAt) }}
                   </span>
                   <span v-if="phoneRecommendationIssued" style="display:flex;align-items:center;gap:4px;">
                     📞 전화 권고 완료 · {{ actionTimeLabel(selected.lastPhoneRecommendationAt) }}
                     <a v-if="selected.driverPhone" :href="`tel:${selected.driverPhone.replace(/-/g,'')}`"
-                      style="color:var(--accent);text-decoration:none;font-weight:700;">{{ selected.driverPhone }}</a>
+                      style="color: var(--accent);text-decoration:none;font-weight:700;">{{ selected.driverPhone }}</a>
                   </span>
                 </div>
               </div>
               <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
-                <button class="btn btn-ghost" style="font-size:11.5px;"
-                  :disabled="!selected || selected.level!=='DANGER' || phoneRecommendationIssued || actionSubmitting.phone"
-                  :style="{opacity:selected?.level==='DANGER' && !phoneRecommendationIssued ? 1 : 0.45,cursor:selected?.level==='DANGER' && !phoneRecommendationIssued ? 'pointer' : 'not-allowed'}"
+                <button class="btn btn-ghost" style="font-size: 14px;"
+                  :disabled="!selected || selected.level!=='DANGER' || !selectedDetailId || phoneRecommendationIssued || actionSubmitting.phone"
+                  :style="{opacity:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 1 : 0.45,cursor:selected?.level==='DANGER' && selectedDetailId && !phoneRecommendationIssued ? 'pointer' : 'not-allowed'}"
                   @click="sendPhoneRecommendation">
                   <AppIcon name="phone" :size="12"/>
                   {{ phoneRecommendationIssued ? '전화 권고 완료' : actionSubmitting.phone ? '기록 중...' : '전화 권고' }}
                 </button>
-                <button class="btn btn-ghost" style="font-size:11.5px;"
-                  :disabled="!selected || actionSubmitting.rest"
-                  :style="{opacity:selected ? 1 : 0.45,cursor:selected ? 'pointer' : 'not-allowed'}"
+                <button class="btn btn-ghost" style="font-size: 14px;"
+                  :disabled="!selected || !selectedDetailId || actionSubmitting.rest"
+                  :style="{opacity:selected && selectedDetailId ? 1 : 0.45,cursor:selected && selectedDetailId ? 'pointer' : 'not-allowed'}"
                   @click="sendRestGuide">
                   <AppIcon name="coffee" :size="12"/>
                   {{ actionSubmitting.rest ? '기록 중...' : restGuideCount > 0 ? `휴게 안내 (${restGuideCount}회)` : '휴게 안내' }}
                 </button>
-                <button class="btn btn-primary" style="font-size:11.5px;"
+                <button class="btn btn-primary" style="font-size: 14px;"
                   :disabled="!selectedDetailId"
                   :style="{opacity:selectedDetailId?1:0.45,cursor:selectedDetailId?'pointer':'not-allowed'}"
                   @click="goToDriveHistoryDetail">
@@ -968,25 +968,25 @@ const rankingItems = computed(() =>
             </div>
           </div>
 
-          <!-- FATIGUE BREAKDOWN 레이블 -->
+          <!-- 피로도 산출 요인 레이블 -->
           <div style="padding:10px 16px 0;display:flex;justify-content:space-between;align-items:center;">
-            <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand"/>FATIGUE BREAKDOWN</div>
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-4);letter-spacing:.06em;">score = Σ(factor · weight)</span>
+            <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand"/>피로도 산출 요인</div>
+            <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);letter-spacing:.06em;">점수 = Σ(요인 · 가중치)</span>
           </div>
 
           <!-- 피로 요인 목록 -->
           <div style="padding:14px;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;">
-            <div v-if="!selected" style="padding:20px;text-align:center;color:var(--text-4);font-size:12.5px;">차량을 선택하세요</div>
+            <div v-if="!selected" style="padding:20px;text-align:center;color: var(--text-3);font-size: 14px;">차량을 선택하세요</div>
             <div v-for="fb in drillFactors" :key="fb.label"
               :style="`padding:10px 12px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-sm);border-top:2px solid ${fbColor(fb.val,fb.thr)};`">
               <div style="display:flex;justify-content:space-between;align-items:flex-end;">
                 <div>
-                  <div style="font-size:12px;color:var(--text-2);font-weight:600;">{{ fb.label }}</div>
-                  <div style="font-family:var(--font-mono);font-size:9.5px;color:var(--text-4);margin-top:1px;">max {{ fb.max }}{{ fb.unit }} · 임계 {{ fb.thr[0] }} / {{ fb.thr[1] }}{{ fb.unit }}</div>
+                  <div style="font-size: 14px;color: var(--text-2);font-weight:600;">{{ fb.label }}</div>
+                  <div style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);margin-top:1px;">max {{ fb.max }}{{ fb.unit }} · 임계 {{ fb.thr[0] }} / {{ fb.thr[1] }}{{ fb.unit }}</div>
                 </div>
                 <div style="display:flex;align-items:baseline;gap:4px;">
                   <span :style="`font-family:var(--font-mono);font-size:20px;font-weight:800;color:${fbColor(fb.val,fb.thr)};line-height:1;`">{{ (Math.round(fb.val*10)/10).toFixed(1) }}</span>
-                  <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-4);">{{ fb.unit }}</span>
+                  <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">{{ fb.unit }}</span>
                 </div>
               </div>
               <div class="fb-bar-wrap">
@@ -995,42 +995,42 @@ const rankingItems = computed(() =>
                 <div :style="`position:absolute;top:-3px;bottom:-3px;left:${(fb.thr[1]/fb.max)*100}%;width:1.5px;background:var(--danger);`"/>
                 <div :style="`position:absolute;top:-3px;bottom:-3px;left:calc(${fbPct(fb.val,fb.max)}% - 1px);width:2px;background:var(--text-1);`"/>
               </div>
-              <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--font-mono);font-size:9.5px;">
-                <span :style="fb.val>fb.thr[0]?'color:var(--warn);font-weight:700;':'color:var(--text-4);'">{{ fb.val>fb.thr[0]?'▲ ':'○ ' }}{{ fb.cLbl }}</span>
-                <span :style="fb.val>fb.thr[1]?'color:var(--danger);font-weight:700;':'color:var(--text-4);'">{{ fb.val>fb.thr[1]?'▲ ':'○ ' }}{{ fb.dLbl }}</span>
+              <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:var(--font-mono);font-size: 14px;">
+                <span :style="fb.val>fb.thr[0]?'color: var(--warn);font-weight:700;':'color: var(--text-3);'">{{ fb.val>fb.thr[0]?'▲ ':'○ ' }}{{ fb.cLbl }}</span>
+                <span :style="fb.val>fb.thr[1]?'color: var(--danger);font-weight:700;':'color: var(--text-3);'">{{ fb.val>fb.thr[1]?'▲ ':'○ ' }}{{ fb.dLbl }}</span>
               </div>
             </div>
           </div>
 
-          <!-- REST EVENTS -->
+          <!-- 휴식 이벤트 -->
           <div style="padding:12px 16px;border-top:1px solid var(--line-1);">
-            <div class="label-sm" style="margin-bottom:8px;">REST EVENTS</div>
+            <div class="label-sm" style="margin-bottom:8px;">휴식 이벤트</div>
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
               <div v-for="r in restEvents" :key="r.label"
                 :style="`padding:8px;border-radius:4px;background:var(--bg-2);border:1px solid var(--line-2);border-top:2px solid ${r.color};`">
-                <div :style="`font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;font-weight:700;color:${r.color};`">{{ r.label }}</div>
-                <div :style="`font-family:var(--font-mono);font-size:22px;font-weight:800;margin-top:2px;letter-spacing:-0.015em;color:${r.count>0?'var(--text-1)':'var(--text-4)'};`">{{ r.count }}</div>
-                <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-4);margin-top:1px;">{{ r.hint }}</div>
+                <div :style="`font-family:var(--font-mono);font-size: 14px;letter-spacing:.1em;font-weight:700;color:${r.color};`">{{ r.label }}</div>
+                <div :style="`font-family:var(--font-mono);font-size:22px;font-weight:800;margin-top:2px;letter-spacing: 0;color:${r.count>0?'var(--text-1)':'var(--text-3)'};`">{{ r.count }}</div>
+                <div style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);margin-top:1px;">{{ r.hint }}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- DRIVE TIMELINE 카드 -->
+        <!-- 운행 타임라인 카드 -->
         <div class="card" style="padding:0;overflow:hidden;">
           <div style="padding:14px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div class="label-sm">DRIVE TIMELINE</div>
-              <div style="font-size:11.5px;color:var(--text-2);margin-top:2px;">시간대별 누적 피로 점수</div>
+              <div class="label-sm">운행 타임라인</div>
+              <div style="font-size: 14px;color: var(--text-2);margin-top:2px;">시간대별 누적 피로 점수</div>
             </div>
             <div style="display:flex;align-items:baseline;gap:10px;">
               <div style="text-align:right;">
                 <div class="label-sm">현재</div>
-                <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--text-1);line-height:1;">{{ selected ? selected.score : '—' }}</div>
+                <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;color: var(--text-1);line-height:1;">{{ selected ? selected.score : '—' }}</div>
               </div>
               <div style="border-left:1px solid var(--line-2);padding-left:10px;text-align:right;">
                 <div class="label-sm">최고</div>
-                <div style="font-family:var(--font-mono);font-size:22px;font-weight:800;color:var(--text-1);line-height:1;">{{ selected ? peakScore : '—' }}</div>
+                <div style="font-family:var(--font-mono);font-size:22px;font-weight:800;color: var(--text-1);line-height:1;">{{ selected ? peakScore : '—' }}</div>
               </div>
             </div>
           </div>
@@ -1039,9 +1039,9 @@ const rankingItems = computed(() =>
               <rect x="30" y="10" width="720" height="66" fill="rgba(181,84,74,.07)"/>
               <rect x="30" y="76" width="720" height="54" fill="rgba(197,138,58,.07)"/>
               <rect x="30" y="130" width="720" height="52" fill="rgba(94,138,111,.06)"/>
-              <text x="748" y="22"  text-anchor="end" font-family="var(--font-mono)" font-size="9" fill="var(--danger)">위험≥70</text>
-              <text x="748" y="96"  text-anchor="end" font-family="var(--font-mono)" font-size="9" fill="var(--warn)">주의40~69</text>
-              <text x="748" y="144" text-anchor="end" font-family="var(--font-mono)" font-size="9" fill="var(--ok)">정상≤39</text>
+              <text x="748" y="22"  text-anchor="end" font-family="var(--font-mono)" font-size="14" fill="var(--danger)">위험≥70</text>
+              <text x="748" y="96"  text-anchor="end" font-family="var(--font-mono)" font-size="14" fill="var(--warn)">주의40~69</text>
+              <text x="748" y="144" text-anchor="end" font-family="var(--font-mono)" font-size="14" fill="var(--ok)">정상≤39</text>
               <line x1="30" y1="10"  x2="750" y2="10"  stroke="var(--line-1)" stroke-dasharray="2 4"/>
               <line x1="30" y1="55"  x2="750" y2="55"  stroke="var(--line-1)" stroke-dasharray="2 4"/>
               <line x1="30" y1="100" x2="750" y2="100" stroke="var(--line-1)" stroke-dasharray="2 4"/>
@@ -1052,30 +1052,30 @@ const rankingItems = computed(() =>
               <g v-for="(p,i) in tlEvents" :key="i">
                 <line :x1="tlPx(p.t)" y1="10" :x2="tlPx(p.t)" y2="182" stroke="var(--accent)" stroke-dasharray="2 4" opacity=".35"/>
                 <circle :cx="tlPx(p.t)" :cy="tlPy(p.score)" r="4" :fill="tlEventColor(p.event)" stroke="var(--bg-1)" stroke-width="2"/>
-                <text :x="tlPx(p.t)+6" :y="tlPy(p.score)-8" font-family="var(--font-mono)" font-size="9" fill="var(--text-2)">{{ p.event }}</text>
+                <text :x="tlPx(p.t)+6" :y="tlPy(p.score)-8" font-family="var(--font-mono)" font-size="14" fill="var(--text-2)">{{ p.event }}</text>
               </g>
-              <text x="30"  y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">0h</text>
-              <text x="150" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+2h</text>
-              <text x="270" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+4h</text>
-              <text x="390" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+6h</text>
-              <text x="510" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+8h</text>
-              <text x="630" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+10h</text>
-              <text x="750" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="9" fill="var(--text-4)">+12h</text>
+              <text x="30"  y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">0h</text>
+              <text x="150" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+2h</text>
+              <text x="270" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+4h</text>
+              <text x="390" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+6h</text>
+              <text x="510" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+8h</text>
+              <text x="630" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+10h</text>
+              <text x="750" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+12h</text>
             </svg>
           </div>
         </div>
 
       </div><!-- /left-col -->
 
-      <!-- ── 중: FLEET MAP + RUNNING VEHICLES ── -->
+      <!-- ── 중: 차량 위치 지도 + 운행 중 차량 ── -->
       <div class="center-col">
 
-        <!-- Fleet Map 카드 -->
+        <!-- 차량 위치 지도 카드 -->
         <div class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
           <div style="padding:12px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
             <div>
-              <div class="label-sm" style="display:flex;align-items:center;gap:6px;"><span class="dot dot-brand blink"/>FLEET MAP · LIVE</div>
-              <div style="font-size:11.5px;color:var(--text-2);margin-top:2px;">운행 <strong style="color:var(--text-1);">{{ runningCount }}</strong>대 / 전체 {{ vehicles.length }}대</div>
+              <div class="label-sm" style="display:flex;align-items:center;gap:6px;"><span class="dot dot-brand blink"/>차량 위치 지도 · 실시간</div>
+              <div style="font-size: 14px;color: var(--text-2);margin-top:2px;">운행 <strong style="color: var(--text-1);">{{ runningCount }}</strong>대 / 전체 {{ vehicles.length }}대</div>
             </div>
             <div class="map-tabs">
               <button v-for="t in mapTabs" :key="t" class="map-tab" :class="{active: mapTab===t}" @click="mapTab=t">
@@ -1094,8 +1094,8 @@ const rankingItems = computed(() =>
               <span v-if="cautionCount>0" class="chip chip-warn"><span class="dot dot-warn"/>{{ cautionCount }} 주의</span>
             </div>
             <!-- 범례 -->
-            <div style="position:absolute;bottom:20px;right:10px;background:rgba(241,243,246,.92);border:1px solid var(--line-2);border-radius:var(--r-md);padding:7px 10px;font-family:var(--font-mono);font-size:9.5px;display:flex;flex-direction:column;gap:4px;backdrop-filter:blur(4px);z-index:10;pointer-events:none;">
-              <div style="font-size:8px;letter-spacing:.12em;color:var(--text-4);font-weight:700;">LEGEND</div>
+            <div style="position:absolute;bottom:20px;right:10px;background:rgba(241,243,246,.92);border:1px solid var(--line-2);border-radius:var(--r-md);padding:7px 10px;font-family:var(--font-mono);font-size: 14px;display:flex;flex-direction:column;gap:4px;backdrop-filter:blur(4px);z-index:10;pointer-events:none;">
+              <div style="font-size: 14px;letter-spacing:.12em;color: var(--text-3);font-weight:700;">범례</div>
               <div style="display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#B5544A;display:inline-block;"/>위험 (70+)</div>
               <div style="display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#C58A3A;display:inline-block;"/>주의 (40~69)</div>
               <div style="display:flex;gap:5px;align-items:center;"><span style="width:7px;height:7px;border-radius:50%;background:#515F7A;display:inline-block;"/>정상 (0~39)</div>
@@ -1106,11 +1106,11 @@ const rankingItems = computed(() =>
         <!-- Running Vehicles 카드 -->
         <div class="card" style="padding:0;overflow:hidden;">
           <div style="padding:10px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
-            <div class="label-sm">RUNNING VEHICLES · {{ sortedFiltered.length }}대</div>
-            <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">점수 높은 순</span>
+            <div class="label-sm">운행 중 차량 · {{ sortedFiltered.length }}대</div>
+            <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">점수 높은 순</span>
           </div>
           <div style="padding:10px;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;">
-            <div v-if="sortedFiltered.length===0" style="padding:20px;text-align:center;color:var(--text-4);font-size:12px;">해당 등급의 차량이 없습니다</div>
+            <div v-if="sortedFiltered.length===0" style="padding:20px;text-align:center;color: var(--text-3);font-size: 14px;">해당 등급의 차량이 없습니다</div>
             <div v-for="v in sortedFiltered" :key="v.id" class="vrow" :class="{selected: selectedId===v.id}" @click="selectedId=v.id">
               <!-- 번호판 -->
               <div class="vrow-plate">
@@ -1128,24 +1128,24 @@ const rankingItems = computed(() =>
                   <circle cx="55" cy="98" r="8" fill="#747F95"/>
                   <circle cx="160" cy="98" r="8" fill="#747F95"/>
                 </svg>
-                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.recognizedPlate || v.plate.split(' ').slice(-1)[0] }}</div>
+                <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size: 14px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.recognizedPlate || v.plate.split(' ').slice(-1)[0] }}</div>
               </div>
               <!-- 중앙 정보 -->
               <div style="min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:space-between;">
                 <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
-                  <span style="font-family:var(--font-mono);font-size:11px;font-weight:700;">{{ v.plate }}</span>
+                  <span style="font-family:var(--font-mono);font-size: 14px;font-weight:700;">{{ v.plate }}</span>
                   <span :class="levelChipCls(v.level)">{{ levelLabel(v.level) }} {{ v.score }}</span>
                 </div>
-                <div style="font-size:10px;color:var(--text-3);font-family:var(--font-mono);">{{ v.driver }} · {{ v.loc.replace(/^.*?· /,'') }}</div>
+                <div style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);">{{ v.driver }} · {{ v.loc.replace(/^.*?· /,'') }}</div>
                 <div style="display:flex;flex-direction:column;gap:2px;">
                   <div v-for="f in vFactors" :key="f.key" style="display:grid;grid-template-columns:30px 1fr 26px;gap:4px;align-items:center;">
-                    <span style="font-family:var(--font-mono);font-size:8px;color:var(--text-4);">{{ f.key }}</span>
+                    <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">{{ f.key }}</span>
                     <div style="position:relative;height:4px;background:var(--bg-3);border-radius:2px;overflow:hidden;">
                       <div :style="`position:absolute;top:0;left:0;height:100%;width:${fbPct(factorVal(v,f.key),f.max)}%;background:${fbColor(factorVal(v,f.key),f.thr)};`"/>
                       <div :style="`position:absolute;top:-1px;bottom:-1px;left:${(f.thr[0]/f.max)*100}%;width:1px;background:var(--warn);`"/>
                       <div :style="`position:absolute;top:-1px;bottom:-1px;left:${(f.thr[1]/f.max)*100}%;width:1px;background:var(--danger);`"/>
                     </div>
-                    <span :style="`font-family:var(--font-mono);font-size:8px;color:${fbColor(factorVal(v,f.key),f.thr)};font-weight:700;text-align:right;`">{{ factorVal(v,f.key)===0?'—':fmtHM(factorVal(v,f.key)) }}</span>
+                    <span :style="`font-family:var(--font-mono);font-size: 14px;color:${fbColor(factorVal(v,f.key),f.thr)};font-weight:700;text-align:right;`">{{ factorVal(v,f.key)===0?'—':fmtHM(factorVal(v,f.key)) }}</span>
                   </div>
                 </div>
               </div>
@@ -1153,13 +1153,13 @@ const rankingItems = computed(() =>
               <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;min-width:70px;">
                 <div>
                   <span :style="`font-family:var(--font-mono);font-size:20px;font-weight:800;color:${vSparkColor(v)};line-height:1;`">{{ v.score }}</span>
-                  <span style="font-size:9px;color:var(--text-4);font-family:var(--font-mono);">/100</span>
+                  <span style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);">/100</span>
                 </div>
                 <svg width="70" height="22" style="display:block;">
                   <polyline :points="vSparkPts(v)" fill="none" :stroke="vSparkColor(v)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
                   <circle :cx="vSparkEnd(v).cx" :cy="vSparkEnd(v).cy" r="2" :fill="vSparkColor(v)"/>
                 </svg>
-                <span :style="`font-family:var(--font-mono);font-size:9px;color:${vDelta(v).color};font-weight:700;`">{{ vDelta(v).txt }}</span>
+                <span :style="`font-family:var(--font-mono);font-size: 14px;color:${vDelta(v).color};font-weight:700;`">{{ vDelta(v).txt }}</span>
               </div>
             </div>
           </div>
@@ -1167,42 +1167,42 @@ const rankingItems = computed(() =>
 
       </div><!-- /center-col -->
 
-      <!-- ── 우: ACTIVE ALERTS + EVENT STREAM ── -->
+      <!-- ── 우: 활성 알림 + 이벤트 흐름 ── -->
       <div class="right-col">
 
-        <!-- ACTIVE ALERTS -->
+        <!-- 활성 알림 -->
         <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
           <div style="padding:12px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
-            <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-danger pulse-ring"/>ACTIVE ALERTS</div>
-            <span class="chip chip-danger">{{ alertList.length }} active</span>
+            <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-danger pulse-ring"/>활성 알림</div>
+            <span class="chip chip-danger">{{ alertList.length }}건</span>
           </div>
           <div style="padding:10px;display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;">
-            <div v-if="alertList.length===0" style="padding:20px;text-align:center;color:var(--text-4);font-size:12.5px;">현재 활성 알림이 없습니다</div>
+            <div v-if="alertList.length===0" style="padding:20px;text-align:center;color: var(--text-3);font-size: 14px;">현재 활성 알림이 없습니다</div>
             <div v-for="a in alertList" :key="a.id" @click="selectedId=a.id"
               :style="`padding:10px 12px;border-left:3px solid var(--${a.sev});background:var(--${a.sev}-soft);border-radius:0 4px 4px 0;cursor:pointer;`">
               <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span :style="`font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--${a.sev});`">{{ a.plate }}</span>
-                <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-4);">{{ a.t }}</span>
+                <span :style="`font-family:var(--font-mono);font-size: 14px;font-weight:700;color: var(--${a.sev});`">{{ a.plate }}</span>
+                <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">{{ a.t }}</span>
               </div>
-              <div style="font-size:12.5px;color:var(--text-1);margin-top:5px;">{{ a.desc }}</div>
-              <div style="font-size:11.5px;color:var(--text-3);margin-top:4px;display:flex;gap:6px;align-items:center;">
+              <div style="font-size: 14px;color: var(--text-1);margin-top:5px;">{{ a.desc }}</div>
+              <div style="font-size: 14px;color: var(--text-3);margin-top:4px;display:flex;gap:6px;align-items:center;">
                 <AppIcon name="check" :size="10"/> {{ a.action }}
               </div>
             </div>
           </div>
         </div>
 
-        <!-- EVENT STREAM -->
+        <!-- 이벤트 흐름 -->
         <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
           <div style="padding:12px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand blink"/>EVENT STREAM</div>
-              <div style="font-size:11.5px;color:var(--text-2);margin-top:2px;">시간 역순</div>
+              <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand blink"/>이벤트 흐름</div>
+              <div style="font-size: 14px;color: var(--text-2);margin-top:2px;">시간 역순</div>
             </div>
-            <span class="chip chip-info">{{ allEvents.length }} events</span>
+            <span class="chip chip-info">{{ allEvents.length }}건</span>
           </div>
           <div style="flex:1;overflow-y:auto;">
-            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <table style="width:100%;border-collapse:collapse;font-size: 14px;">
               <tbody>
                 <tr v-for="(e,i) in allEvents" :key="i"
                   @click="()=>{ const id=eventVehicleId(e.plate); if(id) selectedId=id; }"
@@ -1212,13 +1212,13 @@ const rankingItems = computed(() =>
                   <td style="padding:8px 10px;white-space:nowrap;vertical-align:middle;width:60px;">
                     <div style="display:flex;align-items:center;gap:5px;">
                       <span :style="`width:6px;height:6px;border-radius:50%;background:${evColor(e.kind)};flex-shrink:0;display:inline-block;`"/>
-                      <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);">{{ e.t }}</span>
+                      <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">{{ e.t }}</span>
                     </div>
                   </td>
                   <td style="padding:8px 10px;white-space:nowrap;vertical-align:middle;">
-                    <span :style="`font-family:var(--font-mono);font-size:11px;font-weight:700;color:${evColor(e.kind)};`">{{ e.plate }}</span>
+                    <span :style="`font-family:var(--font-mono);font-size: 14px;font-weight:700;color:${evColor(e.kind)};`">{{ e.plate }}</span>
                   </td>
-                  <td style="padding:8px 10px;vertical-align:middle;color:var(--text-2);font-size:11px;">{{ e.text }}</td>
+                  <td style="padding:8px 10px;vertical-align:middle;color: var(--text-2);font-size: 14px;">{{ e.text }}</td>
                 </tr>
               </tbody>
             </table>
@@ -1228,31 +1228,31 @@ const rankingItems = computed(() =>
       </div><!-- /right-col -->
     </div><!-- /main-grid -->
 
-    <!-- ── 하단: DRIVER RANKING + HEATMAP ── -->
+    <!-- ── 하단: 운전자 순위 + 히트맵 ── -->
     <div class="bottom-grid">
 
       <!-- Driver Ranking -->
       <div class="card" style="padding:0;overflow:hidden;">
         <div style="padding:14px 18px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
           <div>
-            <div class="label-sm">DRIVER RANKING · TODAY</div>
-            <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">현재 누적 피로 점수</div>
+            <div class="label-sm">운전자 순위 · 오늘</div>
+            <div style="font-size: 14px;color: var(--text-2);margin-top:2px;">현재 누적 피로 점수</div>
           </div>
-          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-3);">상위 6명</span>
+          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">상위 6명</span>
         </div>
         <div style="padding:16px 18px;">
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div v-for="it in rankingItems" :key="it.id" @click="selectedId=it.id"
               style="display:grid;grid-template-columns:120px 1fr 60px;gap:14px;align-items:center;cursor:pointer;">
               <div>
-                <div style="font-size:12.5px;font-weight:600;color:var(--text-1);">{{ it.label }}</div>
-                <div style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);">{{ it.sub }}</div>
+                <div style="font-size: 14px;font-weight:600;color: var(--text-1);">{{ it.label }}</div>
+                <div style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">{{ it.sub }}</div>
               </div>
               <div style="height:16px;background:var(--bg-2);border-radius:3px;overflow:hidden;position:relative;">
                 <div :style="`width:${it.value}%;height:100%;background:${it.color};transition:width .4s;`"/>
-                <div style="position:absolute;top:50%;left:8px;transform:translateY(-50%);font-family:var(--font-mono);font-size:10px;color:var(--bg-1);font-weight:700;">{{ it.value }}</div>
+                <div style="position:absolute;top:50%;left:8px;transform:translateY(-50%);font-family:var(--font-mono);font-size: 14px;color: var(--bg-1);font-weight:700;">{{ it.value }}</div>
               </div>
-              <span :style="`font-family:var(--font-mono);font-size:11px;font-weight:700;color:${it.color};text-align:right;`">{{ it.tag }}</span>
+              <span :style="`font-family:var(--font-mono);font-size: 14px;font-weight:700;color:${it.color};text-align:right;`">{{ it.tag }}</span>
             </div>
           </div>
         </div>
@@ -1262,27 +1262,27 @@ const rankingItems = computed(() =>
       <div class="card" style="padding:18px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
-            <div class="label-sm">DRIVER × HOUR HEATMAP</div>
-            <div style="font-size:12.5px;color:var(--text-2);margin-top:2px;">오늘 시간대별 누적 피로 점수</div>
+            <div class="label-sm">운전자 × 시간대 히트맵</div>
+            <div style="font-size: 14px;color: var(--text-2);margin-top:2px;">오늘 시간대별 누적 피로 점수</div>
           </div>
           <span class="chip chip-mute">{{ formatSelectedDateLabel(selectedDate) }}</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
-          <div style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;font-family:var(--font-mono);font-size:9px;color:var(--text-4);">
+          <div style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">
             <div/>
             <div v-for="h in 24" :key="h" style="text-align:center;">{{ String(h-1).padStart(2,'0') }}</div>
           </div>
           <div v-for="d in heatmapDrivers" :key="d.plate" style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;align-items:center;">
-            <div style="font-size:11px;">
-              <div style="font-weight:600;color:var(--text-1);">{{ d.name }}</div>
-              <div style="font-family:var(--font-mono);color:var(--text-4);font-size:9px;margin-top:1px;">{{ d.plate }}</div>
+            <div style="font-size: 14px;">
+              <div style="font-weight:600;color: var(--text-1);">{{ d.name }}</div>
+              <div style="font-family:var(--font-mono);color: var(--text-3);font-size: 14px;margin-top:1px;">{{ d.plate }}</div>
             </div>
             <div v-for="(s,i) in d.hours" :key="i"
               :style="`height:20px;border-radius:2px;background:${heatColor(s)};`"
               :title="`${i}:00 · ${s===null?'운행 없음':s+'점'}`"/>
           </div>
         </div>
-        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10px;color:var(--text-3);">
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">
           <span>0 (안전)</span>
           <div style="display:flex;gap:2px;">
             <span v-for="c in ['var(--bg-2)','#5E8A6F','#92A08F','#C5A56A','#C58A3A','#B5544A']" :key="c"
@@ -1302,21 +1302,21 @@ const rankingItems = computed(() =>
       <div class="phone-modal">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
           <div>
-            <div style="font:600 10px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--danger);margin-bottom:4px;">PHONE RECOMMENDATION</div>
-            <div style="font:800 16px/1.2 var(--font-sans);color:var(--text-1);">전화 권고 기록 완료</div>
+            <div style="font:600 14px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color: var(--danger);margin-bottom:4px;">전화 권고</div>
+            <div style="font:700 16px/1.2 var(--font-point);color: var(--text-1);">전화 권고 기록 완료</div>
           </div>
           <button class="btn btn-ghost" style="padding:4px 8px;" @click="phoneModal=null">✕</button>
         </div>
 
         <div style="background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:14px;">
-          <div style="font-size:11px;color:var(--text-4);font-family:var(--font-mono);margin-bottom:6px;">대상 운전자</div>
-          <div style="font:700 15px/1.3 var(--font-mono);color:var(--text-1);">{{ phoneModal.driver }}</div>
-          <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;">{{ phoneModal.plate }}</div>
+          <div style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);margin-bottom:6px;">대상 운전자</div>
+          <div style="font:700 15px/1.3 var(--font-mono);color: var(--text-1);">{{ phoneModal.driver }}</div>
+          <div style="font-size: 14px;color: var(--text-3);margin-top:2px;">{{ phoneModal.plate }}</div>
         </div>
 
         <div style="margin-bottom:16px;">
-          <div style="font-size:11px;color:var(--text-4);font-family:var(--font-mono);letter-spacing:.1em;margin-bottom:8px;">DRIVER CONTACT</div>
-          <div style="font:800 22px/1 var(--font-mono);color:var(--text-1);letter-spacing:.04em;margin-bottom:12px;">
+          <div style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);letter-spacing:.1em;margin-bottom:8px;">운전자 연락처</div>
+          <div style="font:800 22px/1 var(--font-mono);color: var(--text-1);letter-spacing:.04em;margin-bottom:12px;">
             {{ phoneModal.phone || '번호 없음' }}
           </div>
           <div v-if="phoneModal.phone" style="display:flex;gap:8px;">
@@ -1330,7 +1330,7 @@ const rankingItems = computed(() =>
           </div>
         </div>
 
-        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-4);text-align:center;border-top:1px solid var(--line-1);padding-top:10px;">
+        <div style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);text-align:center;border-top:1px solid var(--line-1);padding-top:10px;">
           전화 권고 이력이 시스템에 기록되었습니다
         </div>
       </div>
@@ -1342,17 +1342,17 @@ const rankingItems = computed(() =>
     <Transition name="sms-toast">
       <div v-if="smsToast" class="sms-toast">
         <div class="sms-toast__header">
-          <span style="font:600 10px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ok);">📱 SMS 발송 시뮬레이션</span>
-          <button style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;line-height:1;padding:0;" @click="smsToast=null">✕</button>
+          <span style="font:600 14px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color: var(--ok);">📱 SMS 발송 시뮬레이션</span>
+          <button style="background:none;border:none;cursor:pointer;color: var(--text-3);font-size: 14px;line-height:1;padding:0;" @click="smsToast=null">✕</button>
         </div>
         <div class="sms-toast__to">
-          <span style="font-size:10px;color:var(--text-4);font-family:var(--font-mono);">TO</span>
-          <span style="font:700 13px/1 var(--font-mono);color:var(--text-1);">{{ smsToast.driver }}</span>
-          <span style="font-family:var(--font-mono);font-size:11px;color:var(--ok);">{{ smsToast.phone }}</span>
-          <span style="font-size:10px;color:var(--text-4);font-family:var(--font-mono);">· {{ smsToast.count }}회차</span>
+          <span style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);">TO</span>
+          <span style="font:700 14px/1 var(--font-mono);color: var(--text-1);">{{ smsToast.driver }}</span>
+          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--ok);">{{ smsToast.phone }}</span>
+          <span style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);">· {{ smsToast.count }}회차</span>
         </div>
         <div class="sms-toast__bubble">{{ smsToast.message }}</div>
-        <div style="font-size:10px;color:var(--text-4);font-family:var(--font-mono);margin-top:6px;">포트폴리오 시뮬레이션 · 실제 전송 아님</div>
+        <div style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);margin-top:6px;">포트폴리오 시뮬레이션 · 실제 전송 아님</div>
       </div>
     </Transition>
   </Teleport>
@@ -1381,15 +1381,15 @@ const rankingItems = computed(() =>
   display:inline-flex;
   align-items:center;
   gap:6px;
-  font-size:11px;
-  color:var(--text-3);
+  font-size: 14px;
+  color: var(--text-3);
   white-space:nowrap;
 }
 .date-filter__input {
   border:none;
   background:transparent;
-  color:var(--text-1);
-  font-size:12px;
+  color: var(--text-1);
+  font-size: 14px;
   outline:none;
 }
 
@@ -1407,12 +1407,12 @@ const rankingItems = computed(() =>
 .kpi-tile { padding: 14px 16px; border-right: 1px solid var(--line-1); }
 .kpi-tile:last-child { border-right: none; }
 .tile-hdr   { display:flex; justify-content:space-between; align-items:center; }
-.tile-label { font: 600 9.5px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-4); }
-.tile-meta  { font-family: var(--font-mono); font-size: 9px; color: var(--text-4); }
+.tile-label { font: 600 14px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
+.tile-meta  { font-family: var(--font-mono); font-size: 14px; color: var(--text-3); }
 .tile-val   { display:flex; align-items:baseline; gap:4px; margin-top:8px; }
-.tile-delta { margin-left:auto; font-family:var(--font-mono); font-size:10.5px; padding:2px 5px; border-radius:3px; }
-.tile-delta.bad  { color:var(--danger); background:var(--danger-soft); }
-.tile-delta.good { color:var(--ok);     background:var(--ok-soft); }
+.tile-delta { margin-left:auto; font-family:var(--font-mono); font-size: 14px; padding:2px 5px; border-radius:3px; }
+.tile-delta.bad  { color: var(--danger); background:var(--danger-soft); }
+.tile-delta.good { color: var(--ok);     background:var(--ok-soft); }
 
 /* 메인 3컬럼 그리드 */
 .main-grid {
@@ -1433,7 +1433,7 @@ const rankingItems = computed(() =>
 .map-tabs { display:flex; gap:5px; }
 .map-tab {
   padding: 5px 10px;
-  font-size: 11px;
+  font-size: 14px;
   font-family: var(--font-mono);
   border-radius: var(--r-sm);
   cursor: pointer;
@@ -1480,15 +1480,15 @@ const rankingItems = computed(() =>
 .fb-bar-fill { position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg,var(--ok),var(--warn) 50%,var(--danger) 85%); transition:width .4s; }
 
 /* label-sm */
-.label-sm { font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-3); font-weight:600; }
+.label-sm { font-family:var(--font-mono); font-size: 14px; letter-spacing:.12em; text-transform:uppercase; color: var(--text-3); font-weight:600; }
 
 /* chips */
-.chip { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:500; border:1px solid transparent; font-family:var(--font-mono); }
-.chip-ok     { background:var(--ok-soft);     color:var(--ok);     border-color:rgba(138,186,154,.25); }
-.chip-warn   { background:var(--warn-soft);   color:var(--warn);   border-color:rgba(214,181,106,.25); }
-.chip-danger { background:var(--danger-soft); color:var(--danger); border-color:rgba(209,139,126,.25); }
-.chip-info   { background:var(--info-soft);   color:var(--info);   border-color:var(--accent-line); }
-.chip-mute   { background:var(--bg-3);        color:var(--text-3); border-color:var(--line-2); }
+.chip { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:999px; font-size: 14px; font-weight: 700; border:1px solid transparent; font-family:var(--font-mono); }
+.chip-ok     { background:var(--ok-soft);     color: var(--ok);     border-color:rgba(138,186,154,.25); }
+.chip-warn   { background:var(--warn-soft);   color: var(--warn);   border-color:rgba(214,181,106,.25); }
+.chip-danger { background:var(--danger-soft); color: var(--danger); border-color:rgba(209,139,126,.25); }
+.chip-info   { background:var(--info-soft);   color: var(--info);   border-color: var(--accent-line); }
+.chip-mute   { background:var(--bg-3);        color: var(--text-3); border-color: var(--line-2); }
 
 /* dots */
 .dot        { width:6px; height:6px; border-radius:50%; display:inline-block; flex-shrink:0; }
@@ -1527,10 +1527,10 @@ const rankingItems = computed(() =>
 }
 
 /* 버튼 */
-.btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:var(--r-sm); font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:var(--font-sans); transition:background .12s; }
+.btn { display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:var(--r-sm); font-size: 14px; font-weight:500; cursor:pointer; border:none; font-family:var(--font-sans); transition:background .12s; }
 .btn-primary { background:var(--accent); color:#fff; }
 .btn-primary:hover { background:var(--accent-hover); }
-.btn-ghost { background:var(--bg-2); color:var(--text-2); border:1px solid var(--line-2); }
+.btn-ghost { background:var(--bg-2); color: var(--text-2); border:1px solid var(--line-2); }
 .btn-ghost:hover { background:var(--bg-3); }
 
 /* SMS 시뮬레이션 토스트 */
@@ -1557,7 +1557,7 @@ const rankingItems = computed(() =>
   border: 1px solid var(--line-2);
   border-radius: var(--r-sm);
   padding: 10px 12px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
   line-height: 1.5;
   font-family: var(--font-sans);

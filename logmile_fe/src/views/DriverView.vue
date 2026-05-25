@@ -169,7 +169,7 @@ async function doUnassign(d) {
 <template>
   <div class="view">
     <div class="breadcrumb mono">
-      ADMIN / DRIVER_TABLE · {{ list.length }} record(s)
+      관리자 / 운전자 목록 · {{ list.length }}건
     </div>
 
     <div class="page-header">
@@ -186,17 +186,17 @@ async function doUnassign(d) {
     <div class="sum-row">
       <div class="sum-card">
         <span class="sum-dot" style="background:var(--accent)" />
-        <span class="sum-lbl mono">ASSIGNED</span>
-        <span class="sum-val mono" style="color:var(--accent)">{{ assignedCount }}</span>
+        <span class="sum-lbl mono">배정 완료</span>
+        <span class="sum-val mono" style="color: var(--accent)">{{ assignedCount }}</span>
       </div>
       <div class="sum-card">
         <span class="sum-dot" style="background:var(--text-3)" />
-        <span class="sum-lbl mono">UNASSIGNED</span>
-        <span class="sum-val mono" style="color:var(--text-3)">{{ unassignedCount }}</span>
+        <span class="sum-lbl mono">미배정</span>
+        <span class="sum-val mono" style="color: var(--text-3)">{{ unassignedCount }}</span>
       </div>
       <div class="sum-card">
-        <span class="sum-dot" style="background:var(--text-4)" />
-        <span class="sum-lbl mono">TOTAL</span>
+        <span class="sum-dot" style="background:var(--text-3)" />
+        <span class="sum-lbl mono">전체</span>
         <span class="sum-val mono">{{ list.length }}</span>
       </div>
     </div>
@@ -209,14 +209,14 @@ async function doUnassign(d) {
         <div class="filter-btns">
           <button v-for="s in ['ALL','ASSIGNED','UNASSIGNED']" :key="s"
             class="filter-btn mono" :class="{ active: assignFilter===s }"
-            @click="assignFilter=s">{{ s }}</button>
+            @click="assignFilter=s">{{ s === 'ALL' ? '전체' : s === 'ASSIGNED' ? '배정 완료' : '미배정' }}</button>
         </div>
       </div>
     </div>
 
     <!-- 로딩 / 에러 -->
     <div v-if="loading" class="state-row mono">데이터 로드 중...</div>
-    <div v-else-if="error" class="state-row" style="color:var(--danger)">{{ error }}</div>
+    <div v-else-if="error" class="state-row" style="color: var(--danger)">{{ error }}</div>
 
     <!-- 테이블 -->
     <div v-else class="card table-card">
@@ -244,7 +244,7 @@ async function doUnassign(d) {
                   </div>
                 </div>
               </td>
-              <td class="mono" style="font-size:12px;color:var(--text-2)">{{ d.phone }}</td>
+              <td class="mono" style="font-size: 14px;color: var(--text-2)">{{ d.phone }}</td>
               <td class="sub-txt">{{ d.license }}</td>
               <td>
                 <div v-if="d.vehicleId" style="display:flex;align-items:center;gap:6px;">
@@ -318,7 +318,7 @@ async function doUnassign(d) {
                 {{ v.plateNo }} ({{ v.type }})
               </option>
             </select>
-            <div v-if="availableVehicles.length === 0" style="font-size:11.5px;color:var(--text-4);margin-top:4px">
+            <div v-if="availableVehicles.length === 0" style="font-size: 14px;color: var(--text-3);margin-top:4px">
               배정 가능한 활성 차량이 없습니다.
             </div>
           </div>
@@ -336,10 +336,10 @@ async function doUnassign(d) {
 
 <style scoped>
 .view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
-.breadcrumb { font-size:11px; color:var(--text-4); letter-spacing:0.04em; }
+.breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 .page-header { display:flex; align-items:center; justify-content:space-between; }
-.page-title  { font-size:24px; font-weight:700; color:var(--text-1); margin:0; letter-spacing:-0.01em; }
-.hdr-btn { display:flex; align-items:center; gap:5px; font-size:12.5px; padding:7px 13px; }
+.page-title  { font-size:24px; font-weight:700; color: var(--text-1); margin:0; letter-spacing: 0; }
+.hdr-btn { display:flex; align-items:center; gap:5px; font-size: 14px; padding:7px 13px; }
 
 .sum-row  { display:flex; gap:10px; }
 .sum-card {
@@ -347,63 +347,63 @@ async function doUnassign(d) {
   background:var(--bg-2); border:1px solid var(--line-1); border-radius:var(--r-md); flex:1;
 }
 .sum-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.sum-lbl { font-size:10px; letter-spacing:0.08em; color:var(--text-4); flex:1; }
-.sum-val { font-size:20px; font-weight:700; color:var(--text-2); }
+.sum-lbl { font-size: 14px; letter-spacing:0.08em; color: var(--text-3); flex:1; }
+.sum-val { font-size:20px; font-weight:700; color: var(--text-2); }
 
 .filter-row  { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 .search-inp  {
   flex:1; min-width:240px; padding:8px 12px;
   border:1px solid var(--line-2); border-radius:var(--r-md);
-  background:var(--bg-1); color:var(--text-1); font-size:13px; outline:none; transition:border-color .15s;
+  background:var(--bg-1); color: var(--text-1); font-size: 14px; outline:none; transition:border-color .15s;
 }
-.search-inp:focus { border-color:var(--accent-line); }
+.search-inp:focus { border-color: var(--accent-line); }
 .filter-group { display:flex; align-items:center; gap:8px; }
-.filter-lbl   { font-size:10px; color:var(--text-4); letter-spacing:0.08em; }
+.filter-lbl   { font-size: 14px; color: var(--text-3); letter-spacing:0.08em; }
 .filter-btns  { display:flex; gap:3px; }
 .filter-btn {
-  padding:4px 9px; border-radius:var(--r-sm); font-size:10.5px;
-  background:none; border:1px solid var(--line-2); color:var(--text-3); cursor:pointer; transition:all .12s;
+  padding:4px 9px; border-radius:var(--r-sm); font-size: 14px;
+  background:none; border:1px solid var(--line-2); color: var(--text-3); cursor:pointer; transition:all .12s;
 }
-.filter-btn.active { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:600; }
+.filter-btn.active { background:var(--accent-soft); border-color: var(--accent-line); color: var(--accent); font-weight:600; }
 
-.state-row { padding:40px; text-align:center; font-size:13px; color:var(--text-4); }
+.state-row { padding:40px; text-align:center; font-size: 14px; color: var(--text-3); }
 
 .table-card { padding:0; overflow:hidden; }
 .table-wrap { overflow-x:auto; }
-.tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.tbl { width:100%; border-collapse:collapse; font-size: 14px; }
 .tbl th {
   padding:10px 14px; text-align:left;
-  font-size:10px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase;
-  color:var(--text-4); background:var(--bg-3); border-bottom:1px solid var(--line-1); white-space:nowrap;
+  font-size: 16px; font-weight: 700; letter-spacing:0.07em; text-transform:uppercase;
+  color: var(--text-3); background:var(--bg-3); border-bottom:1px solid var(--line-1); white-space:nowrap;
 }
-.tbl td { padding:11px 14px; color:var(--text-2); border-bottom:1px solid var(--line-1); vertical-align:middle; }
+.tbl td { padding:11px 14px; color: var(--text-2); border-bottom:1px solid var(--line-1); vertical-align:middle; }
 .tbl tbody tr:last-child td { border-bottom:none; }
 .tbl tbody tr:hover td { background:var(--bg-3); }
 
 .avatar {
   width:32px; height:32px; border-radius:50%; flex-shrink:0;
-  background:var(--accent-soft); color:var(--accent);
+  background:var(--accent-soft); color: var(--accent);
   display:flex; align-items:center; justify-content:center;
-  font-size:13px; font-weight:700;
+  font-size: 14px; font-weight:700;
 }
-.cell-name { font-size:13px; font-weight:500; color:var(--text-1); }
-.sub-txt   { font-size:11px; color:var(--text-4); margin-top:2px; }
-.plate-txt { font-size:12px; color:var(--text-2); }
+.cell-name { font-size: 16px; font-weight: 600; color: var(--text-1); }
+.sub-txt   { font-size: 14px; color: var(--text-3); margin-top:2px; }
+.plate-txt { font-size: 14px; color: var(--text-2); }
 
 .act-btn {
-  font-size:11px; padding:3px 9px; margin-left:4px;
+  font-size: 14px; padding:3px 9px; margin-left:4px;
   border-radius:var(--r-sm); cursor:pointer; border:1px solid var(--line-2);
-  background:transparent; color:var(--text-2); font-family:var(--font-mono);
+  background:transparent; color: var(--text-2); font-family:var(--font-mono);
   transition:all .12s;
 }
 .act-btn:first-child { margin-left:0; }
-.act-btn:hover        { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); }
-.act-del:hover        { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color:var(--danger); }
-.act-assign           { font-size:10px; padding:2px 7px; color:var(--accent); border-color:var(--accent-line); background:var(--accent-soft); }
-.act-unassign         { font-size:10px; padding:2px 6px; color:var(--text-3); }
-.act-unassign:hover   { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color:var(--danger); }
+.act-btn:hover        { background:var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
+.act-del:hover        { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color: var(--danger); }
+.act-assign           { font-size: 14px; padding:2px 7px; color: var(--accent); border-color: var(--accent-line); background:var(--accent-soft); }
+.act-unassign         { font-size: 14px; padding:2px 6px; color: var(--text-3); }
+.act-unassign:hover   { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color: var(--danger); }
 
-.empty-row { padding:40px; text-align:center; color:var(--text-4); font-size:13px; }
+.empty-row { padding:40px; text-align:center; color: var(--text-3); font-size: 14px; }
 
 /* 모달 */
 .modal-backdrop {
@@ -418,22 +418,22 @@ async function doUnassign(d) {
   display:flex; align-items:center; justify-content:space-between;
   padding:16px 20px; border-bottom:1px solid var(--line-1);
 }
-.modal-title { font-size:15px; font-weight:700; color:var(--text-1); }
+.modal-title { font-size:15px; font-weight:700; color: var(--text-1); }
 .modal-close {
-  background:none; border:none; cursor:pointer; color:var(--text-3);
+  background:none; border:none; cursor:pointer; color: var(--text-3);
   font-size:16px; padding:0 4px; transition:color .12s;
 }
-.modal-close:hover { color:var(--text-1); }
+.modal-close:hover { color: var(--text-1); }
 .modal-body   { padding:20px; display:flex; flex-direction:column; gap:14px; }
 .modal-footer { display:flex; justify-content:flex-end; gap:8px; padding:14px 20px; border-top:1px solid var(--line-1); }
 
 .form-row { display:flex; flex-direction:column; gap:5px; }
-.form-lbl { font-size:11.5px; color:var(--text-3); font-weight:600; }
-.req      { color:var(--danger); }
+.form-lbl { font-size: 14px; color: var(--text-3); font-weight:600; }
+.req      { color: var(--danger); }
 .form-inp {
   padding:8px 11px; border:1px solid var(--line-2); border-radius:var(--r-sm);
-  background:var(--bg-2); color:var(--text-1); font-size:13px; outline:none;
+  background:var(--bg-2); color: var(--text-1); font-size: 14px; outline:none;
   transition:border-color .15s;
 }
-.form-inp:focus { border-color:var(--accent-line); }
+.form-inp:focus { border-color: var(--accent-line); }
 </style>

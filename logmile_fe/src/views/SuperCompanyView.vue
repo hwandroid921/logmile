@@ -62,17 +62,17 @@ onMounted(fetchCompanies)
 
     <div class="summary-grid">
       <div class="summary-card">
-        <span class="mono summary-label">TOTAL</span>
+        <span class="mono summary-label">전체</span>
         <strong>{{ companies.length }}</strong>
         <span>등록 업체</span>
       </div>
       <div class="summary-card">
-        <span class="mono summary-label">ACTIVE</span>
+        <span class="mono summary-label">활성</span>
         <strong class="ok">{{ activeCount }}</strong>
         <span>활성 업체</span>
       </div>
       <div class="summary-card">
-        <span class="mono summary-label">INACTIVE</span>
+        <span class="mono summary-label">비활성</span>
         <strong class="danger">{{ inactiveCount }}</strong>
         <span>비활성 업체</span>
       </div>
@@ -117,7 +117,7 @@ onMounted(fetchCompanies)
               <td class="mono">{{ formatDate(company.createdAt) }}</td>
               <td>
                 <span class="status-pill" :class="{ inactive: !company.active }">
-                  {{ company.active ? 'ACTIVE' : 'INACTIVE' }}
+                  {{ company.active ? '활성' : '비활성' }}
                 </span>
               </td>
               <td style="text-align:right">
@@ -146,7 +146,7 @@ onMounted(fetchCompanies)
 }
 .view-header { display: flex; align-items: flex-start; justify-content: space-between; }
 .view-title { font-size: 18px; font-weight: 700; color: var(--text-1); margin: 0 0 4px; }
-.view-sub { font-size: 12.5px; color: var(--text-4); margin: 0; }
+.view-sub { font-size: 14px; color: var(--text-3); margin: 0; }
 
 .summary-grid {
   display: grid;
@@ -163,8 +163,8 @@ onMounted(fetchCompanies)
   gap: 4px;
 }
 .summary-label {
-  font-size: 10px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   letter-spacing: 0.08em;
 }
 .summary-card strong {
@@ -175,8 +175,8 @@ onMounted(fetchCompanies)
 .summary-card strong.ok { color: var(--ok); }
 .summary-card strong.danger { color: var(--danger); }
 .summary-card span:last-child {
-  font-size: 11px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
 }
 
 .error-box {
@@ -185,21 +185,21 @@ onMounted(fetchCompanies)
   border: 1px solid rgba(181, 84, 74, 0.28);
   background: var(--danger-soft);
   color: var(--danger);
-  font-size: 12.5px;
+  font-size: 14px;
 }
 
 /* 테이블 */
 .table-card { padding: 0; overflow: hidden; }
 .table-wrap { overflow-x: auto; }
-.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th {
   padding: 11px 16px;
   text-align: left;
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-4);
+  color: var(--text-3);
   background: var(--bg-3);
   border-bottom: 1px solid var(--line-1);
 }
@@ -212,8 +212,8 @@ onMounted(fetchCompanies)
 .placeholder-row {
   padding: 48px 16px;
   text-align: center;
-  color: var(--text-4);
-  font-size: 13px;
+  color: var(--text-3);
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,7 +229,7 @@ onMounted(fetchCompanies)
   color: var(--ok);
   border: 1px solid rgba(94, 138, 111, 0.22);
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 14px;
 }
 .status-pill.inactive {
   background: rgba(181, 84, 74, 0.12);
@@ -237,7 +237,7 @@ onMounted(fetchCompanies)
   border-color: rgba(181, 84, 74, 0.22);
 }
 .action-btn {
-  font-size: 11.5px;
+  font-size: 14px;
   padding: 5px 10px;
 }
 .action-btn.danger:hover {

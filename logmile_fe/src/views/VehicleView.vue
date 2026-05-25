@@ -127,7 +127,7 @@ async function removeItem(v) {
 <template>
   <div class="view">
     <div class="breadcrumb mono">
-      ADMIN / VEHICLE_TABLE · {{ list.length }} record(s)
+      관리자 / 차량 목록 · {{ list.length }}건
     </div>
 
     <div class="page-header">
@@ -144,17 +144,17 @@ async function removeItem(v) {
     <div class="sum-row">
       <div class="sum-card">
         <span class="sum-dot" style="background:var(--ok)" />
-        <span class="sum-lbl mono">ACTIVE</span>
-        <span class="sum-val mono" style="color:var(--ok)">{{ activeCount }}</span>
+        <span class="sum-lbl mono">운행 가능</span>
+        <span class="sum-val mono" style="color: var(--ok)">{{ activeCount }}</span>
       </div>
       <div class="sum-card">
         <span class="sum-dot" style="background:var(--text-3)" />
-        <span class="sum-lbl mono">INACTIVE</span>
-        <span class="sum-val mono" style="color:var(--text-3)">{{ inactiveCount }}</span>
+        <span class="sum-lbl mono">비활성</span>
+        <span class="sum-val mono" style="color: var(--text-3)">{{ inactiveCount }}</span>
       </div>
       <div class="sum-card">
-        <span class="sum-dot" style="background:var(--text-4)" />
-        <span class="sum-lbl mono">TOTAL</span>
+        <span class="sum-dot" style="background:var(--text-3)" />
+        <span class="sum-lbl mono">전체</span>
         <span class="sum-val mono">{{ list.length }}</span>
       </div>
     </div>
@@ -163,18 +163,18 @@ async function removeItem(v) {
     <div class="filter-row">
       <input v-model="search" class="search-inp" placeholder="번호판 / 운전자 검색" />
       <div class="filter-group">
-        <span class="filter-lbl mono">STATUS</span>
+        <span class="filter-lbl mono">상태</span>
         <div class="filter-btns">
           <button v-for="s in ['ALL','ACTIVE','INACTIVE']" :key="s"
             class="filter-btn mono" :class="{ active: statusFilter===s }"
-            @click="statusFilter=s">{{ s }}</button>
+            @click="statusFilter=s">{{ s === 'ALL' ? '전체' : s === 'ACTIVE' ? '운행 가능' : '비활성' }}</button>
         </div>
       </div>
     </div>
 
     <!-- 로딩 / 에러 -->
     <div v-if="loading" class="state-row mono">데이터 로드 중...</div>
-    <div v-else-if="error" class="state-row" style="color:var(--danger)">{{ error }}</div>
+    <div v-else-if="error" class="state-row" style="color: var(--danger)">{{ error }}</div>
 
     <!-- 테이블 -->
     <div v-else class="card table-card">
@@ -201,7 +201,7 @@ async function removeItem(v) {
               <td>
                 <div class="cell-name">{{ v.driverName }}</div>
               </td>
-              <td class="mono" style="font-size:12px;color:var(--text-2)">{{ v.driverPhone }}</td>
+              <td class="mono" style="font-size: 14px;color: var(--text-2)">{{ v.driverPhone }}</td>
               <td>
                 <span class="status-chip mono"
                   :style="{ color: statusChip(v.active).color, background: statusChip(v.active).bg, borderColor: statusChip(v.active).border }">
@@ -267,11 +267,11 @@ async function removeItem(v) {
 
 <style scoped>
 .view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
-.breadcrumb { font-size:11px; color:var(--text-4); letter-spacing:0.04em; }
+.breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header { display:flex; align-items:center; justify-content:space-between; }
-.page-title  { font-size:24px; font-weight:700; color:var(--text-1); margin:0; letter-spacing:-0.01em; }
-.hdr-btn { display:flex; align-items:center; gap:5px; font-size:12.5px; padding:7px 13px; }
+.page-title  { font-size:24px; font-weight:700; color: var(--text-1); margin:0; letter-spacing: 0; }
+.hdr-btn { display:flex; align-items:center; gap:5px; font-size: 14px; padding:7px 13px; }
 
 .sum-row { display:flex; gap:10px; }
 .sum-card {
@@ -279,63 +279,63 @@ async function removeItem(v) {
   background:var(--bg-2); border:1px solid var(--line-1); border-radius:var(--r-md); flex:1;
 }
 .sum-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.sum-lbl { font-size:10px; letter-spacing:0.08em; color:var(--text-4); flex:1; }
-.sum-val { font-size:20px; font-weight:700; color:var(--text-2); }
+.sum-lbl { font-size: 14px; letter-spacing:0.08em; color: var(--text-3); flex:1; }
+.sum-val { font-size:20px; font-weight:700; color: var(--text-2); }
 
 .filter-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
 .search-inp {
   flex:1; min-width:240px; padding:8px 12px;
   border:1px solid var(--line-2); border-radius:var(--r-md);
-  background:var(--bg-1); color:var(--text-1); font-size:13px; outline:none;
+  background:var(--bg-1); color: var(--text-1); font-size: 14px; outline:none;
   transition:border-color .15s;
 }
-.search-inp:focus { border-color:var(--accent-line); }
+.search-inp:focus { border-color: var(--accent-line); }
 .filter-group { display:flex; align-items:center; gap:8px; }
-.filter-lbl   { font-size:10px; color:var(--text-4); letter-spacing:0.08em; white-space:nowrap; }
+.filter-lbl   { font-size: 14px; color: var(--text-3); letter-spacing:0.08em; white-space:nowrap; }
 .filter-btns  { display:flex; gap:3px; }
 .filter-btn {
-  padding:4px 9px; border-radius:var(--r-sm); font-size:10.5px;
-  background:none; border:1px solid var(--line-2); color:var(--text-3);
+  padding:4px 9px; border-radius:var(--r-sm); font-size: 14px;
+  background:none; border:1px solid var(--line-2); color: var(--text-3);
   cursor:pointer; transition:all .12s;
 }
 .filter-btn.active {
-  background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:600;
+  background:var(--accent-soft); border-color: var(--accent-line); color: var(--accent); font-weight:600;
 }
 
-.state-row { padding:40px; text-align:center; font-size:13px; color:var(--text-4); }
+.state-row { padding:40px; text-align:center; font-size: 14px; color: var(--text-3); }
 
 .table-card { padding:0; overflow:hidden; }
 .table-wrap { overflow-x:auto; }
-.tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.tbl { width:100%; border-collapse:collapse; font-size: 14px; }
 .tbl th {
   padding:10px 14px; text-align:left;
-  font-size:10px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase;
-  color:var(--text-4); background:var(--bg-3); border-bottom:1px solid var(--line-1);
+  font-size: 16px; font-weight: 700; letter-spacing:0.07em; text-transform:uppercase;
+  color: var(--text-3); background:var(--bg-3); border-bottom:1px solid var(--line-1);
   white-space:nowrap;
 }
-.tbl td { padding:11px 14px; color:var(--text-2); border-bottom:1px solid var(--line-1); vertical-align:middle; }
+.tbl td { padding:11px 14px; color: var(--text-2); border-bottom:1px solid var(--line-1); vertical-align:middle; }
 .tbl tbody tr:last-child td { border-bottom:none; }
 .tbl tbody tr:hover td { background:var(--bg-3); }
 
-.plate     { font-size:12.5px; font-weight:700; color:var(--text-1); }
-.cell-name { font-size:13px; font-weight:500; color:var(--text-1); }
-.sub-txt   { font-size:11px; color:var(--text-4); margin-top:2px; }
+.plate     { font-size: 16px; font-weight:700; color: var(--text-1); }
+.cell-name { font-size: 16px; font-weight: 600; color: var(--text-1); }
+.sub-txt   { font-size: 14px; color: var(--text-3); margin-top:2px; }
 
 .status-chip {
   display:inline-block; padding:2px 8px; border-radius:var(--r-sm);
-  font-size:10px; font-weight:600; letter-spacing:0.06em; border:1px solid;
+  font-size: 14px; font-weight:600; letter-spacing:0.06em; border:1px solid;
 }
 
 .act-btn {
-  font-size:11px; padding:3px 9px; margin-left:4px;
+  font-size: 14px; padding:3px 9px; margin-left:4px;
   border-radius:var(--r-sm); cursor:pointer; border:1px solid var(--line-2);
-  background:transparent; color:var(--text-2); font-family:var(--font-mono);
+  background:transparent; color: var(--text-2); font-family:var(--font-mono);
   transition:all .12s;
 }
-.act-btn:hover     { background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); }
-.act-del:hover     { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color:var(--danger); }
+.act-btn:hover     { background:var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
+.act-del:hover     { background:rgba(181,84,74,.12); border-color:rgba(181,84,74,.4); color: var(--danger); }
 
-.empty-row { padding:40px; text-align:center; color:var(--text-4); font-size:13px; }
+.empty-row { padding:40px; text-align:center; color: var(--text-3); font-size: 14px; }
 
 /* 모달 */
 .modal-backdrop {
@@ -350,25 +350,25 @@ async function removeItem(v) {
   display:flex; align-items:center; justify-content:space-between;
   padding:16px 20px; border-bottom:1px solid var(--line-1);
 }
-.modal-title { font-size:15px; font-weight:700; color:var(--text-1); }
+.modal-title { font-size:15px; font-weight:700; color: var(--text-1); }
 .modal-close {
-  background:none; border:none; cursor:pointer; color:var(--text-3);
+  background:none; border:none; cursor:pointer; color: var(--text-3);
   font-size:16px; padding:0 4px; transition:color .12s;
 }
-.modal-close:hover { color:var(--text-1); }
+.modal-close:hover { color: var(--text-1); }
 .modal-body   { padding:20px; display:flex; flex-direction:column; gap:14px; }
 .modal-footer { display:flex; justify-content:flex-end; gap:8px; padding:14px 20px; border-top:1px solid var(--line-1); }
 
 .form-row { display:flex; flex-direction:column; gap:5px; }
-.form-lbl { font-size:11.5px; color:var(--text-3); font-weight:600; }
-.req      { color:var(--danger); }
+.form-lbl { font-size: 14px; color: var(--text-3); font-weight:600; }
+.req      { color: var(--danger); }
 .form-inp {
   padding:8px 11px; border:1px solid var(--line-2); border-radius:var(--r-sm);
-  background:var(--bg-2); color:var(--text-1); font-size:13px; outline:none;
+  background:var(--bg-2); color: var(--text-1); font-size: 14px; outline:none;
   transition:border-color .15s;
 }
-.form-inp:focus { border-color:var(--accent-line); }
+.form-inp:focus { border-color: var(--accent-line); }
 
 .toggle-wrap { display:flex; align-items:center; gap:8px; cursor:pointer; }
-.toggle-label { font-size:13px; color:var(--text-2); }
+.toggle-label { font-size: 14px; color: var(--text-2); }
 </style>

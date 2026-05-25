@@ -50,9 +50,9 @@ onMounted(fetchAdmins)
   <div class="view">
     <!-- 브레드크럼 -->
     <div class="breadcrumb mono">
-      <span>SUPER_ADMIN</span>
+      <span>최상위 관리자</span>
       <AppIcon name="chevronR" :size="11" class="bc-sep" />
-      <span>HOME</span>
+      <span>홈</span>
     </div>
 
     <!-- 헤더 -->
@@ -64,7 +64,7 @@ onMounted(fetchAdmins)
       <div class="admin-badge">
         <span class="dot dot-ok" style="animation: blink-soft 2s infinite" />
         <span class="mono">{{ authStore.name }}</span>
-        <span class="chip chip-accent">SUPER ADMIN</span>
+        <span class="chip chip-accent">최상위 관리자</span>
       </div>
     </div>
 
@@ -179,8 +179,8 @@ onMounted(fetchAdmins)
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   letter-spacing: 0.07em;
 }
 .bc-sep { opacity: .5; }
@@ -192,8 +192,8 @@ onMounted(fetchAdmins)
   justify-content: space-between;
   gap: 12px;
 }
-.view-title { font-size: 20px; font-weight: 700; color: var(--text-1); margin: 0 0 4px; letter-spacing: -0.01em; }
-.view-sub   { font-size: 12.5px; color: var(--text-4); margin: 0; }
+.view-title { font-size: 20px; font-weight: 700; color: var(--text-1); margin: 0 0 4px; letter-spacing: 0; }
+.view-sub   { font-size: 14px; color: var(--text-3); margin: 0; }
 
 .admin-badge {
   display: flex;
@@ -203,7 +203,7 @@ onMounted(fetchAdmins)
   background: var(--bg-3);
   border: 1px solid var(--line-1);
   border-radius: var(--r-md);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-2);
 }
 
@@ -235,8 +235,8 @@ onMounted(fetchAdmins)
 
 .stat-body { flex: 1; }
 .stat-label {
-  font-size: 10.5px;
-  color: var(--text-4);
+  font-size: 14px;
+  color: var(--text-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   margin-bottom: 6px;
@@ -249,15 +249,15 @@ onMounted(fetchAdmins)
   align-items: center;
   gap: 5px;
 }
-.stat-unit { font-size: 13px; font-weight: 400; color: var(--text-4); }
-.api-pending { font-size: 12px; color: var(--text-4); }
+.stat-unit { font-size: 14px; font-weight: 400; color: var(--text-3); }
+.api-pending { font-size: 14px; color: var(--text-3); }
 .system-ok { font-size: 15px; font-weight: 600; color: var(--ok); gap: 8px; }
 
 .stat-link {
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--accent);
   background: none;
   border: none;
@@ -275,8 +275,8 @@ onMounted(fetchAdmins)
   justify-content: space-between;
   margin-bottom: 12px;
 }
-.section-title { font-size: 14px; font-weight: 600; color: var(--text-1); margin: 0; }
-.small-btn { font-size: 12px; padding: 5px 10px; }
+.section-title { font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0; }
+.small-btn { font-size: 14px; padding: 5px 10px; }
 
 /* 로딩 / 빈 상태 */
 .loading-row, .empty-row {
@@ -285,8 +285,8 @@ onMounted(fetchAdmins)
   justify-content: center;
   gap: 10px;
   padding: 32px;
-  color: var(--text-4);
-  font-size: 13px;
+  color: var(--text-3);
+  font-size: 14px;
 }
 .spinner {
   width: 22px; height: 22px;
@@ -315,7 +315,7 @@ onMounted(fetchAdmins)
   background: var(--accent-soft);
   color: var(--accent);
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700;
+  font-size: 14px; font-weight: 700;
   flex-shrink: 0;
 }
 .admin-info {
@@ -325,19 +325,19 @@ onMounted(fetchAdmins)
   gap: 1px;
   min-width: 0;
 }
-.admin-name  { font-size: 13px; font-weight: 500; color: var(--text-1); }
-.admin-email { font-size: 11px; color: var(--text-4); }
-.admin-company { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+.admin-name  { font-size: 16px; font-weight: 500; color: var(--text-1); }
+.admin-email { font-size: 14px; color: var(--text-3); }
+.admin-company { font-size: 14px; color: var(--text-3); white-space: nowrap; }
 
 .status-chip {
   padding: 2px 7px;
   border-radius: var(--r-sm);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.06em;
   font-weight: 600;
   white-space: nowrap;
 }
-.admin-date { font-size: 11px; color: var(--text-4); white-space: nowrap; }
+.admin-date { font-size: 14px; color: var(--text-3); white-space: nowrap; }
 
 /* chip-accent */
 .chip-accent {

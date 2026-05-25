@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Logmile — Design System</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/index.css');
+
 /* ───────────────────────────────────────────
    DESIGN TOKENS (from tokens.css)
 ─────────────────────────────────────────── */
@@ -53,8 +56,9 @@
   --info:        var(--slate-700);
   --info-soft:   rgba(116, 127, 149, 0.14);
 
-  --font-sans: "Pretendard Variable", "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --font-sans: "LINE Seed Sans KR", sans-serif;
+  --font-point: var(--font-sans);
+  --font-mono: "IBM Plex Mono", monospace;
 
   --r-sm: 4px;
   --r-md: 8px;
@@ -359,6 +363,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .font-card-title { font-size: 16px; font-weight: 800; color: var(--text-1); }
 .font-card-meta { font-family: var(--font-mono); font-size: 14px; color: var(--text-2); }
 .font-sample { font-size: 24px; font-weight: 700; color: var(--text-1); line-height: 1.35; }
+.font-sample.point { font-family: var(--font-point); letter-spacing: 0; }
 .font-sample.mono { font-family: var(--font-mono); letter-spacing: 0; }
 .font-desc { font-size: 14px; color: var(--text-2); line-height: 1.55; }
 
@@ -568,7 +573,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <aside class="guide-sidebar">
     <div class="guide-sidebar-logo">
       <h2>Logmile DS</h2>
-      <p>DESIGN SYSTEM v1.1.3</p>
+      <p>DESIGN SYSTEM v1.1.7</p>
     </div>
     <nav class="guide-nav">
       <div class="guide-nav-section">Foundation</div>
@@ -600,10 +605,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <div class="hero-inner">
         <div class="hero-badge">LOGMILE DESIGN SYSTEM</div>
         <h1>라이트 슬레이트 테마</h1>
-        <p>화물차 피로도 관제 플랫폼 · Light Slate Theme · v1.1.3</p>
+        <p>화물차 피로도 관제 플랫폼 · Light Slate Theme · v1.1.7</p>
         <div class="hero-pills">
-          <span class="hero-pill">Pretendard Variable</span>
-          <span class="hero-pill">JetBrains Mono</span>
+          <span class="hero-pill">LINE Seed Sans KR</span>
+          <span class="hero-pill">IBM Plex Mono</span>
           <span class="hero-pill">CSS Custom Properties</span>
           <span class="hero-pill">Vue 3 + Vite</span>
         </div>
@@ -744,20 +749,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <div class="preview-box-inner">
           <div class="font-grid">
             <div class="font-card">
-              <div class="font-card-title">Pretendard Variable</div>
-              <div class="font-card-meta">--font-sans · Korean / UI text</div>
-              <div class="font-sample">화물차 피로도 관제</div>
-              <div class="font-desc">페이지 제목, 카드 제목, 본문, 버튼, 폼 라벨처럼 자연어 중심의 UI 텍스트에 사용한다.</div>
+              <div class="font-card-title">LINE Seed Sans KR</div>
+              <div class="font-card-meta">--font-sans · Korean UI / title / body</div>
+              <div class="font-sample point">화물차 피로도 관제</div>
+              <div class="font-desc">브랜드 타이틀, 페이지 제목, 카드 제목, 본문, 버튼, 폼 라벨처럼 한글 중심 UI 텍스트에 사용한다.</div>
             </div>
             <div class="font-card">
-              <div class="font-card-title">JetBrains Mono</div>
+              <div class="font-card-title">IBM Plex Mono</div>
               <div class="font-card-meta">--font-mono · Number / code / status</div>
               <div class="font-sample mono">LOGMILE 42.8 DANGER</div>
               <div class="font-desc">KPI 숫자, 차량번호, 상태 chip, 테이블 헤더, 코드성 라벨처럼 정렬과 식별성이 필요한 텍스트에 사용한다.</div>
             </div>
           </div>
         </div>
-        <div class="preview-label">폰트 종류: Pretendard Variable은 기본 UI, JetBrains Mono는 숫자·상태·코드성 정보에 사용</div>
+        <div class="preview-label">폰트 종류: LINE Seed Sans KR은 한글 UI·타이틀, IBM Plex Mono는 숫자·상태·코드성 정보에 사용</div>
       </div>
 
       <div class="preview-box" style="margin-bottom:20px;">
@@ -777,8 +782,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
               <div class="rule-list">
                 <div>스타일 가이드와 실제 앱 UI의 상세 항목 최소 크기는 <strong>14px</strong>로 둔다.</div>
                 <div>항목 제목, 카드 제목, 핵심 텍스트는 <strong>16px 이상</strong>을 기준으로 한다.</div>
-                <div>페이지 섹션 제목은 <strong>18px / 800</strong> 이상을 기준으로 한다.</div>
-                <div>숫자, 상태값, 테이블 헤더, chip은 <strong>JetBrains Mono</strong>를 우선 사용한다.</div>
+                <div>페이지 섹션 제목은 <strong>18px / 700</strong> 이상을 기준으로 한다.</div>
+                <div>한글 UI와 브랜드/페이지/섹션/카드 제목은 <strong>LINE Seed Sans KR</strong>을 사용한다.</div>
+                <div>숫자, 상태값, 테이블 헤더, chip은 <strong>IBM Plex Mono</strong>를 우선 사용한다.</div>
               </div>
             </div>
           </div>
@@ -837,7 +843,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     <section class="section" id="typography">
       <div class="section-header">
         <div class="section-title">Typography</div>
-        <div class="section-sub">Pretendard Variable + JetBrains Mono</div>
+        <div class="section-sub">LINE Seed Sans KR + IBM Plex Mono</div>
       </div>
 
       <div class="preview-box">
@@ -847,25 +853,25 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             <div class="type-row">
               <div class="type-meta">
                 <div class="label-name">Brand Title</div>
-                <div class="type-spec">32px · weight 800 · -0.02em</div>
+                <div class="type-spec">32px · weight 700 · ls 0</div>
               </div>
-              <div class="type-sample" style="font-size:32px;font-weight:800;letter-spacing:-0.02em;">화물차 피로도 관제</div>
+              <div class="type-sample" style="font-size:32px;font-weight:700;font-family:var(--font-point);letter-spacing:0;">화물차 피로도 관제</div>
             </div>
 
             <div class="type-row">
               <div class="type-meta">
                 <div class="label-name">Page Title</div>
-                <div class="type-spec">24px · weight 800 · lh 1.25</div>
+                <div class="type-spec">24px · weight 700 · lh 1.25</div>
               </div>
-              <div class="type-sample" style="font-size:24px;font-weight:800;line-height:1.25;">대시보드 현황</div>
+              <div class="type-sample" style="font-size:24px;font-weight:700;font-family:var(--font-point);line-height:1.25;">대시보드 현황</div>
             </div>
 
             <div class="type-row">
               <div class="type-meta">
                 <div class="label-name">Section Title</div>
-                <div class="type-spec">18px · weight 800 · lh 1.3</div>
+                <div class="type-spec">18px · weight 700 · lh 1.3</div>
               </div>
-              <div class="type-sample" style="font-size:18px;font-weight:800;line-height:1.3;">운행 현황 통계</div>
+              <div class="type-sample" style="font-size:18px;font-weight:700;font-family:var(--font-point);line-height:1.3;">운행 현황 통계</div>
             </div>
 
             <div class="type-row">
@@ -873,7 +879,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 <div class="label-name">Form Title</div>
                 <div class="type-spec">22px · weight 700 · -0.01em</div>
               </div>
-              <div class="type-sample" style="font-size:22px;font-weight:700;letter-spacing:-0.01em;">관리자 로그인</div>
+              <div class="type-sample" style="font-size:22px;font-weight:700;font-family:var(--font-point);letter-spacing:0;">관리자 로그인</div>
             </div>
 
             <div class="type-row">
@@ -881,7 +887,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 <div class="label-name">Card Title</div>
                 <div class="type-spec">16px · weight 700 · lh 1.35</div>
               </div>
-              <div class="type-sample" style="font-size:16px;font-weight:700;line-height:1.35;">일별 운행 시간</div>
+              <div class="type-sample" style="font-size:16px;font-weight:700;font-family:var(--font-point);line-height:1.35;">일별 운행 시간</div>
             </div>
 
             <div class="type-row">
@@ -946,7 +952,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
           </div>
         </div>
-        <div class="preview-label">sans: Pretendard Variable · mono: JetBrains Mono (숫자/코드/라벨 전용)</div>
+        <div class="preview-label">sans/point: LINE Seed Sans KR · mono: IBM Plex Mono</div>
       </div>
     </section>
 
@@ -1142,7 +1148,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             <div class="label-name">.chip-brand</div>
           </div>
         </div>
-        <div class="preview-label">Chip variants · font: JetBrains Mono · font-size: 14px</div>
+        <div class="preview-label">Chip variants · font: IBM Plex Mono · font-size: 14px</div>
       </div>
 
       <div class="preview-box">

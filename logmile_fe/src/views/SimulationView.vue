@@ -337,7 +337,7 @@ watch(vehicles, () => {
 <template>
   <div class="view">
     <!-- ───── 헤더 ───── -->
-    <div class="breadcrumb mono">ADMIN / SIMULATION · 시연용 운행 시뮬레이터</div>
+    <div class="breadcrumb mono">관리자 / 시뮬레이션 · 시연용 운행 시뮬레이터</div>
     <div class="page-header">
       <div>
         <h2 class="page-title">운행 시뮬레이션</h2>
@@ -348,10 +348,10 @@ watch(vehicles, () => {
       </div>
       <div class="header-status">
         <div v-if="isRunning" class="status-running mono">
-          <span class="status-dot" /> RUNNING · DriveLog #{{ driveLogId }}
+          <span class="status-dot" /> 운행중 · 운행 #{{ driveLogId }}
         </div>
         <div v-else class="status-idle mono">
-          <span class="status-dot status-dot-idle" /> IDLE
+          <span class="status-dot status-dot-idle" /> 대기
         </div>
         <div v-if="apiError" class="api-msg api-err">{{ apiError }}</div>
         <div v-if="apiInfo"  class="api-msg api-ok">{{ apiInfo }}</div>
@@ -435,7 +435,7 @@ watch(vehicles, () => {
           </div>
 
           <div v-if="vehiclePickMode === 'LIST'" class="form-row">
-            <label class="form-lbl mono">VEHICLE</label>
+            <label class="form-lbl mono">차량</label>
             <select :value="vehicleId" @change="e => pickVehicleById(Number(e.target.value))"
                     class="sel-inp mono" :disabled="isRunning || ocrLoading">
               <option v-if="!vehicles.length" :value="null">차량 없음</option>
@@ -444,7 +444,7 @@ watch(vehicles, () => {
           </div>
 
           <div v-else class="form-row">
-            <label class="form-lbl mono">PHOTO</label>
+            <label class="form-lbl mono">사진</label>
             <input type="file" accept="image/*" class="txt-inp mono" :disabled="isRunning || ocrLoading" @change="onPhoto" />
             <div class="ocr-row">
               <button class="btn btn-ghost ocr-btn" :disabled="!ocrFile || ocrLoading || isRunning" @click="recognizePhoto">
@@ -504,7 +504,7 @@ watch(vehicles, () => {
 
           <div v-if="!isRunning" class="form-row">
             <label class="form-lbl mono">
-              STARTED_AT
+              시작 시각
               <button class="reset-mini mono" :disabled="ocrLoading" @click="startedAtInput = nowLocalDt()">↻ 지금</button>
             </label>
             <input type="datetime-local" v-model="startedAtInput" class="txt-inp mono" :disabled="ocrLoading" />
@@ -512,13 +512,13 @@ watch(vehicles, () => {
           </div>
 
           <div v-else class="form-row">
-            <label class="form-lbl mono">RUNNING SINCE</label>
+            <label class="form-lbl mono">운행 시작 시각</label>
             <input :value="startedAtIso" disabled class="txt-inp mono" />
           </div>
 
           <div v-if="isRunning" class="form-row">
             <label class="form-lbl mono">
-              ENDED_AT
+              종료 시각
               <button class="reset-mini mono" @click="endedAtInput = nowLocalDt()">↻ 지금</button>
             </label>
             <input type="datetime-local" v-model="endedAtInput" class="txt-inp mono"
@@ -568,51 +568,51 @@ watch(vehicles, () => {
           <!-- REST 폼 -->
           <div v-if="eventType === 'REST'" class="event-form">
             <div class="form-row">
-              <label class="form-lbl mono">REST_STARTED_AT</label>
+              <label class="form-lbl mono">휴식 시작 시각</label>
               <input type="datetime-local" v-model="restForm.startIso" class="txt-inp mono" />
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">REST_ENDED_AT</label>
+              <label class="form-lbl mono">휴식 종료 시각</label>
               <input type="datetime-local" v-model="restForm.endIso" class="txt-inp mono" />
             </div>
             <div class="form-hint-strong mono"
                  :style="{ color: (sim.diffMinutes(restForm.startIso, restForm.endIso) >= 30) ? 'var(--ok)' :
                                   (sim.diffMinutes(restForm.startIso, restForm.endIso) >= 15) ? 'var(--info)' : 'var(--warn)' }">
               {{ sim.diffMinutes(restForm.startIso, restForm.endIso) }}분 ·
-              <template v-if="sim.diffMinutes(restForm.startIso, restForm.endIso) >= 30">SUFFICIENT (-20pt)</template>
-              <template v-else-if="sim.diffMinutes(restForm.startIso, restForm.endIso) >= 15">VALID (-10pt)</template>
-              <template v-else>INVALID (보정 없음)</template>
+              <template v-if="sim.diffMinutes(restForm.startIso, restForm.endIso) >= 30">충분 휴식 (-20점)</template>
+              <template v-else-if="sim.diffMinutes(restForm.startIso, restForm.endIso) >= 15">유효 휴식 (-10점)</template>
+              <template v-else>휴식 부족 (보정 없음)</template>
             </div>
           </div>
 
           <!-- FATIGUE 폼 -->
           <div v-if="eventType === 'FATIGUE'" class="event-form fatigue-form">
             <div class="form-row">
-              <label class="form-lbl mono">CONTINUOUS_MIN<span class="form-lbl-ko">연속 운행 (분)</span></label>
+              <label class="form-lbl mono">연속 운행<span class="form-lbl-ko">분 단위</span></label>
               <input type="number" min="0" v-model.number="fatigueForm.continuousDrivingMinutes" class="num-inp mono" />
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">DAILY_MIN<span class="form-lbl-ko">일일 총 운행 (분)</span></label>
+              <label class="form-lbl mono">일일 총 운행<span class="form-lbl-ko">분 단위</span></label>
               <input type="number" min="0" v-model.number="fatigueForm.dailyTotalDrivingMinutes" class="num-inp mono" />
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">NIGHT_MIN<span class="form-lbl-ko">야간 운행 (분)</span></label>
+              <label class="form-lbl mono">야간 운행<span class="form-lbl-ko">분 단위</span></label>
               <input type="number" min="0" v-model.number="fatigueForm.nightDrivingMinutes" class="num-inp mono" />
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">REST_COUNT<span class="form-lbl-ko">유효 휴식 횟수</span></label>
+              <label class="form-lbl mono">유효 휴식<span class="form-lbl-ko">횟수</span></label>
               <input type="number" min="0" v-model.number="fatigueForm.restCount" class="num-inp mono" />
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">REST_VIOLATION<span class="form-lbl-ko">휴식 위반 횟수</span></label>
+              <label class="form-lbl mono">휴식 위반<span class="form-lbl-ko">횟수</span></label>
               <input type="number" min="0" v-model.number="fatigueForm.restViolationCount" class="num-inp mono" />
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">OCCURRED_AT<span class="form-lbl-ko">발생 시각</span></label>
+              <label class="form-lbl mono">발생 시각</label>
               <input type="datetime-local" v-model="fatigueForm.occurredAtIso" class="txt-inp mono" />
             </div>
             <div class="form-row form-row-wide">
-              <label class="form-lbl mono">REASON<span class="form-lbl-ko">메모 / 사유</span></label>
+              <label class="form-lbl mono">메모 / 사유</label>
               <input type="text" v-model="fatigueForm.reason" class="txt-inp mono" placeholder="(선택)" />
             </div>
           </div>
@@ -620,7 +620,7 @@ watch(vehicles, () => {
           <!-- MARKER 폼 -->
           <div v-if="eventType === 'MARKER'" class="event-form">
             <div class="form-row">
-              <label class="form-lbl mono">LOCATION_TYPE</label>
+              <label class="form-lbl mono">위치 종류</label>
               <select v-model="markerForm.locationType" class="sel-inp mono">
                 <option value="HIGHWAY_GATE">고속도로 게이트 (입출차)</option>
                 <option value="REST_AREA">휴게소</option>
@@ -630,11 +630,11 @@ watch(vehicles, () => {
               </select>
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">LABEL</label>
+              <label class="form-lbl mono">표시 라벨</label>
               <input type="text" v-model="markerForm.label" class="txt-inp mono" placeholder="예: 경부고속 안성IC" />
             </div>
             <div class="form-row">
-              <label class="form-lbl mono">OBSERVED_AT</label>
+              <label class="form-lbl mono">관측 시각</label>
               <input type="datetime-local" v-model="markerForm.tIso" class="txt-inp mono" />
             </div>
             <div class="form-hint mono">※ 백엔드 API 없음 — 그래프와 이벤트 로그에 시각적 마커만 추가됩니다.</div>
@@ -712,12 +712,12 @@ watch(vehicles, () => {
             <!-- y 축 라벨 -->
             <text :x="chart.padL - 6" :y="chart.yDanger + 3"  text-anchor="end" class="chart-y-lbl" fill="var(--danger)">70</text>
             <text :x="chart.padL - 6" :y="chart.yCaution + 3" text-anchor="end" class="chart-y-lbl" fill="var(--warn)">40</text>
-            <text :x="chart.padL - 6" :y="chart.yZero + 3"    text-anchor="end" class="chart-y-lbl" fill="var(--text-4)">0</text>
+            <text :x="chart.padL - 6" :y="chart.yZero + 3"    text-anchor="end" class="chart-y-lbl" fill="var(--text-3)">0</text>
 
             <!-- x 축 -->
             <g v-for="(t, i) in chart.ticks" :key="'t'+i">
               <line :x1="t.x" :x2="t.x" :y1="chart.yZero" :y2="chart.yZero + 4" stroke="var(--line-2)" />
-              <text :x="t.x" :y="chart.yZero + 16" text-anchor="middle" class="chart-x-lbl" fill="var(--text-4)">{{ t.label }}</text>
+              <text :x="t.x" :y="chart.yZero + 16" text-anchor="middle" class="chart-x-lbl" fill="var(--text-3)">{{ t.label }}</text>
             </g>
           </svg>
         </div>
@@ -746,25 +746,25 @@ watch(vehicles, () => {
 
 <style scoped>
 .view { display:flex; flex-direction:column; gap:14px; padding:28px 32px 40px; }
-.breadcrumb { font-size:11px; color:var(--text-4); letter-spacing:0.04em; }
+.breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; }
-.page-title  { font-size:24px; font-weight:700; color:var(--text-1); margin:0 0 4px; letter-spacing:-0.01em; }
-.page-sub    { font-size:12.5px; color:var(--text-3); margin:0; max-width:680px; line-height:1.55; }
+.page-title  { font-size:24px; font-weight:700; color: var(--text-1); margin:0 0 4px; letter-spacing: 0; }
+.page-sub    { font-size: 14px; color: var(--text-3); margin:0; max-width:680px; line-height:1.55; }
 
 .header-status { display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-width:240px; }
 .status-running, .status-idle {
   display:flex; align-items:center; gap:8px;
-  font-size:11px; padding:5px 10px; border-radius:999px;
+  font-size: 14px; padding:5px 10px; border-radius:999px;
   border:1px solid var(--line-2); background:var(--bg-2);
 }
-.status-running { color:var(--ok); border-color:rgba(94,138,111,.4); background:var(--ok-soft); }
+.status-running { color: var(--ok); border-color:rgba(94,138,111,.4); background:var(--ok-soft); }
 .status-dot { width:7px; height:7px; border-radius:50%; background:var(--ok); animation:pulse-ring 1.6s infinite; }
-.status-dot-idle { background:var(--text-4); animation:none; box-shadow:none; }
-.status-idle { color:var(--text-3); }
-.api-msg { font-size:11px; max-width:360px; text-align:right; }
-.api-err { color:var(--danger); }
-.api-ok  { color:var(--ok); }
+.status-dot-idle { background:var(--text-3); animation:none; box-shadow:none; }
+.status-idle { color: var(--text-3); }
+.api-msg { font-size: 14px; max-width:360px; text-align:right; }
+.api-err { color: var(--danger); }
+.api-ok  { color: var(--ok); }
 
 /* ── KPI ───────────────────────── */
 .kpi-strip {
@@ -775,8 +775,8 @@ watch(vehicles, () => {
   padding:14px 18px; display:flex; flex-direction:column; gap:6px;
 }
 .kpi-main { background:var(--bg-1); }
-.kpi-lbl  { font-size:10px; letter-spacing:0.07em; color:var(--text-4); }
-.kpi-num  { font-size:28px; font-weight:800; color:var(--text-1); letter-spacing:-0.02em; line-height:1; }
+.kpi-lbl  { font-size: 14px; letter-spacing:0.07em; color: var(--text-3); }
+.kpi-num  { font-size:28px; font-weight:800; color: var(--text-1); letter-spacing: 0; line-height:1; }
 .kpi-num-xl { font-size:42px; }
 .kpi-bar  { height:4px; background:var(--bg-3); border-radius:2px; overflow:hidden; margin-top:4px; }
 .kpi-bar-fill { height:100%; transition:width .4s, background .4s; }
@@ -792,7 +792,7 @@ watch(vehicles, () => {
 
 .panel { padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
 .panel-title {
-  font-size:12.5px; font-weight:700; color:var(--text-1);
+  font-size: 14px; font-weight:700; color: var(--text-1);
   display:flex; align-items:center; gap:7px;
 }
 
@@ -800,57 +800,57 @@ watch(vehicles, () => {
 .mode-tabs, .pick-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 .mode-btn, .pick-btn, .scenario-btn {
   padding:8px 10px; border:1px solid var(--line-2); border-radius:var(--r-sm);
-  background:var(--bg-1); color:var(--text-3); cursor:pointer;
-  font-size:11.5px; font-weight:700; letter-spacing:0.02em;
+  background:var(--bg-1); color: var(--text-3); cursor:pointer;
+  font-size: 14px; font-weight:700; letter-spacing:0.02em;
   transition:background .15s, border-color .15s, color .15s;
 }
 .mode-btn:hover:not(:disabled), .pick-btn:hover:not(:disabled), .scenario-btn:hover:not(:disabled) {
   background:var(--bg-2);
 }
 .mode-btn.active, .pick-btn.active, .scenario-btn.active {
-  color:var(--accent); background:var(--accent-soft); border-color:var(--accent-line);
+  color: var(--accent); background:var(--accent-soft); border-color: var(--accent-line);
 }
 .mode-btn:disabled, .pick-btn:disabled, .scenario-btn:disabled { opacity:.5; cursor:not-allowed; }
 .scenario-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
-.locked-hint { font-size:10px; color:var(--text-4); }
+.locked-hint { font-size: 14px; color: var(--text-3); }
 
 /* form */
 .form-row { display:flex; flex-direction:column; gap:5px; }
 .form-row-wide { grid-column:1 / -1; }
 .form-lbl {
-  font-size:9.5px; letter-spacing:0.06em; color:var(--text-4);
+  font-size: 14px; letter-spacing:0.06em; color: var(--text-3);
   display:flex; align-items:center; gap:8px; flex-wrap:wrap;
 }
 .form-lbl-ko {
-  font-family:var(--font-sans); letter-spacing:0; color:var(--text-3);
-  font-size:11px; text-transform:none; font-weight:500;
+  font-family:var(--font-sans); letter-spacing:0; color: var(--text-3);
+  font-size: 14px; text-transform:none; font-weight:500;
 }
-.form-hint { font-size:10.5px; color:var(--text-4); margin-top:2px; }
-.form-hint-strong { font-size:11px; font-weight:700; letter-spacing:0.03em; }
+.form-hint { font-size: 14px; color: var(--text-3); margin-top:2px; }
+.form-hint-strong { font-size: 14px; font-weight:700; letter-spacing:0.03em; }
 
 .txt-inp, .num-inp, .sel-inp {
   padding:8px 10px; border:1px solid var(--line-2); border-radius:var(--r-sm);
-  background:var(--bg-1); color:var(--text-1); font-size:12.5px; outline:none;
+  background:var(--bg-1); color: var(--text-1); font-size: 14px; outline:none;
   width:100%; box-sizing:border-box; transition:border-color .15s;
   font-family:var(--font-mono);
 }
-.txt-inp:focus, .num-inp:focus, .sel-inp:focus { border-color:var(--accent-line); }
-.txt-inp:disabled { background:var(--bg-2); color:var(--text-3); }
+.txt-inp:focus, .num-inp:focus, .sel-inp:focus { border-color: var(--accent-line); }
+.txt-inp:disabled { background:var(--bg-2); color: var(--text-3); }
 .sel-inp { cursor:pointer; }
 
 .reset-mini {
-  font-size:9.5px; padding:1px 6px; border-radius:var(--r-sm);
-  background:transparent; color:var(--text-4); border:1px solid var(--line-2);
+  font-size: 14px; padding:1px 6px; border-radius:var(--r-sm);
+  background:transparent; color: var(--text-3); border:1px solid var(--line-2);
   cursor:pointer; letter-spacing:0;
 }
-.reset-mini:hover { color:var(--accent); border-color:var(--accent-line); }
+.reset-mini:hover { color: var(--accent); border-color: var(--accent-line); }
 
 /* OCR */
 .ocr-row { display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap; }
-.ocr-btn { font-size:11.5px; padding:6px 12px; }
-.ocr-btn.cancel { color:var(--danger); border-color:rgba(181,84,74,.35); }
-.ocr-result { font-size:11.5px; color:var(--ok); display:flex; gap:6px; }
-.ocr-error  { font-size:11px; color:var(--danger); margin-top:2px; }
+.ocr-btn { font-size: 14px; padding:6px 12px; }
+.ocr-btn.cancel { color: var(--danger); border-color:rgba(181,84,74,.35); }
+.ocr-result { font-size: 14px; color: var(--ok); display:flex; gap:6px; }
+.ocr-error  { font-size: 14px; color: var(--danger); margin-top:2px; }
 .ocr-preview {
   margin-top:8px; border:1px solid var(--line-1); border-radius:var(--r-md);
   background:var(--bg-2); overflow:hidden; aspect-ratio:16 / 9;
@@ -866,30 +866,30 @@ watch(vehicles, () => {
   color:#fff; display:grid; gap:2px; box-shadow:0 10px 24px rgba(0,0,0,.22);
 }
 .ocr-preview-label.warn { border-color:rgba(197,138,58,.7); }
-.ocr-label-title { font-size:9px; color:rgba(255,255,255,.68); letter-spacing:0.06em; }
+.ocr-label-title { font-size: 14px; color:rgba(255,255,255,.68); letter-spacing:0.06em; }
 .ocr-preview-label strong { font-size:18px; line-height:1.05; letter-spacing:0; }
-.ocr-label-meta { font-size:10px; color:rgba(255,255,255,.72); }
+.ocr-label-meta { font-size: 14px; color:rgba(255,255,255,.72); }
 .recognized-plate {
   margin-top:8px; padding:10px 12px; border-radius:var(--r-md);
   border:1px solid var(--accent-line); background:var(--accent-soft);
   display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:center;
 }
-.recognized-lbl { font-size:9.5px; letter-spacing:0.06em; color:var(--text-3); }
-.recognized-num { font-size:18px; font-weight:800; color:var(--accent); letter-spacing:0; }
-.recognized-meta { grid-column:1 / -1; font-size:10.5px; color:var(--text-4); }
+.recognized-lbl { font-size: 14px; letter-spacing:0.06em; color: var(--text-3); }
+.recognized-num { font-size:18px; font-weight:800; color: var(--accent); letter-spacing:0; }
+.recognized-meta { grid-column:1 / -1; font-size: 14px; color: var(--text-3); }
 
 .picked-card {
   background:var(--bg-2); border:1px solid var(--line-1); border-radius:var(--r-md);
   padding:10px 12px; display:flex; flex-direction:column; gap:4px;
 }
 .picked-row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.picked-lbl { font-size:9.5px; letter-spacing:0.06em; color:var(--text-4); }
-.picked-val { font-size:13px; font-weight:600; color:var(--text-1); }
+.picked-lbl { font-size: 14px; letter-spacing:0.06em; color: var(--text-3); }
+.picked-val { font-size: 14px; font-weight:600; color: var(--text-1); }
 
 /* control */
 .control-actions { display:flex; gap:8px; align-items:center; }
-.control-actions .btn { font-size:13px; padding:10px 18px; display:flex; align-items:center; gap:6px; }
-.btn-sm { font-size:11.5px !important; padding:6px 12px !important; }
+.control-actions .btn { font-size: 14px; padding:10px 18px; display:flex; align-items:center; gap:6px; }
+.btn-sm { font-size: 14px !important; padding:6px 12px !important; }
 .btn-danger {
   background:var(--danger); color:#fff; border-radius:var(--r-md);
   cursor:pointer; font-weight:600; border:none; transition:opacity .15s;
@@ -906,43 +906,43 @@ watch(vehicles, () => {
 @media (max-width: 1400px) {
   .fatigue-form { grid-template-columns:1fr; }
 }
-.event-submit { font-size:13px; padding:10px 18px; display:inline-flex; align-items:center; gap:6px; align-self:flex-start; }
+.event-submit { font-size: 14px; padding:10px 18px; display:inline-flex; align-items:center; gap:6px; align-self:flex-start; }
 
 /* planned */
 .planned-list { display:flex; flex-direction:column; gap:6px; }
 .planned-row {
   display:flex; align-items:center; gap:10px; padding:7px 10px;
-  background:var(--bg-2); border-radius:var(--r-sm); font-size:12px;
+  background:var(--bg-2); border-radius:var(--r-sm); font-size: 14px;
 }
-.planned-time { color:var(--accent); font-weight:700; min-width:60px; }
-.planned-label { color:var(--text-2); }
+.planned-time { color: var(--accent); font-weight:700; min-width:60px; }
+.planned-label { color: var(--text-2); }
 
 /* ── 차트 ───────────────────────── */
 .chart-card { padding:18px; }
 .chart-hdr  { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.card-title { font-size:14px; font-weight:700; color:var(--text-1); }
-.chart-sub  { font-size:11px; color:var(--text-4); }
+.card-title { font-size: 16px; font-weight:700; color: var(--text-1); }
+.chart-sub  { font-size: 14px; color: var(--text-3); }
 .chart-svg  { width:100%; height:260px; display:block; }
 .chart-empty {
   height:260px; display:flex; align-items:center; justify-content:center;
-  color:var(--text-4); font-size:12.5px;
+  color: var(--text-3); font-size: 14px;
   border:1px dashed var(--line-2); border-radius:var(--r-sm);
 }
-.chart-y-lbl, .chart-x-lbl { font-family:var(--font-mono); font-size:9.5px; }
+.chart-y-lbl, .chart-x-lbl { font-family:var(--font-mono); font-size: 14px; }
 
 /* event log */
 .event-card { padding:18px; }
 .event-list { display:flex; flex-direction:column; gap:1px; max-height:320px; overflow-y:auto; }
 .event-row {
   display:flex; align-items:center; gap:10px; padding:8px 10px;
-  border-radius:var(--r-sm); font-size:12px;
+  border-radius:var(--r-sm); font-size: 14px;
 }
 .event-row:hover { background:var(--bg-2); }
-.ev-icon  { font-size:11px; flex-shrink:0; width:14px; text-align:center; }
-.ev-time  { font-size:11px; color:var(--text-3); flex-shrink:0; min-width:42px; }
-.ev-label { flex:1; color:var(--text-2); }
-.ev-score { font-size:11px; font-weight:700; flex-shrink:0; }
-.empty-hint { font-size:11.5px; color:var(--text-4); padding:14px 0; text-align:center; }
+.ev-icon  { font-size: 14px; flex-shrink:0; width:14px; text-align:center; }
+.ev-time  { font-size: 14px; color: var(--text-3); flex-shrink:0; min-width:42px; }
+.ev-label { flex:1; color: var(--text-2); }
+.ev-score { font-size: 14px; font-weight:700; flex-shrink:0; }
+.empty-hint { font-size: 14px; color: var(--text-3); padding:14px 0; text-align:center; }
 
 @keyframes pulse-ring {
   0%   { box-shadow: 0 0 0 0 rgba(94, 138, 111, 0.5); }

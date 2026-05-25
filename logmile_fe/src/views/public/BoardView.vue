@@ -19,7 +19,7 @@ function statusColor(s) {
   if (s === '답변 완료') return 'var(--ok)'
   if (s === '검토 중')   return 'var(--warn)'
   if (s === '접수')      return 'var(--accent)'
-  return 'var(--text-4)'
+  return 'var(--text-3)'
 }
 
 // 상세 모달
@@ -65,11 +65,11 @@ function submit() {
     <!-- ══ 헤더 ══ -->
     <section class="section-border" style="padding:48px 0 36px;">
       <div class="page-inner">
-        <div class="eyebrow" style="margin-bottom:10px;">BOARD</div>
+        <div class="eyebrow" style="margin-bottom:10px;">문의 게시판</div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;">
           <div>
             <h1 class="page-title">문의 게시판</h1>
-            <p style="font-size:14px;color:var(--text-3);margin:8px 0 0;">logmile 프로젝트에 대한 질문·피드백·기술 문의를 남겨주세요.</p>
+            <p style="font-size: 14px;color: var(--text-3);margin:8px 0 0;">logmile 프로젝트에 대한 질문·피드백·기술 문의를 남겨주세요.</p>
           </div>
           <button class="btn-write" @click="openWrite">
             <AppIcon name="plus" :size="13" /> 문의 작성
@@ -89,7 +89,7 @@ function submit() {
       <!-- 필터 바 -->
       <div class="filter-bar">
         <button v-for="c in allCats" :key="c" class="filter-btn" :class="{ active: filterCat === c }" @click="filterCat = c">{{ c }}</button>
-        <span class="mono" style="margin-left:auto;font-size:11px;color:var(--text-4);">{{ filtered.length }}건</span>
+        <span class="mono" style="margin-left:auto;font-size: 14px;color: var(--text-3);">{{ filtered.length }}건</span>
       </div>
 
       <!-- 게시글 목록 헤더 -->
@@ -109,10 +109,10 @@ function submit() {
             <span class="chip chip-mute">{{ p.category }}</span>
           </span>
           <span style="width:80px;text-align:center;">
-            <span class="mono" style="font-size:11px;font-weight:700;" :style="{color:statusColor(p.status)}">● {{ p.status }}</span>
+            <span class="mono" style="font-size: 14px;font-weight:700;" :style="{color:statusColor(p.status)}">● {{ p.status }}</span>
           </span>
-          <span style="width:60px;text-align:center;font-size:12px;color:var(--text-4);">{{ p.name }}</span>
-          <span class="mono" style="width:90px;text-align:right;font-size:11px;color:var(--text-4);">{{ p.date }}</span>
+          <span style="width:60px;text-align:center;font-size: 14px;color: var(--text-3);">{{ p.name }}</span>
+          <span class="mono" style="width:90px;text-align:right;font-size: 14px;color: var(--text-3);">{{ p.date }}</span>
         </div>
         <div v-if="filtered.length === 0" class="empty-state">
           <AppIcon name="list" :size="28" />
@@ -129,21 +129,21 @@ function submit() {
             <div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
                 <span class="chip chip-mute">{{ selected.category }}</span>
-                <span class="mono" style="font-size:10.5px;font-weight:700;" :style="{color:statusColor(selected.status)}">● {{ selected.status }}</span>
+                <span class="mono" style="font-size: 14px;font-weight:700;" :style="{color:statusColor(selected.status)}">● {{ selected.status }}</span>
               </div>
               <div style="font-size:17px;font-weight:700;">{{ selected.subject }}</div>
-              <div class="mono" style="font-size:11px;color:var(--text-4);margin-top:5px;">{{ selected.name }} · {{ selected.date }}</div>
+              <div class="mono" style="font-size: 14px;color: var(--text-3);margin-top:5px;">{{ selected.name }} · {{ selected.date }}</div>
             </div>
             <button class="icon-close" @click="selected = null"><AppIcon name="x" :size="16" /></button>
           </div>
-          <div style="padding:20px;font-size:14px;color:var(--text-2);line-height:1.75;white-space:pre-wrap;">{{ selected.content }}</div>
+          <div style="padding:20px;font-size: 14px;color: var(--text-2);line-height:1.75;white-space:pre-wrap;">{{ selected.content }}</div>
           <!-- 관리자 답변 -->
           <div v-if="selected.reply" class="reply-section">
             <div class="reply-label">
               <AppIcon name="arrow" :size="12" /> 관리자 답변
-              <span class="mono" style="margin-left:auto;font-size:10.5px;color:var(--text-4);">{{ selected.replyDate }}</span>
+              <span class="mono" style="margin-left:auto;font-size: 14px;color: var(--text-3);">{{ selected.replyDate }}</span>
             </div>
-            <div style="font-size:13.5px;color:var(--text-2);line-height:1.75;white-space:pre-wrap;">{{ selected.reply }}</div>
+            <div style="font-size: 14px;color: var(--text-2);line-height:1.75;white-space:pre-wrap;">{{ selected.reply }}</div>
           </div>
         </div>
       </div>
@@ -160,11 +160,11 @@ function submit() {
           <form @submit.prevent="submit" class="form-body">
             <div class="row-2">
               <div class="fgroup">
-                <label class="flabel">이름 <span style="color:var(--danger);">*</span></label>
+                <label class="flabel">이름 <span style="color: var(--danger);">*</span></label>
                 <input v-model="form.name" type="text" class="finput" placeholder="홍길동" />
               </div>
               <div class="fgroup">
-                <label class="flabel">이메일 <span style="color:var(--danger);">*</span></label>
+                <label class="flabel">이메일 <span style="color: var(--danger);">*</span></label>
                 <input v-model="form.email" type="email" class="finput" placeholder="you@example.com" />
               </div>
             </div>
@@ -175,11 +175,11 @@ function submit() {
               </select>
             </div>
             <div class="fgroup">
-              <label class="flabel">제목 <span style="color:var(--danger);">*</span></label>
+              <label class="flabel">제목 <span style="color: var(--danger);">*</span></label>
               <input v-model="form.subject" type="text" class="finput" placeholder="문의 제목을 입력해주세요" />
             </div>
             <div class="fgroup">
-              <label class="flabel">내용 <span style="color:var(--danger);">*</span></label>
+              <label class="flabel">내용 <span style="color: var(--danger);">*</span></label>
               <textarea v-model="form.content" class="finput ftextarea" placeholder="문의 내용을 상세히 작성해주세요." />
             </div>
             <div v-if="errorMsg" class="err-msg">
@@ -203,25 +203,25 @@ function submit() {
 .page-inner { max-width: 1280px; margin: 0 auto; padding: 0 28px; }
 .section-border { border-bottom: 1px solid var(--line-1); }
 .mono { font-family: var(--font-mono); }
-.eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
-.page-title { font-size: 34px; font-weight: 800; margin: 0; letter-spacing: -0.022em; color: var(--text-1); }
+.eyebrow { font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.page-title { font-size: 34px; font-weight: 700; margin: 0; letter-spacing: 0; color: var(--text-1); }
 
 /* 작성 버튼 */
 .btn-write {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 8px 18px; background: var(--accent); border: none;
-  border-radius: var(--r-md); font-size: 13px; font-weight: 600;
+  border-radius: var(--r-md); font-size: 14px; font-weight: 600;
   color: var(--accent-ink); cursor: pointer; flex-shrink: 0;
   transition: background 0.15s;
 }
 .btn-write:hover { background: var(--accent-hover); }
 
 /* 토스트 */
-.toast-ok { display: flex; align-items: center; gap: 7px; padding: 10px 16px; background: var(--ok-soft); border: 1px solid rgba(138,186,154,0.3); border-radius: var(--r-md); font-size: 13px; color: var(--ok); font-weight: 500; }
+.toast-ok { display: flex; align-items: center; gap: 7px; padding: 10px 16px; background: var(--ok-soft); border: 1px solid rgba(138,186,154,0.3); border-radius: var(--r-md); font-size: 14px; color: var(--ok); font-weight: 500; }
 
 /* 필터 바 */
 .filter-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-.filter-btn { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--text-3); background: var(--bg-2); border: 1px solid var(--line-2); cursor: pointer; transition: all 0.15s; }
+.filter-btn { padding: 5px 12px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--text-3); background: var(--bg-2); border: 1px solid var(--line-2); cursor: pointer; transition: all 0.15s; }
 .filter-btn:hover { background: var(--bg-3); color: var(--text-1); }
 .filter-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
 
@@ -229,7 +229,7 @@ function submit() {
 .list-header {
   display: flex; align-items: center; gap: 12px;
   padding: 8px 16px; margin-bottom: 6px;
-  font-size: 11px; font-weight: 600; color: var(--text-4);
+  font-size: 14px; font-weight: 600; color: var(--text-3);
   font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
   border-bottom: 1px solid var(--line-1);
 }
@@ -242,12 +242,12 @@ function submit() {
   border: 1px solid transparent;
 }
 .post-row:hover { background: var(--bg-2); border-color: var(--line-2); }
-.post-subject { flex: 1; font-size: 13.5px; font-weight: 600; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-subject { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 64px; color: var(--text-4); font-size: 13px; }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 64px; color: var(--text-3); font-size: 14px; }
 
 /* Chips */
-.chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+.chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 14px; font-weight: 700; }
 .chip-mute { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--line-2); }
 
 /* 모달 공통 */
@@ -262,15 +262,15 @@ function submit() {
 .form-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .fgroup { display: flex; flex-direction: column; gap: 5px; }
-.flabel { font-size: 12px; font-weight: 600; color: var(--text-3); }
-.finput { background: var(--bg-1); border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 8px 12px; font-size: 13px; color: var(--text-1); font-family: var(--font-sans); outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
+.flabel { font-size: 14px; font-weight: 600; color: var(--text-3); }
+.finput { background: var(--bg-1); border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 8px 12px; font-size: 14px; color: var(--text-1); font-family: var(--font-sans); outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
 .finput:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
-.finput::placeholder { color: var(--text-4); }
+.finput::placeholder { color: var(--text-3); }
 .ftextarea { resize: vertical; min-height: 120px; }
-.err-msg { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--danger-soft); border: 1px solid rgba(209,139,126,0.25); border-radius: var(--r-md); font-size: 12px; color: var(--danger); }
-.btn-submit { display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px; background: var(--accent); border: none; border-radius: var(--r-md); font-size: 13px; font-weight: 600; color: var(--accent-ink); cursor: pointer; transition: background 0.15s; }
+.err-msg { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--danger-soft); border: 1px solid rgba(209,139,126,0.25); border-radius: var(--r-md); font-size: 14px; color: var(--danger); }
+.btn-submit { display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px; background: var(--accent); border: none; border-radius: var(--r-md); font-size: 14px; font-weight: 600; color: var(--accent-ink); cursor: pointer; transition: background 0.15s; }
 .btn-submit:hover { background: var(--accent-hover); }
-.btn-cancel { display: inline-flex; align-items: center; padding: 9px 16px; background: transparent; border: 1px solid var(--line-2); border-radius: var(--r-md); font-size: 13px; font-weight: 500; color: var(--text-3); cursor: pointer; transition: background 0.15s; }
+.btn-cancel { display: inline-flex; align-items: center; padding: 9px 16px; background: transparent; border: 1px solid var(--line-2); border-radius: var(--r-md); font-size: 14px; font-weight: 500; color: var(--text-3); cursor: pointer; transition: background 0.15s; }
 .btn-cancel:hover { background: var(--bg-3); }
 
 /* 관리자 답변 */
@@ -283,7 +283,7 @@ function submit() {
 }
 .reply-label {
   display: flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 700; color: var(--accent);
+  font-size: 14px; font-weight: 700; color: var(--accent);
   margin-bottom: 8px; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
 }
 
