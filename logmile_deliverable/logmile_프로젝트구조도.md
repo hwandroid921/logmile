@@ -1,9 +1,9 @@
 # logmile 프로젝트 전체 구조도
 
 - 프로젝트명: `logmile`
-- 버전: v5.2
-- 작성 기준일: 2026.05.15
-- 변경 내용: 실제 프로젝트 파일 기준 재검증, BE API alias 및 FE API 연동 상태 반영, Company 멀티테넌시 및 PlateEvent 구조 보정, 시연용 A/B/C 직접 입력 시뮬레이션 흐름 반영
+- 버전: v5.3
+- 작성 기준일: 2026.05.26
+- 변경 내용: 시뮬레이션 3열 수평 그리드 개편 및 다중 이력 로컬스토리지 보존 아키텍처 반영, 오토 플레이 시나리오 일괄 시퀀서 명세 추가, 로그인 페이지 뒤로가기 버튼 명기
 
 ---
 
@@ -302,7 +302,7 @@ logmile_fe/
     ├── stores/
     │   ├── authStore.js              # JWT 토큰, 로그인 상태, 역할(role) 관리
     │   ├── dashboardStore.js         # 대시보드 요약, polling 관리
-    │   └── simulationStore.js        # 시뮬레이션 진행 상태
+    │   └── simulationStore.js        # 시뮬레이션 진행 상태 (다중 세션 simulations 배열, currentSimulationId 상태 및 runScenarioSequence 오토 시퀀서 탑재)
     │
     ├── api/
     │   ├── axios.js                  # Axios 인스턴스, JWT 인터셉터
@@ -319,7 +319,7 @@ logmile_fe/
     │
     ├── views/
     │   │   ── 인증 (레이아웃 없음) ──────────────────────
-    │   ├── LoginView.vue             # FR-AUTH01 — 로그인
+    │   ├── LoginView.vue             # FR-AUTH01 — 로그인 (뒤로가기 버튼 탑재)
     │   ├── SignupView.vue            # FR-AUTH01 — 회원가입
     │   ├── PendingView.vue           # 승인 대기 안내 화면
     │   │   ── Super Admin 전용 (/super) ─────────────────
@@ -328,7 +328,7 @@ logmile_fe/
     │   ├── SuperCompanyView.vue      # 회사 목록 관리
     │   │   ── Admin 전용 (/) ──────────────────────────────
     │   ├── DashboardView.vue         # FR-A01~A06
-    │   ├── SimulationView.vue        # FR-B01~B07 — A/B/C 프리셋, 이벤트 로그, start/stop
+    │   ├── SimulationView.vue        # FR-B01~B09 — 3열 그리드 레이아웃 (좌측 컨트롤, 중앙 차트/이벤트, 우측 이력 관리 패널 구성 및 연동)
     │   ├── VehicleView.vue           # FR-C01
     │   ├── DriverView.vue            # FR-C02
     │   ├── ThresholdView.vue         # FR-C03

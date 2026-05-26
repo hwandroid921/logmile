@@ -3,12 +3,12 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 버전: v5.2
+- 버전: v5.3
 - 기준 산출물: `logmile_infra/db/init.sql` v5.0, `logmile_infra/db/seed.sql` v5.0, 실제 JPA Entity
-- 작성 기준일: 2026.05.15
+- 작성 기준일: 2026.05.26
 - DBMS: PostgreSQL 16
 - 담당: 백경서
-- 변경 기준: `company` 기반 멀티테넌시, `plate_event`, 관리자 상태/권한, 실제 시드 데이터, 시연용 시뮬레이션 직접 입력 흐름 반영
+- 변경 기준: 3열 시뮬레이션 로그 localStorage 영구 보존 Rationale 보강, `company` 기반 멀티테넌시, `plate_event`, 관리자 상태/권한, 실제 시드 데이터 반영
 
 ---
 
@@ -24,6 +24,17 @@
 | 권한 | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` |
 | 관리자 상태 | `PENDING`, `ACTIVE`, `INACTIVE`, `REJECTED`, `SUSPENDED` |
 | 시연용 입력 기준 | 별도 테이블/enum 확장 없이 기존 `drive_log`, `gps_data`, `rest_event`, `fatigue_event`, `plate_event` 구조에 반영 |
+
+## 0.1 다중 시뮬레이션 이력 영구 보존 Rationale (설계적 결정)
+
+* **배경 및 요구**:
+  - 데모 시뮬레이션의 다중 세션 이력 관리(저장, 복원, 삭제) 기능이 필요합니다.
+* **설계적 대안**:
+  1. **백엔드 DB 테이블 추가 및 Entity 관리**: 운행 로그의 마스터 테이블 외에 이력 저장을 위한 별도 관계형 테이블을 설계하는 방안.
+  2. **브라우저 로컬 저장소(localStorage) 보존**: 기존의 `init.sql`/`seed.sql` 백엔드 핵심 10개 테이블 스키마에 전혀 영향을 주지 않고, 온전히 프론트엔드 단에서 `localStorage` 직렬화(`persist`, `hydrate`) 기술을 사용하여 브라우저 캐시에 다중 세션 스냅샷을 영구 보존 및 격리하는 방안.
+* **최종 선정 및 Rationale**:
+  - **대안 2(localStorage 보존)를 최종 선정**했습니다.
+  - 이로써 "시연용 시뮬레이션은 기존 DB 테이블 및 enum을 확장하지 않고 기존 구조를 유지한다"는 설계 원칙을 완벽히 지키면서도, 사용자가 페이지를 새로고침하거나 브라우저를 종료하더라도 기존에 구동했던 시뮬레이션 피로 점수 추이 및 이벤트 로그를 한 클릭만으로 완벽히 복원할 수 있어, 시스템 복잡도를 획기적으로 낮추고 성능을 극대화했습니다.
 
 ## 1. 논리적 설계
 
