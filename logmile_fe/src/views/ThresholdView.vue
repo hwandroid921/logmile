@@ -216,7 +216,7 @@ function tagLabel(tag) {
 </template>
 
 <style scoped>
-.view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
+.view { display:flex; flex-direction:column; gap:16px; padding:20px 20px 32px; }
 .breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header {
@@ -282,4 +282,15 @@ function tagLabel(tag) {
 }
 .sim-bar-fill { position:absolute; left:0; right:0; bottom:0; transition:height .3s; }
 .sim-bar-num  { position:absolute; top:6px; left:0; right:0; text-align:center; font-weight:700; color: var(--text-1); font-size: 14px; }
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .view { padding: 24px 32px 40px; }
+}
+@media (min-width: 1720px) {
+  .view { padding: 28px 56px 48px; }
+}
+@media (min-width: 1860px) {
+  .view { padding: 32px 64px 56px; }
+}
 </style>

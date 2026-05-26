@@ -318,7 +318,7 @@ function restTypeBadge(t) {
 </template>
 
 <style scoped>
-.view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
+.view { display:flex; flex-direction:column; gap:16px; padding:20px 20px 32px; }
 .breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
@@ -420,4 +420,15 @@ function restTypeBadge(t) {
 }
 .detail-footer { padding:14px 20px; background:var(--bg-2); border-top:1px solid var(--line-1); }
 .full-btn { width:100%; justify-content:center; gap:6px; display:flex; align-items:center; }
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .view { padding: 24px 32px 40px; }
+}
+@media (min-width: 1720px) {
+  .view { padding: 28px 56px 48px; }
+}
+@media (min-width: 1860px) {
+  .view { padding: 32px 64px 56px; }
+}
 </style>

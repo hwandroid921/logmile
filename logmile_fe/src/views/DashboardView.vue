@@ -975,7 +975,7 @@ const rankingItems = computed(() =>
           </div>
 
           <!-- 피로 요인 목록 -->
-          <div style="padding:14px;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;">
+          <div style="padding:14px;display:flex;flex-direction:column;gap:10px;">
             <div v-if="!selected" style="padding:20px;text-align:center;color: var(--text-3);font-size: 14px;">차량을 선택하세요</div>
             <div v-for="fb in drillFactors" :key="fb.label"
               :style="`padding:10px 12px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r-sm);border-top:2px solid ${fbColor(fb.val,fb.thr)};`">
@@ -1017,7 +1017,7 @@ const rankingItems = computed(() =>
         </div>
 
         <!-- 운행 타임라인 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;">
           <div style="padding:14px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div class="label-sm">운행 타임라인</div>
@@ -1034,7 +1034,7 @@ const rankingItems = computed(() =>
               </div>
             </div>
           </div>
-          <div style="padding:12px 14px;height:340px;display:flex;align-items:center;">
+          <div style="padding:12px 14px;height:184px;flex-shrink:0;display:flex;align-items:center;">
             <svg width="100%" height="160" viewBox="0 0 760 200" preserveAspectRatio="none">
               <rect x="30" y="10" width="720" height="66" fill="rgba(181,84,74,.07)"/>
               <rect x="30" y="76" width="720" height="54" fill="rgba(197,138,58,.07)"/>
@@ -1414,17 +1414,24 @@ const rankingItems = computed(() =>
 .tile-delta.bad  { color: var(--danger); background:var(--danger-soft); }
 .tile-delta.good { color: var(--ok);     background:var(--ok-soft); }
 
-/* 메인 3컬럼 그리드 */
+/* 메인 3컬럼 그리드
+   100vh - topbar(64) - view-padding-top(20) - page-hdr(87+14) - kpi(93+14) = 228px */
 .main-grid {
   display: grid;
-  grid-template-columns: 35fr 25fr 35fr;
+  grid-template-columns: 35fr 35fr 25fr;
   gap: 14px;
   margin-bottom: 14px;
   align-items: stretch;
 }
-.left-col   { display:flex; flex-direction:column; gap:12px; }
-.center-col { display:flex; flex-direction:column; gap:12px; }
-.right-col  { display:flex; flex-direction:column; gap:12px; }
+.left-col   { display:flex; flex-direction:column; gap:12px; overflow:hidden; }
+.center-col { display:flex; flex-direction:column; gap:12px; overflow:hidden; }
+.right-col  { display:flex; flex-direction:column; gap:12px; overflow:hidden; }
+
+/* 2열: 지도 높이 축소 */
+.center-col .map-box { height: 180px; }
+
+/* 3열: 알림 높이 제한 */
+.right-col .alert-scroll { max-height: 160px; }
 
 /* 하단 그리드 */
 .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
@@ -1575,34 +1582,41 @@ const rankingItems = computed(() =>
 .map-box      { width: 100%; height: 340px; overflow: hidden; }
 .alert-scroll { padding: 10px; display: flex; flex-direction: column; gap: 6px; max-height: 420px; overflow-y: auto; }
 
-/* event-scroll: 카드(flex:1)를 꽉 채워 여백 제거. 넘치면 스크롤 */
-.event-scroll { height: 340px; overflow-y: auto; }
+/* event-scroll: 카드(flex:1) 높이를 꽉 채움 */
+.event-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 
-/* vehicle-scroll: 3건 고정 노출 (vrow≈71px × 3 + gap×2 + padding = 245px), 초과 시 스크롤 */
-.vehicle-scroll { padding: 10px; display: flex; flex-direction: column; gap: 6px; height: 340px; overflow-y: auto; }
+/* vehicle-scroll: 카드(flex:1) 높이를 꽉 채움 */
+.vehicle-scroll { padding: 10px; display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow-y: auto; }
 
-/* 1440px — Mac 풀스크린 */
+/* 1440px — Mac 풀스크린 (view-pad 24→+4, 228+4=232) */
 @media (min-width: 1360px) {
-  .view         { padding: 24px 32px 40px; }
-  .map-box      { height: 360px; }
-  .alert-scroll { max-height: 440px; }
+  .view                      { padding: 24px 32px 40px; }
+  /* main-grid height: content-driven */
+  .map-box                   { height: 360px; }
+  .center-col .map-box       { height: 200px; }
+  .alert-scroll              { max-height: 440px; }
+  .right-col .alert-scroll   { max-height: 170px; }
 }
 
-/* 1720px — Windows 중간 ~ 1920px 풀스크린 */
+/* 1720px — Windows 중간 (view-pad 28→+8, kpi-tile 커짐→+6, 228+14=242) */
 @media (min-width: 1720px) {
-  .view         { padding: 28px 56px 48px; }
-  .main-grid    { gap: 18px; }
-  .kpi-strip    { margin-bottom: 16px; }
-  .kpi-tile     { padding: 16px 20px; }
-  .map-box      { height: 440px; }
-  .alert-scroll { max-height: 520px; }
+  .view                      { padding: 28px 56px 48px; }
+  .main-grid                 { gap: 18px; }
+  .kpi-strip                 { margin-bottom: 16px; }
+  .kpi-tile                  { padding: 16px 20px; }
+  .map-box                   { height: 440px; }
+  .center-col .map-box       { height: 280px; }
+  .alert-scroll              { max-height: 520px; }
+  .right-col .alert-scroll   { max-height: 220px; }
 }
 
-/* 1860px — 1920px 풀스크린 최적화 */
+/* 1860px — 1920px 풀스크린 (view-pad 32→+12, 228+12=240) */
 @media (min-width: 1860px) {
-  .view         { padding: 32px 64px 56px; }
-  .main-grid    { gap: 20px; }
-  .map-box      { height: 480px; }
-  .alert-scroll { max-height: 560px; }
+  .view                      { padding: 32px 64px 56px; }
+  .main-grid                 { gap: 20px; }
+  .map-box                   { height: 480px; }
+  .center-col .map-box       { height: 320px; }
+  .alert-scroll              { max-height: 560px; }
+  .right-col .alert-scroll   { max-height: 260px; }
 }
 </style>

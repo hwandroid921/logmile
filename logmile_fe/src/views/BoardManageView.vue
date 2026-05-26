@@ -247,7 +247,7 @@ const stats = computed(() => ({
 </template>
 
 <style scoped>
-.view { padding: 32px 32px 40px; }
+.view { padding: 20px 20px 32px; }
 
 .eyebrow { font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
 .pg-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
@@ -372,4 +372,15 @@ const stats = computed(() => ({
 
 .fade-up { animation: fade-up 0.4s ease both; }
 @keyframes fade-up { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .view { padding: 24px 32px 40px; }
+}
+@media (min-width: 1720px) {
+  .view { padding: 28px 56px 48px; }
+}
+@media (min-width: 1860px) {
+  .view { padding: 32px 64px 56px; }
+}
 </style>
