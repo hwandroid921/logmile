@@ -134,8 +134,28 @@ const apiEvents = ref([])
 
 /* ─── Kakao Maps ─── */
 const mapContainer = ref(null)
+const leftColRef = ref(null)
+const mainGridHeight = ref(null)
 let kakaoMap       = null
 let kakaoOverlays  = []
+let mainGridResizeFrame = null
+
+const mainGridStyle = computed(() =>
+  mainGridHeight.value ? { '--main-grid-height': mainGridHeight.value } : {})
+
+function syncMainGridHeight() {
+  if (typeof window === 'undefined') return
+  if (mainGridResizeFrame != null) {
+    window.cancelAnimationFrame(mainGridResizeFrame)
+  }
+  mainGridResizeFrame = window.requestAnimationFrame(() => {
+    const leftColEl = leftColRef.value
+    if (!leftColEl) return
+    const nextHeight = Math.ceil(leftColEl.scrollHeight)
+    mainGridHeight.value = nextHeight > 0 ? `${nextHeight}px` : null
+    mainGridResizeFrame = null
+  })
+}
 
 function makeMarkerEl(v) {
   const c    = mapVColor(v)
@@ -242,10 +262,18 @@ let timer = null
 onMounted(async () => {
   await Promise.all([fetchData(), fetchWeeklyStats()])
   await nextTick()
+  syncMainGridHeight()
+  window.addEventListener('resize', syncMainGridHeight)
   initKakaoMap()
   timer = setInterval(fetchData, 5000)
 })
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+  clearInterval(timer)
+  window.removeEventListener('resize', syncMainGridHeight)
+  if (mainGridResizeFrame != null) {
+    window.cancelAnimationFrame(mainGridResizeFrame)
+  }
+})
 
 /* 마커 재렌더 watch */
 watch(selectedId, () => renderKakaoMarkers())
@@ -257,6 +285,11 @@ watch(selectedDate, async () => {
   selectedDetail.value = null
   await Promise.all([refresh(), fetchWeeklyStats()])
 })
+
+watch([selectedId, selectedDetail, vehicles, mapTab, selectedDate], async () => {
+  await nextTick()
+  syncMainGridHeight()
+}, { flush: 'post' })
 
 /* ─── 파생값 ─── */
 const isTodaySelected = computed(() => selectedDate.value === todayDateValue())
@@ -714,7 +747,7 @@ function heatColor(s) {
 
 /* ─── Ranking ─── */
 const rankingItems = computed(() =>
-  dashboardVehicles.value.slice().sort((a, b) => b.score - a.score).slice(0, 6).map(v => ({
+  dashboardVehicles.value.slice().sort((a, b) => b.score - a.score).map(v => ({
     id: v.id, label: v.driver, sub: v.plate, value: v.score,
     color: v.level === 'DANGER' ? 'var(--danger)' : v.level === 'CAUTION' ? 'var(--warn)' : 'var(--ok)',
     tag:   v.level === 'DANGER' ? '위험' : v.level === 'CAUTION' ? '주의' : '정상',
@@ -890,18 +923,18 @@ const rankingItems = computed(() =>
     </div>
 
     <!-- ── 메인 3컬럼 그리드 ── -->
-    <div class="main-grid">
+    <div class="main-grid" :style="mainGridStyle">
 
       <!-- ── 좌: 피로도 산출 요인 + 운행 타임라인 ── -->
-      <div class="left-col">
+      <div ref="leftColRef" class="left-col">
 
         <!-- 피로도 산출 요인 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="card factors-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0;">
 
           <!-- 드릴다운 헤더 -->
-          <div style="border-bottom:1px solid var(--line-1);display:flex;align-items:stretch;">
+          <div style="border-bottom:1px solid var(--line-1);display:flex;align-items:stretch;height:175px;flex-shrink:0;">
             <!-- 번호판 썸네일 (왼쪽 끝, 헤더 전체 높이, max-width 제한) -->
-            <div style="flex-shrink:0;width:120px;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
+            <div style="flex:0 0 25%;align-self:stretch;background:linear-gradient(135deg,#DCDFE4,#B8BFC9);border-right:1px solid var(--line-3);position:relative;overflow:hidden;">
               <img
                 v-if="selected?.driveLogId"
                 :src="`/demo-plates/dl${selected.driveLogId}.jpg`"
@@ -1003,11 +1036,11 @@ const rankingItems = computed(() =>
           </div>
 
           <!-- 휴식 이벤트 -->
-          <div style="padding:12px 16px;border-top:1px solid var(--line-1);">
+          <div style="padding:12px 16px;border-top:1px solid var(--line-1);flex:1;display:flex;flex-direction:column;">
             <div class="label-sm" style="margin-bottom:8px;">휴식 이벤트</div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;align-items:center;flex:1;">
               <div v-for="r in restEvents" :key="r.label"
-                :style="`padding:8px;border-radius:4px;background:var(--bg-2);border:1px solid var(--line-2);border-top:2px solid ${r.color};`">
+                :style="`padding:8px;border-radius:4px;background:var(--bg-2);border:1px solid var(--line-2);border-top:2px solid ${r.color};display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:88px;`">
                 <div :style="`font-family:var(--font-mono);font-size: 14px;letter-spacing:.1em;font-weight:700;color:${r.color};`">{{ r.label }}</div>
                 <div :style="`font-family:var(--font-mono);font-size:22px;font-weight:800;margin-top:2px;letter-spacing: 0;color:${r.count>0?'var(--text-1)':'var(--text-3)'};`">{{ r.count }}</div>
                 <div style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);margin-top:1px;">{{ r.hint }}</div>
@@ -1034,7 +1067,7 @@ const rankingItems = computed(() =>
               </div>
             </div>
           </div>
-          <div style="padding:12px 14px;height:184px;flex-shrink:0;display:flex;align-items:center;">
+          <div style="padding:12px 14px;height:194px;flex-shrink:0;display:flex;align-items:center;">
             <svg width="100%" height="160" viewBox="0 0 760 200" preserveAspectRatio="none">
               <rect x="30" y="10" width="720" height="66" fill="rgba(181,84,74,.07)"/>
               <rect x="30" y="76" width="720" height="54" fill="rgba(197,138,58,.07)"/>
@@ -1071,7 +1104,7 @@ const rankingItems = computed(() =>
       <div class="center-col">
 
         <!-- 차량 위치 지도 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="card center-map-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
           <div style="padding:12px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
             <div>
               <div class="label-sm" style="display:flex;align-items:center;gap:6px;"><span class="dot dot-brand blink"/>차량 위치 지도 · 실시간</div>
@@ -1085,7 +1118,7 @@ const rankingItems = computed(() =>
           </div>
 
           <!-- Kakao Maps 컨테이너 -->
-          <div style="position:relative;display:flex;flex-direction:column;">
+          <div class="center-map-stage" style="position:relative;display:flex;flex-direction:column;">
             <div ref="mapContainer" class="map-box"></div>
             <!-- 운행 현황 오버레이 -->
             <div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:10;pointer-events:none;">
@@ -1104,7 +1137,7 @@ const rankingItems = computed(() =>
         </div>
 
         <!-- Running Vehicles 카드 -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+        <div class="card center-vehicle-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
           <div style="padding:10px 14px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div class="label-sm">운행 중 차량 · {{ sortedFiltered.length }}대</div>
             <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">점수 높은 순</span>
@@ -1131,31 +1164,31 @@ const rankingItems = computed(() =>
                 <div style="position:absolute;left:50%;bottom:5px;transform:translateX(-50%);background:#fff;border:1px solid rgba(81,95,122,.28);border-radius:2px;padding:2px 5px;font-family:var(--font-mono);font-size: 14px;font-weight:700;color:#515F7A;white-space:nowrap;">{{ v.recognizedPlate || v.plate.split(' ').slice(-1)[0] }}</div>
               </div>
               <!-- 중앙 정보 -->
-              <div style="min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:space-between;">
-                <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+              <div style="min-width:0;display:flex;flex-direction:column;gap:2px;justify-content:space-between;">
+                <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap;">
                   <span style="font-family:var(--font-mono);font-size: 14px;font-weight:700;">{{ v.plate }}</span>
                   <span :class="levelChipCls(v.level)">{{ levelLabel(v.level) }} {{ v.score }}</span>
                 </div>
                 <div style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);">{{ v.driver }} · {{ v.loc.replace(/^.*?· /,'') }}</div>
-                <div style="display:flex;flex-direction:column;gap:2px;">
-                  <div v-for="f in vFactors" :key="f.key" style="display:grid;grid-template-columns:30px 1fr 26px;gap:4px;align-items:center;">
+                <div style="display:flex;flex-direction:column;gap:1px;">
+                  <div v-for="f in vFactors" :key="f.key" style="display:grid;grid-template-columns:30px 0.85fr 42px;gap:1px;align-items:center;">
                     <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">{{ f.key }}</span>
-                    <div style="position:relative;height:4px;background:var(--bg-3);border-radius:2px;overflow:hidden;">
+                    <div style="position:relative;height:4px;width:85%;justify-self:center;background:var(--bg-3);border-radius:2px;overflow:hidden;">
                       <div :style="`position:absolute;top:0;left:0;height:100%;width:${fbPct(factorVal(v,f.key),f.max)}%;background:${fbColor(factorVal(v,f.key),f.thr)};`"/>
                       <div :style="`position:absolute;top:-1px;bottom:-1px;left:${(f.thr[0]/f.max)*100}%;width:1px;background:var(--warn);`"/>
                       <div :style="`position:absolute;top:-1px;bottom:-1px;left:${(f.thr[1]/f.max)*100}%;width:1px;background:var(--danger);`"/>
                     </div>
-                    <span :style="`font-family:var(--font-mono);font-size: 14px;color:${fbColor(factorVal(v,f.key),f.thr)};font-weight:700;text-align:right;`">{{ factorVal(v,f.key)===0?'—':fmtHM(factorVal(v,f.key)) }}</span>
+                    <span :style="`font-family:var(--font-mono);font-size: 14px;color:${fbColor(factorVal(v,f.key),f.thr)};font-weight:700;text-align:right;white-space:nowrap;`">{{ factorVal(v,f.key)===0?'—':fmtHM(factorVal(v,f.key)) }}</span>
                   </div>
                 </div>
               </div>
               <!-- 우측 점수 -->
-              <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;min-width:70px;">
+              <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;min-width:64px;">
                 <div>
                   <span :style="`font-family:var(--font-mono);font-size:20px;font-weight:800;color:${vSparkColor(v)};line-height:1;`">{{ v.score }}</span>
                   <span style="font-size: 14px;color: var(--text-3);font-family:var(--font-mono);">/100</span>
                 </div>
-                <svg width="70" height="22" style="display:block;">
+                <svg width="62" height="22" style="display:block;">
                   <polyline :points="vSparkPts(v)" fill="none" :stroke="vSparkColor(v)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
                   <circle :cx="vSparkEnd(v).cx" :cy="vSparkEnd(v).cy" r="2" :fill="vSparkColor(v)"/>
                 </svg>
@@ -1171,7 +1204,7 @@ const rankingItems = computed(() =>
       <div class="right-col">
 
         <!-- 활성 알림 -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="card right-alert-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
           <div style="padding:12px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-danger pulse-ring"/>활성 알림</div>
             <span class="chip chip-danger">{{ alertList.length }}건</span>
@@ -1193,7 +1226,7 @@ const rankingItems = computed(() =>
         </div>
 
         <!-- 이벤트 흐름 -->
-        <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+        <div class="card right-event-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
           <div style="padding:12px 16px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand blink"/>이벤트 흐름</div>
@@ -1232,15 +1265,15 @@ const rankingItems = computed(() =>
     <div class="bottom-grid">
 
       <!-- Driver Ranking -->
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div style="padding:14px 18px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;">
+      <div class="card" style="padding:0;height:550px;display:flex;flex-direction:column;">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--line-1);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
           <div>
             <div class="label-sm">운전자 순위 · 오늘</div>
             <div style="font-size: 14px;color: var(--text-2);margin-top:2px;">현재 누적 피로 점수</div>
           </div>
-          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">상위 6명</span>
+          <span style="font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">전체 {{ rankingItems.length }}명</span>
         </div>
-        <div style="padding:16px 18px;">
+        <div style="padding:16px 18px;flex:1;overflow-y:auto;">
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div v-for="it in rankingItems" :key="it.id" @click="selectedId=it.id"
               style="display:grid;grid-template-columns:120px 1fr 60px;gap:14px;align-items:center;cursor:pointer;">
@@ -1259,7 +1292,7 @@ const rankingItems = computed(() =>
       </div>
 
       <!-- Heatmap -->
-      <div class="card" style="padding:18px;">
+      <div class="card" style="padding:18px;height:550px;display:flex;flex-direction:column;overflow:hidden;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
             <div class="label-sm">운전자 × 시간대 히트맵</div>
@@ -1267,8 +1300,8 @@ const rankingItems = computed(() =>
           </div>
           <span class="chip chip-mute">{{ formatSelectedDateLabel(selectedDate) }}</span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <div style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);">
+        <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:grid;grid-template-columns:100px repeat(24,1fr);gap:2px;font-family:var(--font-mono);font-size: 14px;color: var(--text-3);position:sticky;top:0;background:var(--bg-1);z-index:1;padding-bottom:2px;">
             <div/>
             <div v-for="h in 24" :key="h" style="text-align:center;">{{ String(h-1).padStart(2,'0') }}</div>
           </div>
@@ -1418,20 +1451,102 @@ const rankingItems = computed(() =>
    100vh - topbar(64) - view-padding-top(20) - page-hdr(87+14) - kpi(93+14) = 228px */
 .main-grid {
   display: grid;
-  grid-template-columns: 35fr 35fr 25fr;
+  grid-template-columns: 31.5fr 38.5fr 25fr;
+  height: var(--main-grid-height, auto);
   gap: 14px;
   margin-bottom: 14px;
   align-items: stretch;
 }
-.left-col   { display:flex; flex-direction:column; gap:12px; overflow:hidden; }
-.center-col { display:flex; flex-direction:column; gap:12px; overflow:hidden; }
-.right-col  { display:flex; flex-direction:column; gap:12px; overflow:hidden; }
+.main-grid > * {
+  height: 100%;
+  min-height: 0;
+  align-self: stretch;
+}
+.left-col {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-height: 0;
+  height: 1032px;
+}
+.center-col,
+.right-col {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-height: 0;
+  height: 1032px;
+}
+
+.center-col,
+.right-col {
+  height: 1032px;
+}
+
+.center-col > .card,
+.right-col > .card {
+  min-height: 0;
+}
+
+.center-col > .card:last-child {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.center-map-card {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.center-map-stage {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.center-map-card .map-box {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.center-vehicle-card {
+  flex: 0 0 625px;
+  height: 625px;
+}
+
+.right-alert-card {
+  flex: 3 1 0;
+  min-height: 0;
+}
+
+.right-alert-card .alert-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+}
+
+.right-event-card {
+  flex: 2 1 0;
+  min-height: 0;
+}
+
+.right-event-card .event-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
 
 /* 2열: 지도 높이 축소 */
 .center-col .map-box { height: 180px; }
 
 /* 3열: 알림 높이 제한 */
 .right-col .alert-scroll { max-height: 160px; }
+
+/* 좌측 드릴다운 카드 고정 높이 */
+.factors-card {
+  height: 730px;
+  flex-shrink: 0;
+}
 
 /* 하단 그리드 */
 .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
@@ -1460,10 +1575,11 @@ const rankingItems = computed(() =>
 /* 차량 행 */
 .vrow {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 10px;
+  grid-template-columns: auto 0.78fr auto;
+  gap: 3px;
   align-items: stretch;
-  padding: 9px;
+  justify-content: space-between;
+  padding: 7px 6px;
   cursor: pointer;
   border-radius: var(--r-sm);
   background: var(--bg-2);
@@ -1475,7 +1591,7 @@ const rankingItems = computed(() =>
   border-color: var(--accent-line);
 }
 .vrow-plate {
-  width: 70px; height: 52px;
+  width: 120px; height: 90px;
   border-radius: 4px; flex-shrink: 0;
   background: linear-gradient(135deg, #DCDFE4, #B8BFC9);
   border: 1px solid var(--line-3);
@@ -1585,8 +1701,8 @@ const rankingItems = computed(() =>
 /* event-scroll: 카드(flex:1) 높이를 꽉 채움 */
 .event-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 
-/* vehicle-scroll: 카드(flex:1) 높이를 꽉 채움 */
-.vehicle-scroll { padding: 10px; display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow-y: auto; }
+/* vehicle-scroll: 고정 높이 카드 내부를 채움 */
+.vehicle-scroll { padding: 10px; display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 
 /* 1440px — Mac 풀스크린 (view-pad 24→+4, 228+4=232) */
 @media (min-width: 1360px) {
@@ -1594,6 +1710,7 @@ const rankingItems = computed(() =>
   /* main-grid height: content-driven */
   .map-box                   { height: 360px; }
   .center-col .map-box       { height: 200px; }
+  .center-map-card .map-box  { height: auto; }
   .alert-scroll              { max-height: 440px; }
   .right-col .alert-scroll   { max-height: 170px; }
 }
@@ -1606,6 +1723,7 @@ const rankingItems = computed(() =>
   .kpi-tile                  { padding: 16px 20px; }
   .map-box                   { height: 440px; }
   .center-col .map-box       { height: 280px; }
+  .center-map-card .map-box  { height: auto; }
   .alert-scroll              { max-height: 520px; }
   .right-col .alert-scroll   { max-height: 220px; }
 }
@@ -1616,6 +1734,7 @@ const rankingItems = computed(() =>
   .main-grid                 { gap: 20px; }
   .map-box                   { height: 480px; }
   .center-col .map-box       { height: 320px; }
+  .center-map-card .map-box  { height: auto; }
   .alert-scroll              { max-height: 560px; }
   .right-col .alert-scroll   { max-height: 260px; }
 }
