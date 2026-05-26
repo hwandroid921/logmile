@@ -171,7 +171,7 @@ onMounted(fetchAdmins)
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 32px 32px 40px;
+  padding: 20px 20px 32px;
 }
 
 /* 브레드크럼 */
@@ -344,5 +344,16 @@ onMounted(fetchAdmins)
   background: var(--accent-soft);
   color: var(--accent);
   border: 1px solid var(--accent-line);
+}
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .view { padding: 24px 32px 40px; }
+}
+@media (min-width: 1720px) {
+  .view { padding: 28px 56px 48px; }
+}
+@media (min-width: 1860px) {
+  .view { padding: 32px 64px 56px; }
 }
 </style>

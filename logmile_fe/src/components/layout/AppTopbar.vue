@@ -154,7 +154,7 @@ function logout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 48px;
+  padding: 0 20px;
 }
 
 /* 로고 영역 */
@@ -162,13 +162,8 @@ function logout() {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
-}
-
-.logo-link {
-  text-decoration: none;
-  display: flex;
-  align-items: center;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .topbar-env {
@@ -179,13 +174,23 @@ function logout() {
   background: var(--bg-3);
   border: 1px solid var(--line-2);
   border-radius: var(--r-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.logo-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 /* 네비게이션 */
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 50px;
+  gap: 24px;
   flex: 1;
   justify-content: center;
 }
@@ -266,7 +271,15 @@ function logout() {
   font-size: 14px; font-weight: 700; color: var(--accent);
 }
 
-.user-name { font-size: 14px; font-weight: 500; color: var(--text-2); }
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .btn-login {
   display: inline-flex;
@@ -308,4 +321,22 @@ function logout() {
 .dot-ok  { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
 .blink   { animation: blink-soft 2s infinite; }
 @keyframes blink-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .topbar-inner { padding: 0 32px; }
+  .topbar-nav   { gap: 28px; }
+  .user-name    { max-width: 100px; }
+}
+@media (min-width: 1720px) {
+  .topbar-inner { padding: 0 56px; }
+  .topbar-nav   { gap: 44px; }
+  .topbar-env   { font-size: 14px; }
+  .user-name    { max-width: 140px; }
+}
+@media (min-width: 1860px) {
+  .topbar-inner { padding: 0 64px; }
+  .topbar-nav   { gap: 50px; }
+  .user-name    { max-width: 160px; }
+}
 </style>

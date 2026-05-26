@@ -142,7 +142,7 @@ onMounted(fetchCompanies)
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 32px 32px 40px;
+  padding: 20px 20px 32px;
 }
 .view-header { display: flex; align-items: flex-start; justify-content: space-between; }
 .view-title { font-size: 18px; font-weight: 700; color: var(--text-1); margin: 0 0 4px; }
@@ -243,5 +243,16 @@ onMounted(fetchCompanies)
 .action-btn.danger:hover {
   color: var(--danger);
   border-color: rgba(181, 84, 74, 0.28);
+}
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .view { padding: 24px 32px 40px; }
+}
+@media (min-width: 1720px) {
+  .view { padding: 28px 56px 48px; }
+}
+@media (min-width: 1860px) {
+  .view { padding: 32px 64px 56px; }
 }
 </style>

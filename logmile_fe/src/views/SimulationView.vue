@@ -745,7 +745,7 @@ watch(vehicles, () => {
 </template>
 
 <style scoped>
-.view { display:flex; flex-direction:column; gap:14px; padding:28px 32px 40px; }
+.view { display:flex; flex-direction:column; gap:14px; padding:20px 20px 32px; }
 .breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; }
@@ -948,5 +948,16 @@ watch(vehicles, () => {
   0%   { box-shadow: 0 0 0 0 rgba(94, 138, 111, 0.5); }
   70%  { box-shadow: 0 0 0 8px rgba(94, 138, 111, 0); }
   100% { box-shadow: 0 0 0 0 rgba(94, 138, 111, 0); }
+}
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .view { padding: 24px 32px 40px; }
+}
+@media (min-width: 1720px) {
+  .view { padding: 28px 56px 48px; }
+}
+@media (min-width: 1860px) {
+  .view { padding: 32px 64px 56px; }
 }
 </style>

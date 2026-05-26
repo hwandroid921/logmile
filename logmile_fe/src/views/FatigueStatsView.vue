@@ -651,7 +651,7 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
 </template>
 
 <style scoped>
-.view { display:flex; flex-direction:column; gap:16px; padding:32px 32px 40px; }
+.view { display:flex; flex-direction:column; gap:16px; padding:20px 20px 32px; }
 .breadcrumb { font-size: 14px; color: var(--text-3); letter-spacing:0.04em; }
 
 .page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; }
@@ -837,5 +837,16 @@ onUnmounted(() => { scoreChart?.destroy(); driveChart?.destroy(); eventChart?.de
   .event-day-row { align-items:flex-start; flex-direction:column; }
   .drive-log-row { align-items:flex-start; flex-direction:column; }
   .drive-log-metrics { justify-content:flex-start; }
+}
+
+/* ─── 반응형 레이아웃 ─── */
+@media (min-width: 1360px) {
+  .view { padding: 24px 32px 40px; }
+}
+@media (min-width: 1720px) {
+  .view { padding: 28px 56px 48px; }
+}
+@media (min-width: 1860px) {
+  .view { padding: 32px 64px 56px; }
 }
 </style>
