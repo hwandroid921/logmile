@@ -12,9 +12,10 @@ const {
   mode, scenarioType,
   vehicleId, vehiclePlateNo, driverId, driverName, ocrConfidence,
   isRunning, driveLogId, startedAtIso, endedAtIso,
-  events, plannedEvents,
+  events, plannedEvents, pendingRestStartIso, isScenarioRunning,
   apiError, apiInfo, nowIso,
   currentScore, maxScore, levelLabel, elapsedMinutes, scoreState,
+  currentSimulationId, currentSimulationNo, simulations,
 } = storeToRefs(sim)
 
 /* ─────────── 차량/운전자 목록 ─────────── */
@@ -495,8 +496,8 @@ watch(vehicles, () => {
           </div>
         </div>
 
-        <!-- 운행 시작 / 종료 -->
-        <div class="card panel">
+        <!-- 운행 제어 (직접 입력 모드) -->
+        <div v-if="mode === 'MANUAL'" class="card panel">
           <div class="panel-title">
             <AppIcon name="play" :size="13" />
             <span>운행 제어</span>
@@ -542,6 +543,67 @@ watch(vehicles, () => {
               {{ submitting.stop ? '종료 중…' : '운행 종료' }}
             </button>
             <button v-if="!isRunning && (events.length || driveLogId)"
+                    class="btn btn-ghost btn-sm"
+                    @click="doReset">
+              초기화
+            </button>
+          </div>
+        </div>
+
+        <!-- 시나리오 실행 제어 카드 (시나리오 선택 모드) -->
+        <div v-if="mode === 'SCENARIO'" class="card panel">
+          <div class="panel-title">
+            <AppIcon name="play" :size="13" />
+            <span>시나리오 자동 실행</span>
+          </div>
+
+          <!-- 시나리오 설명 요약 -->
+          <div class="scenario-info-box">
+            <div v-if="scenarioType === 'A'" class="scenario-desc-card">
+              <h4 class="scenario-title mono">🟢 시나리오 A (정상 패턴)</h4>
+              <p class="scenario-summary">
+                주간 운행을 모사하며, 법정 규정에 맞춰 충분한 휴식을 제공하여 피로도 점수를 안전 범위로 유지하는 정상 주행 패턴입니다.
+              </p>
+              <ul class="scenario-bullets mono">
+                <li>시작 시각: 당일 오전 09:00</li>
+                <li>90분 운행 ➔ 35분 충분 휴식 ➔ 35분 추가 운행</li>
+                <li>최종 피로 등급: NORMAL (정상)</li>
+              </ul>
+            </div>
+
+            <div v-if="scenarioType === 'B'" class="scenario-desc-card">
+              <h4 class="scenario-title mono">🟡 시나리오 B (주의 패턴)</h4>
+              <p class="scenario-summary">
+                야간 연속 주행 시간이 증가하고 정차 휴식 시간이 규정(15분)에 미치지 못해 피로 점수가 점진적으로 상승하는 형태입니다.
+              </p>
+              <ul class="scenario-bullets mono">
+                <li>시작 시각: 당일 야간 21:30 (야간 할증 진입)</li>
+                <li>150분 장거리 운행 ➔ 10분 불충분 휴식 ➔ 70분 추가 운행</li>
+                <li>최종 피로 등급: CAUTION (주의)</li>
+              </ul>
+            </div>
+
+            <div v-if="scenarioType === 'C'" class="scenario-desc-card">
+              <h4 class="scenario-title mono">🔴 시나리오 C (위험 패턴)</h4>
+              <p class="scenario-summary">
+                연속 운전 한계인 4시간(240분)을 돌파하고 심야 시간대에 무리하게 주행하여 사고 유발 피로치에 직면하는 상태입니다.
+              </p>
+              <ul class="scenario-bullets mono">
+                <li>시작 시각: 당일 심야 22:00 (심야 가중치 누적)</li>
+                <li>260분 한계 위반 주행 ➔ 5분 무효 휴식 ➔ 120분 심야 주행</li>
+                <li>최종 피로 등급: DANGER (위험)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="control-actions">
+            <button class="btn btn-primary"
+                    :disabled="isScenarioRunning || isRunning || !vehicleId || !driverId || ocrLoading"
+                    @click="sim.runScenarioSequence">
+              <AppIcon name="play" :size="13" />
+              {{ isScenarioRunning ? '시뮬레이션 구동 중…' : '시나리오 시뮬레이션 실행' }}
+            </button>
+            <button v-if="!isScenarioRunning && (events.length || driveLogId)"
                     class="btn btn-ghost btn-sm"
                     @click="doReset">
               초기화
@@ -646,11 +708,11 @@ watch(vehicles, () => {
           </button>
         </div>
 
-        <!-- 예정 이벤트 (시나리오 모드 + 운행 중) -->
-        <div v-if="mode === 'SCENARIO' && isRunning && plannedEvents.length" class="card panel">
+        <!-- 예정 이벤트 시퀀스 (시나리오 모드 대기 및 구동 시 노출) -->
+        <div v-if="mode === 'SCENARIO' && plannedEvents.length" class="card panel">
           <div class="panel-title">
             <AppIcon name="list" :size="13" />
-            <span>예정된 이벤트 · 시나리오 {{ scenarioType }}</span>
+            <span>예정된 시나리오 시퀀스 · {{ scenarioType }}</span>
           </div>
           <div class="planned-list">
             <div v-for="p in plannedEvents" :key="p.id" class="planned-row">
@@ -658,13 +720,13 @@ watch(vehicles, () => {
               <span class="planned-label">{{ p.label }}</span>
             </div>
           </div>
-          <div class="form-hint mono">시나리오 모드에서는 이벤트 등록이 자동 처리되며, 시연 중에는 종료 버튼만 누르면 됩니다.</div>
+          <div class="form-hint mono">시나리오 자동 실행 시 위의 이벤트들이 일정한 시간차를 두고 실시간 순차 전송됩니다.</div>
         </div>
 
       </div>
 
-      <!-- ───── RIGHT: 라이브 차트 + 이벤트 로그 ───── -->
-      <div class="right-col">
+      <!-- ───── CENTER: 라이브 차트 + 이벤트 로그 (2열) ───── -->
+      <div class="center-col">
         <div class="card chart-card">
           <div class="chart-hdr">
             <div class="card-title">피로 점수 추이</div>
@@ -740,6 +802,45 @@ watch(vehicles, () => {
           </div>
         </div>
       </div>
+
+      <!-- ───── RIGHT: 시뮬레이션 로그 (3열) ───── -->
+      <div class="right-col">
+        <!-- 시뮬레이션 로그 (다중 세션 이력 관리) -->
+        <div class="card event-card sim-log-card">
+          <div class="chart-hdr">
+            <div class="card-title">시뮬레이션 로그</div>
+            <span class="mono chart-sub">{{ simulations.length }}개 이력</span>
+          </div>
+          <div class="event-list sim-log-list">
+            <div v-if="!simulations.length" class="empty-hint">저장된 시뮬레이션 이력이 없습니다.</div>
+            <div v-for="s in simulations" :key="s.id" 
+                 class="event-row sim-log-row"
+                 :class="{ active: s.id === currentSimulationId }"
+                 @click="sim.selectSimulation(s.id)">
+              <span class="ev-icon" :style="{ color: s.isRunning ? 'var(--ok)' : 'var(--text-3)' }">
+                {{ s.isRunning ? '●' : '■' }}
+              </span>
+              <div class="sim-log-meta">
+                <div class="sim-log-title mono">
+                  <span class="sim-log-mode" :class="s.mode.toLowerCase()">{{ s.mode === 'SCENARIO' ? `SCENARIO-${s.scenarioType}` : 'MANUAL' }}</span>
+                  <span class="sim-log-plate">{{ s.vehiclePlateNo || '미등록' }}</span>
+                  <span class="sim-log-driver">{{ s.driverName || '운전자없음' }}</span>
+                </div>
+                <div class="sim-log-time mono">
+                  {{ s.startedAtIso ? s.startedAtIso.replace('T', ' ') : '—' }} ~ 
+                  {{ s.endedAtIso ? s.endedAtIso.slice(11, 16) : s.isRunning ? '운행중' : '중단' }}
+                </div>
+              </div>
+              <span class="mono ev-score" :style="{
+                color: s.scoreState.current >= 70 ? 'var(--danger)' : s.scoreState.current >= 40 ? 'var(--warn)' : 'var(--ok)'
+              }">{{ s.scoreState.current }}pt</span>
+              <button class="sim-log-delete" @click.stop="sim.deleteSimulation(s.id)">
+                <AppIcon name="trash" :size="13" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -787,8 +888,8 @@ watch(vehicles, () => {
 }
 
 /* ── 메인 그리드 ───────────────── */
-.main-grid { display:grid; grid-template-columns:420px 1fr; gap:14px; align-items:start; }
-.left-col, .right-col { display:flex; flex-direction:column; gap:12px; }
+.main-grid { display:grid; grid-template-columns:420px 1fr 380px; gap:14px; align-items:start; }
+.left-col, .center-col, .right-col { display:flex; flex-direction:column; gap:12px; }
 
 .panel { padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
 .panel-title {
@@ -948,6 +1049,124 @@ watch(vehicles, () => {
   0%   { box-shadow: 0 0 0 0 rgba(94, 138, 111, 0.5); }
   70%  { box-shadow: 0 0 0 8px rgba(94, 138, 111, 0); }
   100% { box-shadow: 0 0 0 0 rgba(94, 138, 111, 0); }
+}
+
+/* 시나리오 카드 상세 안내 */
+.scenario-info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.scenario-desc-card {
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-1);
+  background: var(--bg-2);
+}
+.scenario-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.scenario-summary {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.45;
+  word-break: keep-all;
+}
+.scenario-bullets {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+/* ─── 시뮬레이션 로그 스타일 ─── */
+.sim-log-card {
+  margin-top: 4px;
+}
+.sim-log-list {
+  max-height: 580px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.sim-log-row {
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--r-sm);
+}
+.sim-log-row:hover {
+  background: var(--bg-2);
+}
+.sim-log-row.active {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.sim-log-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.sim-log-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.sim-log-mode {
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: var(--r-sm);
+  background: var(--bg-3);
+  color: var(--text-3);
+}
+.sim-log-mode.scenario {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.sim-log-mode.manual {
+  background: var(--bg-3);
+  color: var(--text-2);
+}
+.sim-log-plate {
+  color: var(--text-2);
+}
+.sim-log-driver {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.sim-log-time {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.sim-log-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.sim-log-delete:hover {
+  background: rgba(181, 84, 74, 0.15);
+  color: var(--danger);
 }
 
 /* ─── 반응형 레이아웃 ─── */

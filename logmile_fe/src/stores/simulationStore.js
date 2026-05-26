@@ -66,6 +66,10 @@ export const useSimulationStore = defineStore('simulation', () => {
   // 시나리오 모드에서 예정된 이벤트 (start 후 사용자에게 보여주기만)
   const plannedEvents = ref([])
 
+  // 다중 시뮬레이션 이력 관리 추가
+  const simulations = ref([])
+  const currentSimulationId = ref(null)
+
   // 클럭 (1초마다 갱신, 경과시간 표시용)
   const nowIso = ref(formatLocalDt(new Date()))
   let clockTimer = null
@@ -154,6 +158,12 @@ export const useSimulationStore = defineStore('simulation', () => {
     return diffMinutes(startedAtIso.value, endIso)
   })
 
+  const currentSimulationNo = computed(() => {
+    if (!currentSimulationId.value) return ''
+    const idx = simulations.value.findIndex(s => s.id === currentSimulationId.value)
+    return idx > -1 ? `#${idx + 1}` : ''
+  })
+
   /* ─── 액션 ─── */
   function selectVehicle(v) {
     if (!v) return
@@ -167,29 +177,118 @@ export const useSimulationStore = defineStore('simulation', () => {
     driverId.value = d.id ?? null
     driverName.value = d.name ?? ''
   }
-  function setMode(m) { mode.value = m }
-  function setScenario(s) { scenarioType.value = s }
+  function setMode(m) { 
+    mode.value = m 
+    plannedEvents.value = m === 'SCENARIO' ? buildPlannedEvents() : []
+  }
+  function setScenario(s) { 
+    scenarioType.value = s 
+    plannedEvents.value = mode.value === 'SCENARIO' ? buildPlannedEvents() : []
+  }
 
   function buildPlannedEvents() {
-    // 시나리오 모드에서 운행 시작 시 표시되는 정해진 이벤트 목록 (UI 표시 전용)
+    // 시나리오 모드에서 표시할 정해진 이벤트 시퀀스 세부 목록
     const presets = {
       A: [
-        { offsetMin: 90, label: '휴식 시작 (35분)' },
-        { offsetMin: 125, label: '휴식 종료' },
-        { offsetMin: 160, label: '운행 종료' },
+        { offsetMin: 90, label: '광주 휴게소 진입 🚚' },
+        { offsetMin: 90, label: '휴식 시작 ☕ (35분)' },
+        { offsetMin: 125, label: '휴식 종료 🟢 (보정 -20pt)' },
+        { offsetMin: 125, label: '광주 휴게소 진출 🚚' },
+        { offsetMin: 160, label: '운행 종료 🏁 (최종 정상)' },
       ],
       B: [
-        { offsetMin: 180, label: '휴식 시작 (20분)' },
-        { offsetMin: 200, label: '휴식 종료' },
-        { offsetMin: 390, label: '운행 종료' },
+        { offsetMin: 150, label: '여주 졸음쉼터 진입 🚚' },
+        { offsetMin: 150, label: '휴식 시작 ☕ (10분, 무효)' },
+        { offsetMin: 160, label: '휴식 종료 🟡 (보정 없음)' },
+        { offsetMin: 160, label: '여주 졸음쉼터 진출 🚚' },
+        { offsetMin: 230, label: '운행 종료 🏁 (최종 주의)' },
       ],
       C: [
-        { offsetMin: 260, label: '휴식 시작 (10분, 무효)' },
-        { offsetMin: 270, label: '휴식 종료' },
-        { offsetMin: 620, label: '운행 종료' },
+        { offsetMin: 260, label: '충주 휴게소 진입 🚚' },
+        { offsetMin: 260, label: '휴식 시작 ☕ (5분, 무효)' },
+        { offsetMin: 265, label: '휴식 종료 🔴 (보정 없음)' },
+        { offsetMin: 265, label: '충주 휴게소 진출 🚚' },
+        { offsetMin: 385, label: '운행 종료 🏁 (최종 위험)' },
       ],
     }
     return (presets[scenarioType.value] || []).map((p, i) => ({ ...p, id: `pl-${i}` }))
+  }
+
+  /* ─── 다중 시뮬레이션 제어 ─── */
+  function buildSimulationId(dlId) {
+    return dlId ? `drive-${dlId}` : `sim-${Date.now()}`
+  }
+
+  function upsertCurrentSimulation() {
+    if (!startedAtIso.value) return
+    if (!currentSimulationId.value) {
+      currentSimulationId.value = buildSimulationId(driveLogId.value)
+    }
+
+    const snap = {
+      id: currentSimulationId.value,
+      mode: mode.value,
+      scenarioType: scenarioType.value,
+      vehicleId: vehicleId.value,
+      vehiclePlateNo: vehiclePlateNo.value,
+      driverId: driverId.value,
+      driverName: driverName.value,
+      isRunning: isRunning.value,
+      driveLogId: driveLogId.value,
+      startedAtIso: startedAtIso.value,
+      endedAtIso: endedAtIso.value,
+      events: JSON.parse(JSON.stringify(events.value)),
+      plannedEvents: JSON.parse(JSON.stringify(plannedEvents.value)),
+      scoreState: {
+        current: currentScore.value,
+        max: maxScore.value,
+        traces: JSON.parse(JSON.stringify(scoreState.value.traces))
+      },
+      updatedAt: new Date().toISOString()
+    }
+
+    const idx = simulations.value.findIndex(s => s.id === snap.id)
+    if (idx > -1) {
+      simulations.value[idx] = snap
+    } else {
+      simulations.value.push(snap)
+    }
+    persist()
+  }
+
+  function selectSimulation(id) {
+    const snap = simulations.value.find(s => s.id === id)
+    if (!snap) return
+
+    currentSimulationId.value = snap.id
+    mode.value = snap.mode
+    scenarioType.value = snap.scenarioType
+    vehicleId.value = snap.vehicleId
+    vehiclePlateNo.value = snap.vehiclePlateNo
+    driverId.value = snap.driverId
+    driverName.value = snap.driverName
+    isRunning.value = snap.isRunning
+    driveLogId.value = snap.driveLogId
+    startedAtIso.value = snap.startedAtIso
+    endedAtIso.value = snap.endedAtIso
+    events.value = JSON.parse(JSON.stringify(snap.events || []))
+    plannedEvents.value = JSON.parse(JSON.stringify(snap.plannedEvents || []))
+
+    if (isRunning.value) {
+      startClock()
+    } else {
+      stopClock()
+    }
+    persist()
+  }
+
+  function deleteSimulation(id) {
+    simulations.value = simulations.value.filter(s => s.id !== id)
+    if (currentSimulationId.value === id) {
+      reset()
+    } else {
+      persist()
+    }
   }
 
   async function start({ startedAt } = {}) {
@@ -219,9 +318,10 @@ export const useSimulationStore = defineStore('simulation', () => {
       events.value = []
       endedAtIso.value = ''
       plannedEvents.value = mode.value === 'SCENARIO' ? buildPlannedEvents() : []
+      currentSimulationId.value = buildSimulationId(res.data.driveLogId)
       startClock()
       apiInfo.value = `운행 시작 · DriveLog #${driveLogId.value}`
-      persist()
+      upsertCurrentSimulation()
       return true
     } catch (e) {
       apiError.value = `시작 실패: ${e?.response?.data?.message || e.message || '서버 오류'}`
@@ -246,7 +346,7 @@ export const useSimulationStore = defineStore('simulation', () => {
         startIso, endIso, durationMin: dur,
       })
       apiInfo.value = `휴식 이벤트 등록 (${dur}분)`
-      persist()
+      upsertCurrentSimulation()
       return true
     } catch (e) {
       apiError.value = `휴식 등록 실패: ${e?.response?.data?.message || e.message}`
@@ -275,7 +375,7 @@ export const useSimulationStore = defineStore('simulation', () => {
         ...payload,
       })
       apiInfo.value = '피로도 이벤트 등록'
-      persist()
+      upsertCurrentSimulation()
       return true
     } catch (e) {
       apiError.value = `피로도 등록 실패: ${e?.response?.data?.message || e.message}`
@@ -291,7 +391,7 @@ export const useSimulationStore = defineStore('simulation', () => {
       tIso, label, locationType,
     })
     apiInfo.value = `위치 마커 추가 · ${label}`
-    persist()
+    upsertCurrentSimulation()
     return true
   }
 
@@ -305,7 +405,7 @@ export const useSimulationStore = defineStore('simulation', () => {
       isRunning.value = false
       stopClock()
       apiInfo.value = `운행 종료 · DriveLog #${driveLogId.value}`
-      persist()
+      upsertCurrentSimulation()
       return true
     } catch (e) {
       apiError.value = `종료 실패: ${e?.response?.data?.message || e.message}`
@@ -316,14 +416,100 @@ export const useSimulationStore = defineStore('simulation', () => {
   function reset() {
     isRunning.value = false
     driveLogId.value = null
+    currentSimulationId.value = null
     startedAtIso.value = ''
     endedAtIso.value = ''
     events.value = []
     plannedEvents.value = []
     apiError.value = null
     apiInfo.value = null
+    isScenarioRunning.value = false
     stopClock()
     persist()
+  }
+
+  const isScenarioRunning = ref(false)
+
+  async function runScenarioSequence() {
+    if (isScenarioRunning.value) return
+    if (!vehicleId.value || !driverId.value) {
+      apiError.value = '차량과 운전자를 선택해주세요.'
+      return false
+    }
+    if (!vehiclePlateNo.value) {
+      apiError.value = '차량 번호판이 비어 있습니다.'
+      return false
+    }
+    isScenarioRunning.value = true
+    apiError.value = null
+    apiInfo.value = `시나리오 ${scenarioType.value} 자동 시뮬레이션을 시작합니다...`
+
+    try {
+      // 1. 당일 날짜 기반 시작점 설정
+      const today = new Date()
+      let startHour = 9, startMin = 0
+      if (scenarioType.value === 'B') { startHour = 21; startMin = 30 }
+      else if (scenarioType.value === 'C') { startHour = 22; startMin = 0 }
+      
+      const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMin, 0)
+      const baseIso = formatLocalDt(startDate)
+
+      // 2. 운행 시작 API 전송
+      const started = await start({ startedAt: baseIso })
+      if (!started) throw new Error('운행 시작에 실패했습니다.')
+
+      const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+      await delay(600) // API 간 가시적 시간차(0.6초) 부여
+
+      // 3. 시나리오별 일괄 자동 이벤트 순차 연동
+      if (scenarioType.value === 'A') {
+        // [시나리오 A] 90분 운행 -> 35분 휴식 -> 160분 운행 종료
+        await addMarker({ tIso: addMin(baseIso, 90), label: '광주 휴게소 진입', locationType: 'REST_AREA' })
+        await delay(600)
+
+        await addRest({ startIso: addMin(baseIso, 90), endIso: addMin(baseIso, 125) })
+        await delay(600)
+
+        await addMarker({ tIso: addMin(baseIso, 125), label: '광주 휴게소 진출', locationType: 'REST_AREA' })
+        await delay(600)
+
+        await stop({ endedAt: addMin(baseIso, 160) })
+
+      } else if (scenarioType.value === 'B') {
+        // [시나리오 B] 150분 운행 -> 10분 무효 휴식 -> 230분 운행 종료
+        await addMarker({ tIso: addMin(baseIso, 150), label: '여주 졸음쉼터 진입', locationType: 'REST_AREA' })
+        await delay(600)
+
+        await addRest({ startIso: addMin(baseIso, 150), endIso: addMin(baseIso, 160) })
+        await delay(600)
+
+        await addMarker({ tIso: addMin(baseIso, 160), label: '여주 졸음쉼터 진출', locationType: 'REST_AREA' })
+        await delay(600)
+
+        await stop({ endedAt: addMin(baseIso, 230) })
+
+      } else if (scenarioType.value === 'C') {
+        // [시나리오 C] 260분 연속 주행 -> 5분 무효 휴식 -> 385분 운행 종료
+        await addMarker({ tIso: addMin(baseIso, 260), label: '충주 휴게소 진입', locationType: 'REST_AREA' })
+        await delay(600)
+
+        await addRest({ startIso: addMin(baseIso, 260), endIso: addMin(baseIso, 265) })
+        await delay(600)
+
+        await addMarker({ tIso: addMin(baseIso, 265), label: '충주 휴게소 진출', locationType: 'REST_AREA' })
+        await delay(600)
+
+        await stop({ endedAt: addMin(baseIso, 385) })
+      }
+
+      apiInfo.value = `시나리오 ${scenarioType.value} 자동 시뮬레이션이 성공적으로 완수되었습니다!`
+      return true
+    } catch (e) {
+      apiError.value = `시뮬레이션 구동 오류: ${e.message}`
+      return false
+    } finally {
+      isScenarioRunning.value = false
+    }
   }
 
   /* ─── persistence (localStorage) ─── */
@@ -337,6 +523,8 @@ export const useSimulationStore = defineStore('simulation', () => {
         isRunning: isRunning.value, driveLogId: driveLogId.value,
         startedAtIso: startedAtIso.value, endedAtIso: endedAtIso.value,
         events: events.value, plannedEvents: plannedEvents.value,
+        simulations: simulations.value,
+        currentSimulationId: currentSimulationId.value,
       }
       localStorage.setItem(LS_KEY, JSON.stringify(snap))
     } catch (e) { /* quota / privacy mode 무시 */ }
@@ -359,6 +547,8 @@ export const useSimulationStore = defineStore('simulation', () => {
       endedAtIso.value = s.endedAtIso ?? ''
       events.value = Array.isArray(s.events) ? s.events : []
       plannedEvents.value = Array.isArray(s.plannedEvents) ? s.plannedEvents : []
+      simulations.value = Array.isArray(s.simulations) ? s.simulations : []
+      currentSimulationId.value = s.currentSimulationId ?? null
       if (isRunning.value) startClock()
     } catch (e) { /* 손상된 데이터 무시 */ }
   }
@@ -372,15 +562,19 @@ export const useSimulationStore = defineStore('simulation', () => {
     mode, scenarioType,
     vehicleId, vehiclePlateNo, driverId, driverName, ocrConfidence,
     isRunning, driveLogId, startedAtIso, endedAtIso,
-    events, plannedEvents,
+    events, plannedEvents, isScenarioRunning,
     apiError, apiInfo, nowIso,
+    // 다중 이력 추가
+    simulations, currentSimulationId,
     // derived
-    currentScore, maxScore, levelLabel, elapsedMinutes, scoreState,
+    currentScore, maxScore, levelLabel, elapsedMinutes, scoreState, currentSimulationNo,
     // actions
     loadThresholds,
     selectVehicle, selectDriver, setMode, setScenario,
-    start, addRest, addFatigue, addMarker, stop, reset,
+    start, addRest, addFatigue, addMarker, stop, reset, runScenarioSequence,
     hydrate, persist,
+    // 다중 이력 액션 추가
+    buildSimulationId, upsertCurrentSimulation, selectSimulation, deleteSimulation,
     // utils (view에서 재사용)
     formatLocalDt, parseLocalDt, diffMinutes, addMin, toServerLdt,
   }
