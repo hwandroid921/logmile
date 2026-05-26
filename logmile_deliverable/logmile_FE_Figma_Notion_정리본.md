@@ -304,6 +304,26 @@ background: linear-gradient(135deg, #1A2230 0%, #2C3851 55%, #515F7A 100%)
 
 ---
 
+### 🛰️ Simulation 3-Column Layout & Sim-Log Card
+
+> 3열 수평 그리드 레이아웃 구조 (`.main-grid { display:grid; grid-template-columns: 420px 1fr 380px; gap: 14px; }`)  
+> 피로 점수 추이(차트)와 이벤트 로그 카드가 중앙 2열에 배치되며, 그 우측 3열에 다중 세션 이력 카드(`.sim-log-card`)가 단독 정렬됩니다.
+
+**시뮬레이션 로그 카드 (`.sim-log-card`)**
+
+* **구조 및 배치**:
+  - 우측 컬럼(`.right-col`)에 단독 배치되며, 내부 목록(`.sim-log-list`)은 `max-height: 580px; overflow-y: auto;`로 세로 스크롤 영역을 설정하여 중앙 차트/이벤트 영역과 최적의 대칭을 유지합니다.
+* **이력 행 패턴 (`.sim-log-row`)**:
+  - `border: 1px solid transparent`, `border-radius: var(--r-sm)`를 가지며 호버 시 `background: var(--bg-2)`로 피드백을 줍니다.
+  - 액티브 세션(현재 로드된 이력) 상태인 경우 `.active` 클래스가 추가되며 `background: var(--accent-soft)`, `border-color: var(--accent-line)`로 하이라이트됩니다.
+  - 진행 상태 뱃지: 운행 중일 때 `●` (`--ok` 색상), 중단/종료일 때 `■` (`--text-3` 색상)으로 렌더링합니다.
+* **조작 피드백**:
+  - 휴지통 삭제 단추(`.sim-log-delete`): hover 시 `background: rgba(181, 84, 74, 0.15)`, `color: var(--danger)`로 시각적 피드백을 제공하며 클릭 이벤트 버블링 차단을 위해 `.stop` 수식어를 바인딩합니다.
+
+---
+
+---
+
 ## 🔑 핵심 설계 원칙
 
 1. **Surface 계층**: bg-0(어두움)이 앱 배경 → bg-1(밝음)이 카드/콘텐츠. 보통의 라이트 테마와 반대 방향
