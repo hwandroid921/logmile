@@ -4,11 +4,11 @@
 
 - 프로젝트명: `logmile`
 - 버전: v5.4
-- 기준 산출물: `logmile_infra/db/init.sql` v5.0, `logmile_infra/db/seed.sql` v5.0, 실제 JPA Entity
+- 기준 산출물: `logmile_infra/db/init.sql` v5.0, `logmile_infra/db/seed.sql` v5.1, 실제 JPA Entity
 - 작성 기준일: 2026.05.27
 - DBMS: PostgreSQL 16
 - 담당: 백경서
-- 변경 기준: `dashboard_action` 테이블 신규 추가, `admin`/`vehicle`/`driver`/`drive_log` 섹션 3.x `company_id` 컬럼 및 `admin.status` 누락분 반영, `plate_event` 섹션 3.9 신규 추가, Mermaid ERD `plate_event` 필드 보완(`latitude`, `longitude`, `image_path`, `memo`) 및 `dashboard_action` 엔티티 추가
+- 변경 기준: `dashboard_action` 테이블 신규 추가, `admin`/`vehicle`/`driver`/`drive_log` 섹션 3.x `company_id` 컬럼 및 `admin.status` 누락분 반영, `plate_event` 섹션 3.9 신규 추가, Mermaid ERD `plate_event` 필드 보완(`latitude`, `longitude`, `image_path`, `memo`) 및 `dashboard_action` 엔티티 추가, `fatigue_threshold` 시드 데이터에 `_DELTA` 가산 점수 키 10건 추가 (총 21→31건), `FatigueScoreService` DB-first 구조 반영
 
 ---
 
@@ -17,10 +17,10 @@
 | 구분 | 실제 기준 |
 |---|---|
 | DDL | `logmile_infra/db/init.sql` v5.0 |
-| Seed | `logmile_infra/db/seed.sql` v5.0 |
+| Seed | `logmile_infra/db/seed.sql` v5.1 |
 | 테이블 수 | 11개 (`company`, `admin`, `vehicle`, `driver`, `drive_log`, `gps_data`, `rest_event`, `fatigue_event`, `plate_event`, `fatigue_threshold`, `dashboard_action`) |
 | 데모 계정 | `admin@logmile.com` / `admin1234` (`ROLE_SUPER_ADMIN`), `c1_admin1@logmile.com` / `admin1234` (`ROLE_ADMIN`) |
-| 시드 규모 | 업체 10개, 관리자 31명, 차량 50대, 운전자 50명, 피로도 임계값 21건 |
+| 시드 규모 | 업체 10개, 관리자 31명, 차량 50대, 운전자 50명, 피로도 임계값 31건 |
 | 권한 | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` |
 | 관리자 상태 | `PENDING`, `ACTIVE`, `INACTIVE`, `REJECTED`, `SUSPENDED` |
 | 시연용 입력 기준 | 별도 테이블/enum 확장 없이 기존 `drive_log`, `gps_data`, `rest_event`, `fatigue_event`, `plate_event` 구조에 반영 |
@@ -273,7 +273,8 @@ erDiagram
 | `gps_data` | 10,000~100,000건 | 매 GPS 수신마다 | 30일 |
 | `rest_event` | 100~500건 | 운행당 수 건 | 1년 |
 | `fatigue_event` | 1,000~10,000건 | GPS 수신 주기 | 1년 |
-| `fatigue_threshold` | 21건 (고정) | 거의 없음 | 영구 |
+| `fatigue_threshold` | 31건 (고정) | 거의 없음 | 영구 |
+| `dashboard_action` | 30~100건 | 대시보드 처리 시 | 1년 |
 
 ---
 
@@ -300,6 +301,10 @@ erDiagram
 | `fatigue_event` | `idx_fatigue_event_occurred_at` | `occurred_at` | B-Tree | 통계 집계용 시간 조회 |
 | `fatigue_threshold` | (PK) | `id` | B-Tree | 기본키 |
 | `fatigue_threshold` | (UK) | `threshold_key` | B-Tree | key 기반 임계값 조회 |
+| `dashboard_action` | (PK) | `id` | B-Tree | 기본키 |
+| `dashboard_action` | `idx_dashboard_action_drive_log_id` | `drive_log_id` | B-Tree | 운행별 처리 이력 조회 |
+| `dashboard_action` | `idx_dashboard_action_admin_id` | `admin_id` | B-Tree | 관리자별 처리 이력 조회 |
+| `dashboard_action` | `idx_dashboard_action_created_at` | `created_at` | B-Tree | 처리 시각 기준 조회 |
 
 ---
 
@@ -315,7 +320,7 @@ erDiagram
 | `rest_event.drive_log_id` → `drive_log.id` | rest_event → drive_log | CASCADE | 운행 삭제 시 휴식 이벤트 함께 삭제 |
 | `fatigue_event.drive_log_id` → `drive_log.id` | fatigue_event → drive_log | CASCADE | 운행 삭제 시 피로도 이벤트 함께 삭제 |
 | `dashboard_action.company_id` → `company.id` | dashboard_action → company | RESTRICT | 업체 삭제 방지 (처리 이력 보존) |
-| `dashboard_action.drive_log_id` → `drive_log.id` | dashboard_action → drive_log | RESTRICT | 운행 삭제 방지 (처리 이력 보존) |
+| `dashboard_action.drive_log_id` → `drive_log.id` | dashboard_action → drive_log | CASCADE | 운행 삭제 시 처리 이력 함께 삭제 |
 | `dashboard_action.admin_id` → `admin.id` | dashboard_action → admin | RESTRICT | 관리자 삭제 방지 (처리 이력 보존) |
 
 ---
@@ -499,20 +504,32 @@ erDiagram
 
 **인덱스:** PK(`id`), UK(`threshold_key`)
 
-**기본 시드 데이터 (21건):**
+**기본 시드 데이터 (31건):**
+
+> `*_DELTA` 키: 해당 임계값 초과 시 피로도 점수에 가산되는 점수량. `FatigueScoreService`에서 DB 조회 후 사용하며 관리자 페이지에서 수정 가능.
 
 | threshold_key | threshold_value | 설명 |
 |---|---:|---|
-| `CONTINUOUS_DRIVING_90` | 90 | 연속 운행 90분 이상 → +10점 |
-| `CONTINUOUS_DRIVING_120` | 120 | 연속 운행 120분 이상 → +25점 |
-| `CONTINUOUS_DRIVING_180` | 180 | 연속 운행 180분 이상 → +45점 |
-| `CONTINUOUS_DRIVING_240` | 240 | 연속 운행 240분 이상 → +65점 |
-| `DAILY_DRIVING_360` | 360 | 일일 총 운행 6시간 이상 → +15점 |
-| `DAILY_DRIVING_480` | 480 | 일일 총 운행 8시간 이상 → +30점 |
-| `DAILY_DRIVING_600` | 600 | 일일 총 운행 10시간 이상 → +45점 |
-| `NIGHT_DRIVING_30` | 30 | 야간 운행 누적 30분 이상 → +10점 |
-| `NIGHT_DRIVING_60` | 60 | 야간 운행 누적 1시간 이상 → +20점 |
-| `NIGHT_DRIVING_120` | 120 | 야간 운행 누적 2시간 이상 → +35점 |
+| `CONTINUOUS_DRIVING_90` | 90 | 연속 운행 임계값 (90분) |
+| `CONTINUOUS_DRIVING_90_DELTA` | 10 | 연속 90분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_120` | 120 | 연속 운행 임계값 (120분) |
+| `CONTINUOUS_DRIVING_120_DELTA` | 25 | 연속 120분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_180` | 180 | 연속 운행 임계값 (180분) |
+| `CONTINUOUS_DRIVING_180_DELTA` | 45 | 연속 180분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_240` | 240 | 연속 운행 임계값 (240분) |
+| `CONTINUOUS_DRIVING_240_DELTA` | 65 | 연속 240분 초과 시 가산 점수 |
+| `DAILY_DRIVING_360` | 360 | 일일 운행 임계값 (6시간) |
+| `DAILY_DRIVING_360_DELTA` | 15 | 일일 6시간 초과 시 가산 점수 |
+| `DAILY_DRIVING_480` | 480 | 일일 운행 임계값 (8시간) |
+| `DAILY_DRIVING_480_DELTA` | 30 | 일일 8시간 초과 시 가산 점수 |
+| `DAILY_DRIVING_600` | 600 | 일일 운행 임계값 (10시간) |
+| `DAILY_DRIVING_600_DELTA` | 45 | 일일 10시간 초과 시 가산 점수 |
+| `NIGHT_DRIVING_30` | 30 | 야간 운행 임계값 (30분) |
+| `NIGHT_DRIVING_30_DELTA` | 10 | 야간 30분 초과 시 가산 점수 |
+| `NIGHT_DRIVING_60` | 60 | 야간 운행 임계값 (1시간) |
+| `NIGHT_DRIVING_60_DELTA` | 20 | 야간 1시간 초과 시 가산 점수 |
+| `NIGHT_DRIVING_120` | 120 | 야간 운행 임계값 (2시간) |
+| `NIGHT_DRIVING_120_DELTA` | 35 | 야간 2시간 초과 시 가산 점수 |
 | `REST_VALID_MINUTES` | 15 | 유효 휴식 기준 (분) |
 | `REST_SUFFICIENT_MINUTES` | 30 | 충분 휴식 기준 (분) |
 | `REST_REQUIRED_AFTER` | 120 | 2시간 운행 후 휴식 필요 |
@@ -569,7 +586,7 @@ erDiagram
 | 6 | `note` | `VARCHAR(255)` | NULL | - | - | 처리 메모 |
 | 7 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 처리 시각 |
 
-**인덱스:** PK(`id`)
+**인덱스:** PK(`id`), `idx_dashboard_action_drive_log_id`, `idx_dashboard_action_admin_id`, `idx_dashboard_action_created_at`
 
 **`action_type` 값 정의:**
 
@@ -609,5 +626,5 @@ erDiagram
 3. vehicle           INSERT 50건 (업체당 5대, driver_id 없이)
 4. driver            INSERT 50건 (업체당 5명, vehicle_id 포함)
 5. vehicle           UPDATE 50건 (driver_id 역방향 업데이트)
-6. fatigue_threshold INSERT 21건
+6. fatigue_threshold INSERT 31건
 ```
