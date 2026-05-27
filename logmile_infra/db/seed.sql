@@ -331,17 +331,36 @@ INSERT INTO fatigue_threshold (threshold_key, threshold_value, description) VALU
     ('CONTINUOUS_DRIVING_180', 180,  '연속 운행 180분 이상 → +45점'),
     ('CONTINUOUS_DRIVING_240', 240,  '연속 운행 240분 이상 → +65점');
 
+-- 연속 운행 점수 가산량
+INSERT INTO fatigue_threshold (threshold_key, threshold_value, description) VALUES
+    ('CONTINUOUS_DRIVING_90_DELTA',   10, '연속 90분 초과 시 가산 점수'),
+    ('CONTINUOUS_DRIVING_120_DELTA',  25, '연속 120분 초과 시 가산 점수'),
+    ('CONTINUOUS_DRIVING_180_DELTA',  45, '연속 180분 초과 시 가산 점수'),
+    ('CONTINUOUS_DRIVING_240_DELTA',  65, '연속 240분 초과 시 가산 점수');
+
 -- 일일 총 운행 시간 임계값 (단위: 분)
 INSERT INTO fatigue_threshold (threshold_key, threshold_value, description) VALUES
     ('DAILY_DRIVING_360',  360,  '일일 총 운행 6시간(360분) 이상 → +15점'),
     ('DAILY_DRIVING_480',  480,  '일일 총 운행 8시간(480분) 이상 → +30점'),
     ('DAILY_DRIVING_600',  600,  '일일 총 운행 10시간(600분) 이상 → +45점');
 
+-- 일일 운행 점수 가산량
+INSERT INTO fatigue_threshold (threshold_key, threshold_value, description) VALUES
+    ('DAILY_DRIVING_360_DELTA',  15, '일일 6시간 초과 시 가산 점수'),
+    ('DAILY_DRIVING_480_DELTA',  30, '일일 8시간 초과 시 가산 점수'),
+    ('DAILY_DRIVING_600_DELTA',  45, '일일 10시간 초과 시 가산 점수');
+
 -- 야간 운행 시간 임계값 (단위: 분, 22:00~06:00 기준)
 INSERT INTO fatigue_threshold (threshold_key, threshold_value, description) VALUES
     ('NIGHT_DRIVING_30',    30,  '야간 운행 누적 30분 이상 → +10점'),
     ('NIGHT_DRIVING_60',    60,  '야간 운행 누적 1시간 이상 → +20점'),
     ('NIGHT_DRIVING_120',  120,  '야간 운행 누적 2시간 이상 → +35점');
+
+-- 야간 운행 점수 가산량
+INSERT INTO fatigue_threshold (threshold_key, threshold_value, description) VALUES
+    ('NIGHT_DRIVING_30_DELTA',   10, '야간 30분 초과 시 가산 점수'),
+    ('NIGHT_DRIVING_60_DELTA',   20, '야간 1시간 초과 시 가산 점수'),
+    ('NIGHT_DRIVING_120_DELTA',  35, '야간 2시간 초과 시 가산 점수');
 
 -- 휴식 관련 임계값 (단위: 분)
 INSERT INTO fatigue_threshold (threshold_key, threshold_value, description) VALUES

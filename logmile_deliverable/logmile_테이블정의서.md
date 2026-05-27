@@ -3,11 +3,12 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 문서 버전: `v1.7`
-- 기준 문서: `logmile_DB설계서.md`
+- 문서 버전: `v1.8`
+- 기준 문서: `logmile_DB설계서.md` v5.4
 - 참조 원본: `docx/logmile_테이블정의서.docx`
-- 작성 기준일: `2026.05.15`
+- 작성 기준일: `2026.05.26`
 - 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
+- 변경 기준: `fatigue_threshold` 시드 데이터에 `_DELTA` 가산 점수 키 10건 추가 (21→31건)
 - 비고: `logmile_infra/db/init.sql` v5.0 기준으로 실제 테이블명을 보정한 Markdown 원본 문서다. 시연용 시뮬레이션 입력도 별도 테이블/enum 확장 없이 아래 기존 테이블에 반영한다.
 
 ## 1. 목차
@@ -253,20 +254,32 @@
 | 4 | `description` | `VARCHAR(255)` | NULL | - | - | 임계값 설명 |
 | 5 | `updated_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 최종 수정 시각 |
 
-### 11.1 기본 시드 데이터
+### 11.1 기본 시드 데이터 (31건)
+
+> `*_DELTA` 키: 해당 임계값 초과 시 피로도 점수에 가산되는 점수량. `FatigueScoreService`에서 DB 조회 후 사용하며 관리자 페이지에서 수정 가능.
 
 | threshold_key | 값 | 설명 |
 |---|---:|---|
-| `CONTINUOUS_DRIVING_90` | 90 | 연속 운행 90분 이상 → +10점 |
-| `CONTINUOUS_DRIVING_120` | 120 | 연속 운행 120분 이상 → +25점 |
-| `CONTINUOUS_DRIVING_180` | 180 | 연속 운행 180분 이상 → +45점 |
-| `CONTINUOUS_DRIVING_240` | 240 | 연속 운행 240분 이상 → +65점 |
-| `DAILY_DRIVING_360` | 360 | 일일 총 운행 6시간 이상 → +15점 |
-| `DAILY_DRIVING_480` | 480 | 일일 총 운행 8시간 이상 → +30점 |
-| `DAILY_DRIVING_600` | 600 | 일일 총 운행 10시간 이상 → +45점 |
-| `NIGHT_DRIVING_30` | 30 | 야간 운행 누적 30분 이상 → +10점 |
-| `NIGHT_DRIVING_60` | 60 | 야간 운행 누적 1시간 이상 → +20점 |
-| `NIGHT_DRIVING_120` | 120 | 야간 운행 누적 2시간 이상 → +35점 |
+| `CONTINUOUS_DRIVING_90` | 90 | 연속 운행 임계값 (90분) |
+| `CONTINUOUS_DRIVING_90_DELTA` | 10 | 연속 90분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_120` | 120 | 연속 운행 임계값 (120분) |
+| `CONTINUOUS_DRIVING_120_DELTA` | 25 | 연속 120분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_180` | 180 | 연속 운행 임계값 (180분) |
+| `CONTINUOUS_DRIVING_180_DELTA` | 45 | 연속 180분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_240` | 240 | 연속 운행 임계값 (240분) |
+| `CONTINUOUS_DRIVING_240_DELTA` | 65 | 연속 240분 초과 시 가산 점수 |
+| `DAILY_DRIVING_360` | 360 | 일일 운행 임계값 (6시간) |
+| `DAILY_DRIVING_360_DELTA` | 15 | 일일 6시간 초과 시 가산 점수 |
+| `DAILY_DRIVING_480` | 480 | 일일 운행 임계값 (8시간) |
+| `DAILY_DRIVING_480_DELTA` | 30 | 일일 8시간 초과 시 가산 점수 |
+| `DAILY_DRIVING_600` | 600 | 일일 운행 임계값 (10시간) |
+| `DAILY_DRIVING_600_DELTA` | 45 | 일일 10시간 초과 시 가산 점수 |
+| `NIGHT_DRIVING_30` | 30 | 야간 운행 임계값 (30분) |
+| `NIGHT_DRIVING_30_DELTA` | 10 | 야간 30분 초과 시 가산 점수 |
+| `NIGHT_DRIVING_60` | 60 | 야간 운행 임계값 (1시간) |
+| `NIGHT_DRIVING_60_DELTA` | 20 | 야간 1시간 초과 시 가산 점수 |
+| `NIGHT_DRIVING_120` | 120 | 야간 운행 임계값 (2시간) |
+| `NIGHT_DRIVING_120_DELTA` | 35 | 야간 2시간 초과 시 가산 점수 |
 | `REST_VALID_MINUTES` | 15 | 유효 휴식 기준(분) |
 | `REST_SUFFICIENT_MINUTES` | 30 | 충분 휴식 기준(분) |
 | `REST_REQUIRED_AFTER` | 120 | 2시간 운행 후 휴식 필요 |
