@@ -29,12 +29,12 @@ export const useSimulationStore = defineStore('simulation', () => {
         CONTINUOUS_DRIVING_120: 120, CONTINUOUS_DRIVING_120_DELTA: 25,
         CONTINUOUS_DRIVING_180: 180, CONTINUOUS_DRIVING_180_DELTA: 45,
         CONTINUOUS_DRIVING_240: 240, CONTINUOUS_DRIVING_240_DELTA: 65,
-        DAILY_DRIVING_360: 360, DAILY_DRIVING_360_DELTA: 10,
-        DAILY_DRIVING_480: 480, DAILY_DRIVING_480_DELTA: 25,
-        DAILY_DRIVING_600: 600, DAILY_DRIVING_600_DELTA: 40,
+        DAILY_DRIVING_360: 360, DAILY_DRIVING_360_DELTA: 15,
+        DAILY_DRIVING_480: 480, DAILY_DRIVING_480_DELTA: 30,
+        DAILY_DRIVING_600: 600, DAILY_DRIVING_600_DELTA: 45,
         NIGHT_DRIVING_30: 30, NIGHT_DRIVING_30_DELTA: 10,
-        NIGHT_DRIVING_60: 60, NIGHT_DRIVING_60_DELTA: 25,
-        NIGHT_DRIVING_120: 120, NIGHT_DRIVING_120_DELTA: 40,
+        NIGHT_DRIVING_60: 60, NIGHT_DRIVING_60_DELTA: 20,
+        NIGHT_DRIVING_120: 120, NIGHT_DRIVING_120_DELTA: 35,
         REST_VALID_MINUTES: 15, REST_SUFFICIENT_MINUTES: 30,
         REST_CORRECTION_VALID_SCORE_DELTA: -10,
         REST_CORRECTION_SUFFICIENT_SCORE_DELTA: -20,
@@ -127,13 +127,13 @@ export const useSimulationStore = defineStore('simulation', () => {
           { min: T.value.CONTINUOUS_DRIVING_90  ?? 90,  d: T.value.CONTINUOUS_DRIVING_90_DELTA  ?? 10 },
         ]
         const dailySteps = [
-          { min: T.value.DAILY_DRIVING_600 ?? 600, d: T.value.DAILY_DRIVING_600_DELTA ?? 40 },
-          { min: T.value.DAILY_DRIVING_480 ?? 480, d: T.value.DAILY_DRIVING_480_DELTA ?? 25 },
-          { min: T.value.DAILY_DRIVING_360 ?? 360, d: T.value.DAILY_DRIVING_360_DELTA ?? 10 },
+          { min: T.value.DAILY_DRIVING_600 ?? 600, d: T.value.DAILY_DRIVING_600_DELTA ?? 45 },
+          { min: T.value.DAILY_DRIVING_480 ?? 480, d: T.value.DAILY_DRIVING_480_DELTA ?? 30 },
+          { min: T.value.DAILY_DRIVING_360 ?? 360, d: T.value.DAILY_DRIVING_360_DELTA ?? 15 },
         ]
         const nightSteps = [
-          { min: T.value.NIGHT_DRIVING_120 ?? 120, d: T.value.NIGHT_DRIVING_120_DELTA ?? 40 },
-          { min: T.value.NIGHT_DRIVING_60  ?? 60,  d: T.value.NIGHT_DRIVING_60_DELTA  ?? 25 },
+          { min: T.value.NIGHT_DRIVING_120 ?? 120, d: T.value.NIGHT_DRIVING_120_DELTA ?? 35 },
+          { min: T.value.NIGHT_DRIVING_60  ?? 60,  d: T.value.NIGHT_DRIVING_60_DELTA  ?? 20 },
           { min: T.value.NIGHT_DRIVING_30  ?? 30,  d: T.value.NIGHT_DRIVING_30_DELTA  ?? 10 },
         ]
         const top = (val, steps) => steps.find(s => val >= s.min)?.d || 0
