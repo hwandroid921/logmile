@@ -3,10 +3,10 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 문서 버전: `v1.7`
+- 문서 버전: `v1.8`
 - 기준 문서: `logmile_DB설계서.md`
 - 참조 원본: `docx/logmile_ERD.docx`
-- 작성 기준일: `2026.05.15`
+- 작성 기준일: `2026.05.27`
 - 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
 - 비고: 이 문서는 ERD 내용을 Markdown 기준으로 정리한 문서이며, 다이어그램 이미지는 보관용 docx를 참조한다.
 
@@ -40,6 +40,7 @@
 | 휴식 이벤트 | `rest_event` | 운행 중 감지된 휴식 시작/종료 및 유형 |
 | 피로도 이벤트 | `fatigue_event` | GPS 수신 시마다 산정된 피로도 점수 및 판단 근거 |
 | 피로도 임계값 | `fatigue_threshold` | 피로도 점수 모델의 기준값 (`key/value`) |
+| 대시보드 처리 이력 | `dashboard_action` | 관리자가 대시보드에서 수행한 처리 이력 (휴식 안내, 전화 권고 등) |
 
 ### 3.2 엔티티 관계도
 
@@ -62,6 +63,9 @@
 | `drive_log → fatigue_event` | 1:N | 운행 중 GPS 수신마다 피로도 재산정 기록 |
 | `fatigue_threshold` | 독립 | 다른 테이블과 FK 없음, 피로도 계산 로직에서 key로 조회 |
 | `admin` | 인증/승인 | 최상위 관리자는 `company_id = NULL`, 업체 관리자는 업체 FK로 소속을 구분 |
+| `company` → `dashboard_action` | 1:N | 업체 기준으로 처리 이력을 격리하여 조회 |
+| `drive_log` → `dashboard_action` | 1:N | 운행 기록 1건에 대한 여러 관리자 처리 이력 저장 |
+| `admin` → `dashboard_action` | 1:N | 관리자 1명이 여러 처리 이력을 생성 가능 |
 
 ### 3.4 주요 도메인 규칙
 
@@ -107,6 +111,7 @@
 | `rest_event` | 100~500건 | 운행당 수 건 | 1년 |
 | `fatigue_event` | 1,000~10,000건 | GPS 수신 주기 | 1년 |
 | `fatigue_threshold` | 21건 (고정) | 거의 없음 | 영구 |
+| `dashboard_action` | 운행 건수 비례 | 관리자 처리 시 | 영구 |
 
 ### 4.2 인덱스 설계
 
@@ -150,6 +155,9 @@
 | `gps_data.drive_log_id → drive_log.id` | `gps_data → drive_log` | `CASCADE` | 운행 삭제 시 GPS 데이터 함께 삭제 |
 | `rest_event.drive_log_id → drive_log.id` | `rest_event → drive_log` | `CASCADE` | 운행 삭제 시 휴식 이벤트 함께 삭제 |
 | `fatigue_event.drive_log_id → drive_log.id` | `fatigue_event → drive_log` | `CASCADE` | 운행 삭제 시 피로도 이벤트 함께 삭제 |
+| `dashboard_action.company_id → company.id` | `dashboard_action → company` | `RESTRICT` | 업체 삭제 방지 (처리 이력 보존) |
+| `dashboard_action.drive_log_id → drive_log.id` | `dashboard_action → drive_log` | `RESTRICT` | 운행 삭제 방지 (처리 이력 보존) |
+| `dashboard_action.admin_id → admin.id` | `dashboard_action → admin` | `RESTRICT` | 관리자 삭제 방지 (처리 이력 보존) |
 
 ### 4.4 물리 ERD 다이어그램
 

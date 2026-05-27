@@ -6,9 +6,9 @@
 - 문서 버전: `v1.8`
 - 기준 문서: `logmile_DB설계서.md` v5.4
 - 참조 원본: `docx/logmile_테이블정의서.docx`
-- 작성 기준일: `2026.05.26`
+- 작성 기준일: `2026.05.27`
 - 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
-- 변경 기준: `fatigue_threshold` 시드 데이터에 `_DELTA` 가산 점수 키 10건 추가 (21→31건)
+- 변경 기준: `dashboard_action` 테이블 신규 추가 및 `fatigue_threshold` 시드 데이터에 `_DELTA` 가산 점수 키 10건 추가 (21→31건)
 - 비고: `logmile_infra/db/init.sql` v5.0 기준으로 실제 테이블명을 보정한 Markdown 원본 문서다. 시연용 시뮬레이션 입력도 별도 테이블/enum 확장 없이 아래 기존 테이블에 반영한다.
 
 ## 1. 목차
@@ -23,6 +23,7 @@
 8. `rest_event`
 9. `fatigue_event`
 10. `fatigue_threshold`
+11. `dashboard_action`
 
 ## 1.1 시연용 시뮬레이션 입력 반영 기준
 
@@ -291,3 +292,27 @@
 | `LEVEL_CAUTION_MIN` | 40 | 주의 등급 최소 점수 |
 | `LEVEL_CAUTION_MAX` | 69 | 주의 등급 최대 점수 |
 | `LEVEL_DANGER_MIN` | 70 | 위험 등급 최소 점수 |
+
+## 12. dashboard_action (대시보드 관리자 처리 이력)
+
+- 설명: 관리자가 대시보드에서 특정 운행 기록에 대해 수행한 처리 이력 저장 (휴식 안내, 전화 권고 등)
+- 인덱스: `PK(id)`, `idx_dashboard_action_drive_log_id`, `idx_dashboard_action_admin_id`, `idx_dashboard_action_created_at`
+- CHECK: `action_type IN (REST_GUIDE, PHONE_RECOMMENDATION)`
+- 비고: 실제 JPA Entity `DashboardAction.java` 기준으로 신규 추가된 테이블. `company_id`, `drive_log_id`, `admin_id` 모두 NOT NULL
+
+| # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
+|---|---|---|---|---|---|---|
+| 1 | `id` | `BIGSERIAL` | NOT NULL | `auto` | PK | 처리 이력 식별자 |
+| 2 | `company_id` | `BIGINT` | NOT NULL | - | `FK → company.id` | 소속 업체 ID |
+| 3 | `drive_log_id` | `BIGINT` | NOT NULL | - | `FK → drive_log.id` | 대상 운행 기록 ID |
+| 4 | `admin_id` | `BIGINT` | NOT NULL | - | `FK → admin.id` | 처리를 수행한 관리자 ID |
+| 5 | `action_type` | `VARCHAR(40)` | NOT NULL | - | CHK | 처리 유형 |
+| 6 | `note` | `VARCHAR(255)` | NULL | - | - | 처리 메모 |
+| 7 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 처리 시각 |
+
+### 12.1 action_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `REST_GUIDE` | 휴식 안내 처리 |
+| `PHONE_RECOMMENDATION` | 전화 권고 처리 |
