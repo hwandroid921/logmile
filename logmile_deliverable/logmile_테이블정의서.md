@@ -3,10 +3,13 @@
 ## logmile - 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 기준 원본: `docx/logmile_테이블정의서.docx`
-- 버전 표기: `원본 docx에 별도 버전 표기 없음`
-- 작성 기준일: `2026.04`
-- 비고: 이 문서는 `docx/logmile_테이블정의서.docx` 내용을 Markdown 기준으로 정리한 문서다.
+- 문서 버전: `v1.8`
+- 기준 문서: `logmile_DB설계서.md` v5.4
+- 참조 원본: `docx/logmile_테이블정의서.docx`
+- 작성 기준일: `2026.05.27`
+- 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
+- 변경 기준: `dashboard_action` 테이블 신규 추가 및 `fatigue_threshold` 시드 데이터에 `_DELTA` 가산 점수 키 10건 추가 (21→31건)
+- 비고: `logmile_infra/db/init.sql` v5.0 기준으로 실제 테이블명을 보정한 Markdown 원본 문서다. 시연용 시뮬레이션 입력도 별도 테이블/enum 확장 없이 아래 기존 테이블에 반영한다.
 
 ## 1. 목차
 
@@ -15,10 +18,23 @@
 3. `vehicle`
 4. `driver`
 5. `drive_log`
-6. `gps_data`
-7. `rest_event`
-8. `fatigue_event`
-9. `fatigue_threshold`
+6. `plate_event`
+7. `gps_data`
+8. `rest_event`
+9. `fatigue_event`
+10. `fatigue_threshold`
+11. `dashboard_action`
+
+## 1.1 시연용 시뮬레이션 입력 반영 기준
+
+| 입력 구분 | 반영 테이블 | 처리 기준 |
+|---|---|---|
+| 운행 시작/종료 직접 지정 | `drive_log` | 기존 컬럼의 `started_at`, `ended_at`, `status`, 운행 요약값 사용 |
+| 번호판 인식/입출차 직접 입력 | `plate_event` | `ENTRY/EXIT`, `HIGHWAY_GATE/REST_AREA/CCTV`, `OCR/SIMULATOR/MANUAL/DUMMY` 기존 enum 사용 |
+| 휴식 위치/시간 직접 입력 | `rest_event` | 휴식 시간에 따라 `VALID`, `SUFFICIENT`, `INVALID` 저장 |
+| 연속/일일/야간 운행 시간 입력 | `fatigue_event` | 점수, 등급, 판단 근거를 기존 컬럼에 저장 |
+
+항만, 허브, 차고지, 물류센터 등 세부 위치명은 enum으로 확장하지 않는다. 시연 화면의 표시값 또는 메모성 설명으로 관리한다.
 
 ## 2. company (운수 업체)
 
@@ -38,7 +54,7 @@
 
 - 설명: 시스템 관리자 계정 및 권한. JWT 인증에 사용. `ROLE_SUPER_ADMIN` / `ROLE_ADMIN` 구조
 - 인덱스: `PK(id)`, `UK(email)`
-- CHECK: `role IN (ROLE_SUPER_ADMIN, ROLE_ADMIN)` / `status IN (ACTIVE, INACTIVE, SUSPENDED)`
+- CHECK: `role IN (ROLE_SUPER_ADMIN, ROLE_ADMIN)` / `status IN (PENDING, ACTIVE, INACTIVE, REJECTED, SUSPENDED)`
 
 | # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
 |---|---|---|---|---|---|---|
@@ -110,7 +126,56 @@
 | 16 | `max_fatigue_level` | `VARCHAR(20)` | NULL | - | CHK | 최고 피로 등급 |
 | 17 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 레코드 생성 시각 |
 
-## 7. gps_data (GPS 데이터)
+## 7. plate_event (번호판 관측 이벤트)
+
+- 설명: OCR, 시뮬레이터, 수동 입력, 더미 데이터 기반 번호판 입출차 관측 이벤트 저장
+- 인덱스: `PK(id)`, `idx_plate_event_vehicle_id`, `idx_plate_event_plate_no`, `idx_plate_event_observed_at`
+- CHECK: `event_type IN (ENTRY,EXIT)` / `location_type IN (HIGHWAY_GATE,REST_AREA,CCTV)` / `source_type IN (OCR,SIMULATOR,MANUAL,DUMMY)` / `confidence 0.0~1.0` / `detection_confidence 0.0~1.0`
+- 비고: 실제 CCTV/RTSP 실시간 스트리밍은 제외하고 API 또는 시뮬레이터가 생성한 관측 이벤트 저장을 우선 범위로 한다.
+
+| # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
+|---|---|---|---|---|---|---|
+| 1 | `id` | `BIGSERIAL` | NOT NULL | `auto` | PK | 번호판 관측 이벤트 식별자 |
+| 2 | `vehicle_id` | `BIGINT` | NULL | - | `FK SET NULL → vehicle.id` | 매칭된 차량 ID |
+| 3 | `plate_no` | `VARCHAR(20)` | NOT NULL | - | - | 관측 또는 입력된 번호판 |
+| 4 | `event_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 입출차 이벤트 유형 |
+| 5 | `location_type` | `VARCHAR(30)` | NOT NULL | - | CHK | 관측 위치 유형 |
+| 6 | `source_type` | `VARCHAR(20)` | NOT NULL | - | CHK | 입력 출처 |
+| 7 | `observed_at` | `TIMESTAMP` | NOT NULL | - | - | 번호판 관측 시각 |
+| 8 | `latitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 위도 |
+| 9 | `longitude` | `DOUBLE PRECISION` | NULL | - | - | 관측 지점 경도 |
+| 10 | `confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | OCR 문자 인식 신뢰도 |
+| 11 | `detection_confidence` | `DOUBLE PRECISION` | NULL | - | `CHK(0.0~1.0)` | YOLO 탐지 신뢰도 |
+| 12 | `is_manual_required` | `BOOLEAN` | NOT NULL | `FALSE` | - | 수동 확인 필요 여부 |
+| 13 | `image_path` | `VARCHAR(500)` | NULL | - | - | 샘플 이미지 또는 저장 이미지 경로 |
+| 14 | `memo` | `TEXT` | NULL | - | - | 관측 메모 |
+| 15 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 이벤트 저장 시각 |
+
+### 7.1 event_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `ENTRY` | 진입/입차 관측 |
+| `EXIT` | 진출/출차 관측 |
+
+### 7.2 location_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `HIGHWAY_GATE` | 고속도로 톨게이트/관문 |
+| `REST_AREA` | 휴게소 |
+| `CCTV` | 일반 CCTV 관측 지점 |
+
+### 7.3 source_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `OCR` | AI OCR 인식 결과 |
+| `SIMULATOR` | GPS/번호판 시뮬레이터 생성 이벤트 |
+| `MANUAL` | 사용자가 수동 입력한 이벤트 |
+| `DUMMY` | 개발/시연용 더미 이벤트 |
+
+## 8. gps_data (GPS 데이터)
 
 - 설명: 시뮬레이터가 전송하는 GPS 좌표 및 속도. 피로도 계산의 원천 데이터
 - 인덱스: `PK(id)`, `idx_gps_data_drive_log_id`, `idx_gps_data_recorded_at`
@@ -125,7 +190,7 @@
 | 5 | `speed_kmh` | `DOUBLE PRECISION` | NOT NULL | `0.0` | - | 차량 속도 |
 | 6 | `recorded_at` | `TIMESTAMP` | NOT NULL | - | - | GPS 기록 시각 |
 
-## 8. rest_event (휴식 이벤트)
+## 9. rest_event (휴식 이벤트)
 
 - 설명: `speed_kmh ≤ 3` 조건 감지 시 생성. 종료 후 `rest_type`, `rest_minutes` 확정
 - 인덱스: `PK(id)`, `idx_rest_event_drive_log_id`
@@ -140,7 +205,7 @@
 | 5 | `rest_minutes` | `INTEGER` | NULL | - | - | 실제 휴식 시간(분) |
 | 6 | `rest_type` | `VARCHAR(20)` | NOT NULL | `PENDING` | CHK | 휴식 유형 |
 
-### 8.1 rest_type 값 정의
+### 9.1 rest_type 값 정의
 
 | 값 | 조건 | 설명 |
 |---|---|---|
@@ -149,7 +214,7 @@
 | `SUFFICIENT` | 30분 이상 | 충분 휴식, 피로도 보정 `-20점` |
 | `INVALID` | 15분 미만 | 휴식 미달 |
 
-## 9. fatigue_event (피로도 이벤트)
+## 10. fatigue_event (피로도 이벤트)
 
 - 설명: GPS 데이터 수신 시마다 피로도를 재산정하여 기록. 대시보드 실시간 표시 및 운행 이력 조회에 사용
 - 인덱스: `PK(id)`, `idx_fatigue_event_drive_log_id`, `idx_fatigue_event_occurred_at`
@@ -169,7 +234,7 @@
 | 10 | `reason` | `TEXT` | NULL | - | - | 점수 산정 근거 텍스트 |
 | 11 | `occurred_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 피로도 산정 시각 |
 
-### 9.1 피로 등급 기준
+### 10.1 피로 등급 기준
 
 | 등급 | 점수 범위 | 조치 |
 |---|---|---|
@@ -177,7 +242,7 @@
 | `CAUTION` | 40 ~ 69 | 주의 배지 표시 |
 | `DANGER` | 70 이상 | 위험 배지 + 전화 권고 |
 
-## 10. fatigue_threshold (피로도 임계값)
+## 11. fatigue_threshold (피로도 임계값)
 
 - 설명: 피로도 점수 모델의 기준값을 `key/value`로 관리. 관리자 화면에서 동적 수정 가능
 - 인덱스: `PK(id)`, `UK(threshold_key)`
@@ -190,20 +255,32 @@
 | 4 | `description` | `VARCHAR(255)` | NULL | - | - | 임계값 설명 |
 | 5 | `updated_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 최종 수정 시각 |
 
-### 10.1 기본 시드 데이터
+### 11.1 기본 시드 데이터 (31건)
+
+> `*_DELTA` 키: 해당 임계값 초과 시 피로도 점수에 가산되는 점수량. `FatigueScoreService`에서 DB 조회 후 사용하며 관리자 페이지에서 수정 가능.
 
 | threshold_key | 값 | 설명 |
 |---|---:|---|
-| `CONTINUOUS_DRIVING_90` | 90 | 연속 운행 90분 이상 → +10점 |
-| `CONTINUOUS_DRIVING_120` | 120 | 연속 운행 120분 이상 → +25점 |
-| `CONTINUOUS_DRIVING_180` | 180 | 연속 운행 180분 이상 → +45점 |
-| `CONTINUOUS_DRIVING_240` | 240 | 연속 운행 240분 이상 → +65점 |
-| `DAILY_DRIVING_360` | 360 | 일일 총 운행 6시간 이상 → +15점 |
-| `DAILY_DRIVING_480` | 480 | 일일 총 운행 8시간 이상 → +30점 |
-| `DAILY_DRIVING_600` | 600 | 일일 총 운행 10시간 이상 → +45점 |
-| `NIGHT_DRIVING_30` | 30 | 야간 운행 누적 30분 이상 → +10점 |
-| `NIGHT_DRIVING_60` | 60 | 야간 운행 누적 1시간 이상 → +20점 |
-| `NIGHT_DRIVING_120` | 120 | 야간 운행 누적 2시간 이상 → +35점 |
+| `CONTINUOUS_DRIVING_90` | 90 | 연속 운행 임계값 (90분) |
+| `CONTINUOUS_DRIVING_90_DELTA` | 10 | 연속 90분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_120` | 120 | 연속 운행 임계값 (120분) |
+| `CONTINUOUS_DRIVING_120_DELTA` | 25 | 연속 120분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_180` | 180 | 연속 운행 임계값 (180분) |
+| `CONTINUOUS_DRIVING_180_DELTA` | 45 | 연속 180분 초과 시 가산 점수 |
+| `CONTINUOUS_DRIVING_240` | 240 | 연속 운행 임계값 (240분) |
+| `CONTINUOUS_DRIVING_240_DELTA` | 65 | 연속 240분 초과 시 가산 점수 |
+| `DAILY_DRIVING_360` | 360 | 일일 운행 임계값 (6시간) |
+| `DAILY_DRIVING_360_DELTA` | 15 | 일일 6시간 초과 시 가산 점수 |
+| `DAILY_DRIVING_480` | 480 | 일일 운행 임계값 (8시간) |
+| `DAILY_DRIVING_480_DELTA` | 30 | 일일 8시간 초과 시 가산 점수 |
+| `DAILY_DRIVING_600` | 600 | 일일 운행 임계값 (10시간) |
+| `DAILY_DRIVING_600_DELTA` | 45 | 일일 10시간 초과 시 가산 점수 |
+| `NIGHT_DRIVING_30` | 30 | 야간 운행 임계값 (30분) |
+| `NIGHT_DRIVING_30_DELTA` | 10 | 야간 30분 초과 시 가산 점수 |
+| `NIGHT_DRIVING_60` | 60 | 야간 운행 임계값 (1시간) |
+| `NIGHT_DRIVING_60_DELTA` | 20 | 야간 1시간 초과 시 가산 점수 |
+| `NIGHT_DRIVING_120` | 120 | 야간 운행 임계값 (2시간) |
+| `NIGHT_DRIVING_120_DELTA` | 35 | 야간 2시간 초과 시 가산 점수 |
 | `REST_VALID_MINUTES` | 15 | 유효 휴식 기준(분) |
 | `REST_SUFFICIENT_MINUTES` | 30 | 충분 휴식 기준(분) |
 | `REST_REQUIRED_AFTER` | 120 | 2시간 운행 후 휴식 필요 |
@@ -215,3 +292,27 @@
 | `LEVEL_CAUTION_MIN` | 40 | 주의 등급 최소 점수 |
 | `LEVEL_CAUTION_MAX` | 69 | 주의 등급 최대 점수 |
 | `LEVEL_DANGER_MIN` | 70 | 위험 등급 최소 점수 |
+
+## 12. dashboard_action (대시보드 관리자 처리 이력)
+
+- 설명: 관리자가 대시보드에서 특정 운행 기록에 대해 수행한 처리 이력 저장 (휴식 안내, 전화 권고 등)
+- 인덱스: `PK(id)`, `idx_dashboard_action_drive_log_id`, `idx_dashboard_action_admin_id`, `idx_dashboard_action_created_at`
+- CHECK: `action_type IN (REST_GUIDE, PHONE_RECOMMENDATION)`
+- 비고: 실제 JPA Entity `DashboardAction.java` 기준으로 신규 추가된 테이블. `company_id`, `drive_log_id`, `admin_id` 모두 NOT NULL
+
+| # | 컬럼명 | 데이터 타입 | NULL | 기본값 | 제약조건 | 설명 |
+|---|---|---|---|---|---|---|
+| 1 | `id` | `BIGSERIAL` | NOT NULL | `auto` | PK | 처리 이력 식별자 |
+| 2 | `company_id` | `BIGINT` | NOT NULL | - | `FK → company.id` | 소속 업체 ID |
+| 3 | `drive_log_id` | `BIGINT` | NOT NULL | - | `FK → drive_log.id` | 대상 운행 기록 ID |
+| 4 | `admin_id` | `BIGINT` | NOT NULL | - | `FK → admin.id` | 처리를 수행한 관리자 ID |
+| 5 | `action_type` | `VARCHAR(40)` | NOT NULL | - | CHK | 처리 유형 |
+| 6 | `note` | `VARCHAR(255)` | NULL | - | - | 처리 메모 |
+| 7 | `created_at` | `TIMESTAMP` | NOT NULL | `NOW()` | - | 처리 시각 |
+
+### 12.1 action_type 값 정의
+
+| 값 | 설명 |
+|---|---|
+| `REST_GUIDE` | 휴식 안내 처리 |
+| `PHONE_RECOMMENDATION` | 전화 권고 처리 |

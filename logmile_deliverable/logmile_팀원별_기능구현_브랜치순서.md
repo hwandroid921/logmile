@@ -1,6 +1,8 @@
 # logmile 팀원별 기능 구현 및 브랜치 순서
 
-> 프로젝트명: logmile | 버전: v1.5  
+> 프로젝트명: logmile | 버전: v1.6  
+> 작성 기준일: 2026.05.14  
+> 변경 기준: v0.2.0 완료 기준으로 Section 6 release 브랜치 생성 시점 현행화  
 > 기준 브랜치: `dev`  
 > 원칙: feature 브랜치는 미리 전부 만들지 않고, 해당 기능 개발을 시작할 때 `dev`에서 생성 후 원격 push한다.
 
@@ -100,8 +102,12 @@ test: 피로도 계산 단위 테스트 추가
 | 순서 | 브랜치 | 구현 내용 | 선행 조건 |
 |---:|---|---|---|
 | 23 | `feature/ai-fastapi-server` | FastAPI 서버 구조, 라우터, 환경 설정 | AI 프로젝트 구조 |
-| 24 | `feature/ai-ocr-license-plate` | YOLOv8 + EasyOCR 번호판 인식 API | FastAPI 서버 |
-| 25 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | OCR API |
+| 24 | `feature/ai-model-dataset` | 번호판 학습 데이터 수집, 라벨링 기준 정리, 데이터셋 버전 관리 | FastAPI 서버 |
+| 25 | `feature/ai-model-training` | YOLO11n 번호판 탐지 모델 학습, YOLOv8n 비교 학습, 학습 로그 정리 | 데이터셋 |
+| 26 | `feature/ai-model-evaluation` | mAP50, Precision, Recall, OCR 성공률, 추론 속도 비교 및 모델 선정 | 학습 결과 |
+| 27 | `feature/ai-ocr-license-plate` | YOLO11 + EasyOCR 번호판 인식 API | FastAPI 서버, 선정 모델 |
+| 28 | `feature/ai-ocr-observation` | 출발/도착, 고속도로 관측, 휴게소 진입/진출 OCR 처리 | 번호판 인식 API |
+| 29 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | OCR API |
 
 ---
 
@@ -185,7 +191,7 @@ test: 피로도 계산 단위 테스트 추가
 |---:|---|---|---|
 | 1 | `feature/infra-docker-compose` | Backend, Frontend, AI, PostgreSQL Docker Compose 구성 | 공통 |
 | 2 | `feature/infra-env-config` | `.env`, CORS, DB 접속, API URL 환경변수 정리 | 공통 |
-| 3 | `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (9테이블) 및 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) | 공통 |
+| 3 | `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (10테이블) 및 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) | 공통 |
 
 ---
 
@@ -213,11 +219,11 @@ test: 피로도 계산 단위 테스트 추가
 
 `release/*` 브랜치는 미리 만들지 않는다. 각 마일스톤 기능이 `dev`에 충분히 통합된 뒤 생성한다.
 
-| 브랜치 | 생성 시점 |
-|---|---|
-| `release/v0.1.0` | FE/BE/SIM 기본 구조, DB init, 핵심 산출물 정리가 완료된 뒤 |
-| `release/v0.1.1` | JWT, 회원가입, 최상위 관리자 승인/거절/정지 흐름이 안정화된 뒤 |
-| `release/v0.2.0` | 차량/운전자, GPS 수신, 피로도 계산, OCR 1차 구현 완료 뒤 |
-| `release/v0.3.0` | 프론트엔드 주요 화면과 시뮬레이터 1차 연동 완료 뒤 |
-| `release/v1.0.0` | 프론트엔드, 시뮬레이터, 백엔드 전체 통합 완료 뒤 (2026.05.27) |
-| `release/v1.0.1` | 발표용 마무리 수정 (2026.06.02) |
+| 브랜치 | 생성 시점 | 상태 |
+|---|---|---|
+| `release/v0.1.0` | FE/BE/SIM 기본 구조, DB init, 핵심 산출물 정리가 완료된 뒤 | ✅ 완료 (v0.1.0 태그 생성) |
+| `release/v0.1.1` | JWT, 회원가입, 최상위 관리자 승인/거절/정지 흐름이 안정화된 뒤 | ✅ 완료 (v0.2.0에 통합) |
+| `release/v0.2.0` | 차량/운전자, GPS 수신, 피로도 계산, OCR 1차 구현 완료 뒤 | ✅ 완료 (v0.2.0 태그 생성, 2026.05.14) |
+| `release/v0.3.0` | 프론트엔드 주요 화면과 시뮬레이터 1차 연동 완료 뒤 | 진행 중 |
+| `release/v1.0.0` | 프론트엔드, 시뮬레이터, 백엔드 전체 통합 완료 뒤 (2026.05.27) | 예정 |
+| `release/v1.0.1` | 발표용 마무리 수정 (2026.06.02) | 예정 |

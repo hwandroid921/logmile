@@ -1,0 +1,16 @@
+# ─────────────────────────────────────────────
+# logmile 번호판 탐지 데이터셋 설정
+# YOLO11n 학습용 data.yaml
+# ─────────────────────────────────────────────
+
+path: ../dataset        # dataset 루트 (data.yaml 기준 상위)
+train: images/train     # 학습 이미지 경로 (70%)
+val: images/val         # 검증 이미지 경로 (20%)
+test: images/test       # 테스트 이미지 경로 (10%)
+
+# 클래스 수
+nc: 1
+
+# 클래스명
+names:
+  - license_plate

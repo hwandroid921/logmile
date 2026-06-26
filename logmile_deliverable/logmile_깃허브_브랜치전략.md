@@ -1,7 +1,8 @@
 # logmile 깃허브 브랜치 전략
 
-> 프로젝트명: logmile | 버전: v1.5 | 작성일: 2026.04.30  
-> 개발 기간: 2026.04.28 ~ 2026.05.27 제출 / 2026.06.02 발표
+> 프로젝트명: logmile | 버전: v1.6 | 작성일: 2026.05.26  
+> 개발 기간: 2026.04.28 ~ 2026.05.27 제출 / 2026.06.02 발표  
+> *v1.6 수정사항: AI 에이전트 원격 업로드(Commit/Push) 및 PR Description 코드블록 제공 지침 추가*
 
 ---
 
@@ -38,8 +39,33 @@ feature/{layer}-{기능명}
 | 브랜치명 | 기능 | 요구사항 ID |
 |---|---|---|
 | `feature/ai-fastapi-server` | FastAPI 서버 설정, 라우터, 환경 구성 | - |
-| `feature/ai-ocr-license-plate` | YOLOv8 + EasyOCR 번호판 인식 | FR-OCR01, FR-OCR02 |
+| `feature/ai-model-dataset` | 번호판 학습 데이터 수집, Roboflow 라벨링/오토 라벨링, 데이터셋 버전 관리 | FR-OCR01 |
+| `feature/ai-model-training` | YOLO11n 번호판 탐지 모델 학습, YOLOv8n 비교 학습, 학습 로그/가중치 산출 | FR-OCR01 |
+| `feature/ai-model-retraining-artifacts` | GPU 재학습 전략, 학습 결과물 제외 기준, 성능 비교 산출물 관리 | FR-OCR01 |
+| `feature/ai-model-evaluation` | mAP50, Precision, Recall, OCR 최종 성공률, 추론 속도 비교 및 모델 선정 | FR-OCR01 |
+| `feature/ai-ocr-license-plate` | YOLO11 + EasyOCR 번호판 인식 API 적용 | FR-OCR01, FR-OCR02 |
+| `feature/ai-ocr-observation` | 출발/도착, 고속도로 관측, 휴게소 진입/진출 관측 유형별 OCR 처리 | FR-OCR04, FR-OCR05, FR-OCR06 |
 | `feature/ai-ocr-fallback` | 신뢰도 0.85 미만 수동 입력 fallback 처리 | FR-OCR03 |
+
+**모델 훈련 작업 흐름:**
+
+```
+feature/ai-model-dataset
+  → feature/ai-model-training
+  → feature/ai-model-retraining-artifacts
+  → feature/ai-model-evaluation
+  → feature/ai-ocr-license-plate
+  → feature/ai-ocr-observation
+```
+
+**모델 산출물 관리 기준:**
+
+- 학습 데이터 원본, 라벨링 데이터, 모델 가중치(`*.pt`, `*.pth`)는 Git에 직접 커밋하지 않는다.
+- 데이터셋 버전, 라벨링 기준, 학습 설정, 성능 지표 요약은 문서 또는 설정 파일로 남긴다.
+- `runs/`, `wandb/`, `mlruns/`, `evaluate/results/*.json`, GPU 재학습 결과물, 모델 가중치는 로컬 또는 외부 저장소에 보관하고 Git에는 제외한다.
+- Git에는 재현 가능한 학습 설정(`train_config.yaml`), 평가 스크립트, 결과 요약 문서만 포함한다.
+- 기본 후보 모델은 `YOLO11n`으로 두고, `YOLOv8n`은 비교 기준 모델로 학습한다.
+- 최종 모델은 검출 성능뿐 아니라 OCR 최종 성공률과 추론 속도를 함께 비교해 선정한다.
 
 ---
 
@@ -119,7 +145,7 @@ feature/{layer}-{기능명}
 | 브랜치명 | 기능 |
 |---|---|
 | `feature/infra-docker-compose` | Docker Compose 전체 구성 (BE + AI + FE + PostgreSQL) |
-| `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (9테이블), 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) |
+| `feature/infra-db-init` | PostgreSQL 초기 스키마 DDL (10테이블), 시드 데이터 (최상위관리자, 업체, 차량, 운전자, 임계값) |
 | `feature/infra-env-config` | 환경변수 설정 (.env, application.yml, CORS 설정) |
 
 ---
@@ -151,7 +177,7 @@ Semantic Versioning 규칙: `vMAJOR.MINOR.PATCH`
 | `v0.1.0` | 기반 구조 완료 | FE 초기 세팅, BE Entity, DB init, SIM 기본 구조, 문서 |
 | `v0.1.1` | 인증/회원가입/승인 완료 | JWT 로그인, 회원가입, 최상위 관리자 승인 흐름 |
 | `v0.2.0` | 백엔드 1차 완료 | 차량/운전자, GPS 수신, 피로도 계산 모델, TenantAccess |
-| `v0.2.1` | AI 모듈 완료 | FastAPI + YOLOv8 + EasyOCR 번호판 인식 |
+| `v0.2.1` | AI 모듈 완료 | FastAPI + YOLO11 + EasyOCR 번호판 인식, 모델 학습/평가 기준 정리 |
 | `v0.2.2` | GPS 시뮬레이터 완료 | 시나리오 A/B/C 생성 및 전송 |
 | `v0.3.0` | 프론트엔드 1차 완료 | 회원가입/승인/로그인 화면, 최상위 관리자 화면, 대시보드 |
 | `v0.3.1` | 프론트엔드 2차 완료 | 차량/운전자 관리, 운행 이력/통계 |
@@ -169,16 +195,9 @@ git push origin --tags
 
 ## 5. 커밋 메시지 컨벤션
 
+### 기본 형식
 ```
 {type}: {내용}
-
-예시)
-feat: 최상위 관리자 승인/거절 API 구현
-feat: 일반 관리자 회원가입 화면 구현
-fix: PENDING 상태 관리자 로그인 차단 오류 수정
-refactor: TenantAccessService 업체별 검증 로직 분리
-docs: 요구사항 정의서 v1.5 업데이트
-chore: Docker Compose 포트 설정 수정
 ```
 
 | type | 설명 |
@@ -192,10 +211,29 @@ chore: Docker Compose 포트 설정 수정
 
 ---
 
+### 🤖 AI 에이전트 원격 업로드 및 커밋/PR 지침 (v1.6 추가)
+
+에이전트(AI)가 사용자의 명시적인 원격 업로드 요청을 받아 `commit` 및 `push`를 진행할 때는 다음 지침을 엄격히 준수한다.
+
+1. **커밋 메시지 형식**
+   * 커밋 메시지는 포괄적인 작업 나열이 아니라, **실제 구현 및 수정한 기능들을 간단하고 명확하게 한글로 요약하여 작성**한다.
+   * 형식: `[YYYY.MM.DD 파트담당이름 (ex. hwan, seo)] 구현한 기능`
+   * *예시*: `[2026.05.26 seo] feat: JWT 리프레시 토큰 및 자동 로그아웃 기능 추가`
+
+2. **PR(Pull Request) 및 Description 지침**
+   * AI 에이전트는 **원격 레포지토리에 PR을 직접 생성하여 진행하지 않는다.**
+   * 대신, 사용자가 바로 카피해서 PR 작성에 활용할 수 있도록 AI 응답 본문에 **마크다운 코드 블록(```)으로 PR Description을 작성하여 제공**한다.
+   * **PR Description 구성 필수 내용**:
+     * **구현한 기능의 세부 목록 및 내용**
+     * **이번 PR의 핵심 설계 요약**
+     * **이전 사항(기존 구조/로직)과 비교하여 달라진 점 및 개선점**
+
+---
+
 ## 6. 팀원별 담당 브랜치 요약
 
 ### 유환희 (Backend + AI)
-`feature/ai-*` 3개 + `feature/be-*` 22개 = **총 25개**
+`feature/ai-*` 8개 + `feature/be-*` 22개 = **총 30개**
 
 ### 백경서 (Frontend + GPS Simulator)
 `feature/fe-*` 21개 + `feature/sim-*` 7개 = **총 28개**

@@ -47,12 +47,17 @@ CREATE TABLE IF NOT EXISTS admin (
     status      VARCHAR(20)     NOT NULL DEFAULT 'ACTIVE',
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_admin_company
-        FOREIGN KEY (company_id) REFERENCES company (id)
-        ON DELETE SET NULL,
+        FOREIGN KEY (company_id) REFERENCES company (id),
     CONSTRAINT chk_admin_role
         CHECK (role IN ('ROLE_SUPER_ADMIN', 'ROLE_ADMIN')),
     CONSTRAINT chk_admin_status
-        CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED'))
+        CHECK (status IN ('PENDING', 'ACTIVE', 'INACTIVE', 'REJECTED', 'SUSPENDED')),
+    CONSTRAINT chk_admin_role_company
+        CHECK (
+            (role = 'ROLE_SUPER_ADMIN' AND company_id IS NULL)
+            OR
+            (role = 'ROLE_ADMIN' AND company_id IS NOT NULL)
+        )
 );
 
 COMMENT ON TABLE  admin               IS '관리자 계정 및 권한 정보';
@@ -60,7 +65,7 @@ COMMENT ON COLUMN admin.company_id    IS '소속 업체 ID (SUPER_ADMIN은 NULL)
 COMMENT ON COLUMN admin.email         IS '관리자 로그인 이메일 (unique)';
 COMMENT ON COLUMN admin.password      IS 'BCrypt 암호화 패스워드';
 COMMENT ON COLUMN admin.role          IS '권한 (ROLE_SUPER_ADMIN: 최상위, ROLE_ADMIN: 업체 관리자)';
-COMMENT ON COLUMN admin.status        IS '계정 상태 (ACTIVE, INACTIVE, SUSPENDED)';
+COMMENT ON COLUMN admin.status        IS '계정 상태 (PENDING, ACTIVE, INACTIVE, REJECTED, SUSPENDED)';
 
 -- ============================================================
 -- 3. vehicle (차량) — driver FK는 아래 ALTER TABLE로 추가
@@ -256,7 +261,88 @@ CREATE INDEX idx_fatigue_event_drive_log_id ON fatigue_event (drive_log_id);
 CREATE INDEX idx_fatigue_event_occurred_at  ON fatigue_event (occurred_at);
 
 -- ============================================================
--- 9. fatigue_threshold (피로도 임계값 설정)
+-- 9. dashboard_action (관제 액션 기록)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dashboard_action (
+    id              BIGSERIAL       PRIMARY KEY,
+    company_id      BIGINT          NOT NULL,
+    drive_log_id    BIGINT          NOT NULL,
+    admin_id        BIGINT          NOT NULL,
+    action_type     VARCHAR(40)     NOT NULL,
+    note            VARCHAR(255),
+    created_at      TIMESTAMP       NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_dashboard_action_company
+        FOREIGN KEY (company_id) REFERENCES company (id),
+    CONSTRAINT fk_dashboard_action_drive_log
+        FOREIGN KEY (drive_log_id) REFERENCES drive_log (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_dashboard_action_admin
+        FOREIGN KEY (admin_id) REFERENCES admin (id),
+    CONSTRAINT chk_dashboard_action_type
+        CHECK (action_type IN ('REST_GUIDE', 'PHONE_RECOMMENDATION'))
+);
+
+COMMENT ON TABLE  dashboard_action                 IS '대시보드 휴게 안내/전화 권고 액션 기록';
+COMMENT ON COLUMN dashboard_action.company_id      IS '소속 업체 ID';
+COMMENT ON COLUMN dashboard_action.drive_log_id    IS '대상 운행 ID';
+COMMENT ON COLUMN dashboard_action.admin_id        IS '액션을 기록한 관리자 ID';
+COMMENT ON COLUMN dashboard_action.action_type     IS '액션 유형 (REST_GUIDE, PHONE_RECOMMENDATION)';
+COMMENT ON COLUMN dashboard_action.note            IS '관리자 메모';
+
+CREATE INDEX idx_dashboard_action_drive_log_id ON dashboard_action (drive_log_id);
+CREATE INDEX idx_dashboard_action_admin_id     ON dashboard_action (admin_id);
+CREATE INDEX idx_dashboard_action_created_at   ON dashboard_action (created_at);
+
+-- ============================================================
+-- 10. plate_event (번호판 입출차 관측 이벤트)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS plate_event (
+    id                      BIGSERIAL        PRIMARY KEY,
+    vehicle_id              BIGINT,
+    plate_no                VARCHAR(20)      NOT NULL,
+    event_type              VARCHAR(20)      NOT NULL,
+    location_type           VARCHAR(30)      NOT NULL,
+    source_type             VARCHAR(20)      NOT NULL,
+    observed_at             TIMESTAMP        NOT NULL,
+    latitude                DOUBLE PRECISION,
+    longitude               DOUBLE PRECISION,
+    confidence              DOUBLE PRECISION,
+    detection_confidence    DOUBLE PRECISION,
+    is_manual_required      BOOLEAN          NOT NULL DEFAULT FALSE,
+    image_path              VARCHAR(500),
+    memo                    TEXT,
+    created_at              TIMESTAMP        NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_plate_event_vehicle
+        FOREIGN KEY (vehicle_id) REFERENCES vehicle (id)
+        ON DELETE SET NULL,
+    CONSTRAINT chk_plate_event_type
+        CHECK (event_type IN ('ENTRY', 'EXIT')),
+    CONSTRAINT chk_plate_event_location_type
+        CHECK (location_type IN ('HIGHWAY_GATE', 'REST_AREA', 'CCTV')),
+    CONSTRAINT chk_plate_event_source_type
+        CHECK (source_type IN ('OCR', 'SIMULATOR', 'MANUAL', 'DUMMY')),
+    CONSTRAINT chk_plate_event_confidence
+        CHECK (confidence IS NULL OR (confidence >= 0.0 AND confidence <= 1.0)),
+    CONSTRAINT chk_plate_event_detection_confidence
+        CHECK (detection_confidence IS NULL OR (detection_confidence >= 0.0 AND detection_confidence <= 1.0))
+);
+
+COMMENT ON TABLE  plate_event                         IS '번호판 입차/출차 관측 이벤트';
+COMMENT ON COLUMN plate_event.vehicle_id              IS '매칭된 차량 ID (번호판 미매칭 시 NULL)';
+COMMENT ON COLUMN plate_event.plate_no                IS '관측 또는 입력된 번호판 문자열';
+COMMENT ON COLUMN plate_event.event_type              IS '입출차 이벤트 유형 (ENTRY/EXIT)';
+COMMENT ON COLUMN plate_event.location_type           IS '관측 지점 유형 (HIGHWAY_GATE/REST_AREA/CCTV)';
+COMMENT ON COLUMN plate_event.source_type             IS '번호판 입력 출처 (OCR/SIMULATOR/MANUAL/DUMMY)';
+COMMENT ON COLUMN plate_event.observed_at             IS '번호판 관측 시각';
+COMMENT ON COLUMN plate_event.detection_confidence    IS 'YOLO 번호판 영역 탐지 신뢰도';
+COMMENT ON COLUMN plate_event.is_manual_required      IS '수동 확인 필요 여부';
+
+CREATE INDEX idx_plate_event_vehicle_id  ON plate_event (vehicle_id);
+CREATE INDEX idx_plate_event_plate_no    ON plate_event (plate_no);
+CREATE INDEX idx_plate_event_observed_at ON plate_event (observed_at);
+
+-- ============================================================
+-- 11. fatigue_threshold (피로도 임계값 설정)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS fatigue_threshold (
     id                  BIGSERIAL        PRIMARY KEY,

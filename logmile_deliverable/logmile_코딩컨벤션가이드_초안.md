@@ -3,11 +3,18 @@
 ## 화물차 운전자 피로도 실시간 모니터링 플랫폼
 
 - 프로젝트명: `logmile`
-- 작성 기준일: 2026.04.29
+- 버전: v5.0
+- 작성 기준일: 2026.05.12
+- 버전 관리 기준: `md` 우선 관리, `docx`는 제출 및 보관용
+
+| 버전 | 작성일 | 변경 내용 |
+|---|---|---|
+| v4.0 이전 | 2026.04.29 | 초안 작성 |
+| v5.0 | 2026.05.12 | §2.1 패키지 구조 계층형 → 도메인 기반으로 수정(실제 구현 반영), §5.3 관리자 상태/plate_event enum 추가, §8 확정 사항 반영 |
 - 적용 대상:
   - Backend: Java 21, Spring Boot 3.5.14, Spring Data JPA, Spring Security + JWT
   - Frontend: Vue.js 3, Vite, Pinia, Axios, Chart.js
-  - AI/Python: Python 3.11, FastAPI, YOLOv8n, EasyOCR
+  - AI/Python: Python 3.11, FastAPI, YOLO11n, EasyOCR
   - Database: PostgreSQL 16
   - Infra: Docker, Docker Compose
 - 기준 산출물:
@@ -45,24 +52,40 @@
 
 ### 2.1 패키지 구조
 
-산출물 기준 기본 구조는 아래 계층형 구조를 따른다.
+실제 구현 기준 도메인 기반 구조를 따른다.
 
 ```text
 com.project.logmile
-├── config
-├── controller
-├── service
-├── repository
-├── entity
-├── dto
-│   ├── request
-│   └── response
-└── common
-    ├── enums
-    └── exception
+├── common
+│   ├── enums              # 공통 Enum (PlateSourceType, PlateLocationType 등)
+│   ├── exception          # 공통 예외 처리
+│   └── security           # JWT, SecurityConfig
+├── config                 # Spring 설정 (Swagger, CORS 등)
+└── domain
+    ├── admin              # 관리자 (entity, repository, service, controller, dto)
+    ├── company            # 운수 업체
+    ├── vehicle            # 차량
+    ├── driver             # 운전자
+    ├── drivelog           # 운행 기록
+    ├── plateevent         # 번호판 관측 이벤트
+    ├── gpsdata            # GPS 데이터
+    ├── restevent          # 휴식 이벤트
+    ├── fatigueevent       # 피로도 이벤트
+    └── fatiguethreshold   # 피로도 임계값
 ```
 
-관리자/업체 관리자 구조가 확정되면 `company`, `approval`, `auth` 패키지 분리를 검토한다.
+각 도메인 패키지 내부 구조:
+
+```text
+domain/{도메인}/
+├── entity
+├── repository
+├── service
+├── controller
+└── dto
+    ├── request
+    └── response
+```
 
 ### 2.2 클래스 네이밍
 
@@ -289,10 +312,15 @@ logmile_sim/
 
 | 도메인 | 값 |
 |---|---|
-| 운행 상태 | `RUNNING`, `COMPLETED`, `STOPPED` |
-| 휴식 유형 | `PENDING`, `VALID`, `SUFFICIENT`, `INVALID` |
-| 피로 등급 | `NORMAL`, `CAUTION`, `DANGER` |
+| 운행 상태 (`DriveLogStatus`) | `RUNNING`, `COMPLETED`, `STOPPED` |
+| 휴식 유형 (`RestType`) | `PENDING`, `VALID`, `SUFFICIENT`, `INVALID` |
+| 피로 등급 (`FatigueLevel`) | `NORMAL`, `CAUTION`, `DANGER` |
 | 시나리오 | `A`, `B`, `C` |
+| 관리자 권한 (`AdminRole`) | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` |
+| 관리자 상태 (`AdminStatus`) | `PENDING`, `ACTIVE`, `REJECTED`, `SUSPENDED`, `INACTIVE` |
+| 번호판 이벤트 유형 (`PlateEventType`) | `ENTRY`, `EXIT` |
+| 번호판 입력 소스 (`PlateSourceType`) | `OCR`, `SIMULATOR`, `MANUAL`, `DUMMY` |
+| 번호판 관측 위치 (`PlateLocationType`) | `HIGHWAY_GATE`, `REST_AREA`, `CCTV` |
 
 ---
 
@@ -355,6 +383,6 @@ void 장시간_연속운행이면_위험등급을_반환한다() {
 - Java formatter 또는 Checkstyle 적용 여부
 - Frontend ESLint/Prettier 적용 여부
 - Python formatter로 Black/Ruff를 사용할지 여부
-- 패키지명을 `com.project.logmile`로 유지할지 `com.logmile`로 변경할지 여부
-- 최상위 관리자/업체 관리자 구조 확정 후 패키지와 DB 컨벤션 보완
-- 업체별 피로도 임계값을 공통으로 둘지, `company_id` 기준으로 분리할지 여부
+- 패키지명 `com.project.logmile` 유지 확정 (v5.0 기준 유지)
+- 최상위 관리자/업체 관리자 구조: v5.0에서 `ROLE_SUPER_ADMIN` / `ROLE_ADMIN` 으로 확정
+- 업체별 피로도 임계값: 현재 공통(`company_id` 없음)으로 구현, 향후 업체별 분리 검토

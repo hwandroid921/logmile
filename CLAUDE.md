@@ -6,7 +6,7 @@
 
 시스템은 다음 구성 요소를 결합합니다.
 
-- FastAPI + YOLOv8 + EasyOCR 기반 번호판 인식
+- FastAPI + YOLO11n + EasyOCR 기반 번호판 인식
 - 운행 시나리오 생성을 위한 Python GPS 시뮬레이터
 - REST API, 피로도 점수 산정, 인증, 데이터 저장을 담당하는 Spring Boot
 - 관제 대시보드를 담당하는 Vue.js
@@ -24,7 +24,7 @@
 - 휴식 판단 로직
 - JWT / Spring Security
 - FastAPI 번호판 인식
-- YOLOv8 + EasyOCR
+- YOLO11n + EasyOCR
 
 ### 백경서: 프론트엔드 + GPS 시뮬레이터 + 문서
 
@@ -39,7 +39,7 @@
 
 - Backend: Java 21, Spring Boot 3.5.14, Spring Data JPA, Spring Security + JWT
 - Frontend: Vue.js 3, Vite, Pinia, Axios, Chart.js
-- AI/Python: Python 3.11, FastAPI, YOLOv8n, EasyOCR
+- AI/Python: Python 3.11, FastAPI, YOLO11n, EasyOCR
 - Database: PostgreSQL 16
 - Infra: Docker, Docker Compose
 
@@ -48,21 +48,16 @@
 - 모든 작업 시 실제 폴더 내에서 작업한다.
 - 모든 코드 수정은 기존 스타일을 따르며 코드 수정 시에 수정 한 내용 정리하여 보고한다.
 - 코드 작성 시 반드시 산출물을 기반으로 작성해야하며 수정이 필요할 시 산출물 작업이 우선되어야 하며 반드시 보고한다. 
+- 산출물 작업 및 변경점 반영 시 수정 사항은 버전 단위로 관리한다.
+- 산출물 수정 작업은 `md` 문서를 우선 기준으로 진행하고, `docx` 문서는 사용자가 요청한 경우에만 생성 또는 최신화한다.
+- `docx` 문서는 제출 및 보관용 문서로 관리하며, 우선 별도 폴더에 보관하고 추후 정리 대상으로 둔다.
+- 버전 표기가 없는 산출물은 다음 수정 시점부터 새 버전을 작성하여 관리한다.
+- 이후 산출물 작업 시 문서 상단의 버전, 작성일, 변경 기준을 확인하고 변경 내용이 어느 버전에 반영되었는지 보고한다.
 - 한글이 포함된 문서, SQL, 설정 파일을 확인할 때는 반드시 UTF-8 인코딩을 명시하여 읽고, 콘솔 출력이 깨져 보이는 경우 원문이 깨졌다고 단정하지 않는다.
 - 한글 깨짐 또는 SQL 문법 오류를 판단하기 전에는 `Get-Content -Encoding UTF8` 등으로 재확인하고, 깨진 출력만 근거로 오류를 보고하지 않는다.
-- git 커밋 시 Co-Authored-By 등 Agent(Claude)를 contributor로 추가하지 않는다.
-
-## Git 작업 규칙
-
-- Agent(Claude)는 커밋(`git commit`)을 직접 실행하지 않는다. 작업 완료 후 커밋할 내용을 정리하여 보고하고, 사용자가 직접 커밋한다.
-- Agent(Claude)는 `git push` 실행 전 반드시 사용자에게 확인을 받는다.
-- 확인 없이 원격 저장소에 push하지 않는다.
-- force push(`--force`, `--force-with-lease`)는 반드시 사전 설명 및 확인 후 실행한다.
-
-## 환경변수 규칙
-
-- `.env` 파일은 절대 git에 커밋하지 않는다.
-- 모든 모듈에 `.env.example` 파일을 함께 제공하여 필요한 환경변수 항목을 명시한다.
-- 민감 정보(DB 패스워드, JWT 시크릿, API 토큰 등)는 반드시 환경변수로 관리한다.
-- Spring Boot의 경우 `application.yml`에 민감 정보를 직접 작성하지 않으며, `application-local.yml`로 분리하여 관리한다. (`application-local.yml`은 gitignore 대상)
-- `.vscode/`, `.claude/`, `__pycache__/`, `node_modules/`, `dist/`, YOLO 모델 가중치(`*.pt`, `*.pth`)는 git에 커밋하지 않는다.
+- git 커밋은 사용자가 명시적으로 커밋을 지시한 경우에만 수행하며, 작업 완료 후 자동으로 커밋하지 않는다.
+- 사용자의 원격 업로드 요청 시 브랜치 전략에 기반하여 commit과 push를 진행한다.
+- git 커밋 메시지는 `[YYYY.MM.DD 파트담당이름 (ex. hwan, seo)] 구현한 기능` 형식으로 작성하며, 포괄적인 내용이 아닌 실제 구현한 기능을 간단하고 명확하게 명시하는 형태로 작성한다.
+- PR(Pull Request)은 직접 생성하여 진행하지 않되, PR Description을 마크다운 코드 블록(```)으로 본문에 작성하여 제공한다.
+- 제공할 PR Description 코드 블록에는 구현한 기능의 세부 내용, PR의 핵심 내용, 그리고 이전 사항과 비교하여 달라진 점을 위주로 꼼꼼하게 작성해야 한다.
+- Co-Authored-By 등 Agent(Claude)를 contributor로 추가하지 않는다.

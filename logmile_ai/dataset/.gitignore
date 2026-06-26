@@ -1,0 +1,26 @@
+# 실제 이미지/라벨 데이터는 Git에 포함하지 않음
+images/train/*
+images/val/*
+images/test/*
+labels/train/*
+labels/val/*
+labels/test/*
+
+# 원본 데이터셋
+car_plate_data1/
+car_plate_data2/
+raw/
+exports/
+roboflow/
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# 예외: 디렉터리 구조 유지용 .gitkeep은 추적
+!images/train/.gitkeep
+!images/val/.gitkeep
+!images/test/.gitkeep
+!labels/train/.gitkeep
+!labels/val/.gitkeep
+!labels/test/.gitkeep

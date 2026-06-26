@@ -3,6 +3,7 @@
 ## logmile - 최상위 관리자 / 업체 관리자 구조 반영
 
 - 프로젝트명: `logmile`
+- 문서 버전: `v1.0`
 - 작성 기준일: 2026.04.29
 - 기준 산출물:
   - `logmile_요구사항정의서.md`
@@ -39,7 +40,7 @@
 | 사용자 유형 | 권한 | 설명 |
 |---|---|---|
 | 최상위 관리자 | `ROLE_SUPER_ADMIN` | logmile 서비스 운영자. 전체 업체와 업체 관리자 계정을 승인/관리 |
-| 업체 관리자 | `ROLE_COMPANY_ADMIN` | 서비스를 직접 사용하는 업체 담당자. 자기 업체의 차량, 운전자, 운행 데이터만 관리 |
+| 업체 관리자 | `ROLE_ADMIN` | 서비스를 직접 사용하는 업체 담당자. 자기 업체의 차량, 운전자, 운행 데이터만 관리 |
 
 업체 관리자는 회원가입 후 바로 서비스를 이용하지 않고, 최상위 관리자 승인 후 이용 가능하다.
 
@@ -69,7 +70,7 @@
 | 사용자 | 권한 | 주요 기능 |
 |---|---|---|
 | 최상위 관리자 | `ROLE_SUPER_ADMIN` | 업체 가입 요청 승인/거절, 업체 목록 조회, 업체 관리자 정지/해제, 전체 운영 현황 조회 |
-| 업체 관리자 | `ROLE_COMPANY_ADMIN` | 자기 업체 차량/운전자 관리, 시뮬레이션 실행, 대시보드 조회, 운행 이력/통계 조회, 피로도 임계값 관리 |
+| 업체 관리자 | `ROLE_ADMIN` | 자기 업체 차량/운전자 관리, 시뮬레이션 실행, 대시보드 조회, 운행 이력/통계 조회, 피로도 임계값 관리 |
 
 ### 3.2 추가 기능 요구사항
 
@@ -96,7 +97,7 @@ JWT 기반 ROLE_ADMIN 인증을 제공한다.
 변경:
 
 ```text
-JWT 기반 인증을 제공하며, 권한은 ROLE_SUPER_ADMIN과 ROLE_COMPANY_ADMIN으로 구분한다.
+JWT 기반 인증을 제공하며, 권한은 ROLE_SUPER_ADMIN과 ROLE_ADMIN으로 구분한다.
 계정 상태가 ACTIVE인 관리자만 로그인할 수 있다.
 ```
 
@@ -136,7 +137,7 @@ SUSPENDED
 |---|---|---|---|
 | `company_id` | `BIGINT` | NULL | 업체 관리자 소속 업체 ID. 최상위 관리자는 NULL 가능 |
 | `password_hash` | `VARCHAR(255)` | NOT NULL | 기존 `password` 컬럼명 변경 권장 |
-| `role` | `VARCHAR(30)` | NOT NULL | `ROLE_SUPER_ADMIN`, `ROLE_COMPANY_ADMIN` |
+| `role` | `VARCHAR(30)` | NOT NULL | `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` |
 | `status` | `VARCHAR(20)` | NOT NULL | 계정 상태 |
 | `approved_at` | `TIMESTAMP` | NULL | 승인 시각 |
 | `approved_by` | `BIGINT` | NULL | 승인한 최상위 관리자 ID |
@@ -224,7 +225,7 @@ CREATE TABLE IF NOT EXISTS admin (
     CONSTRAINT fk_admin_approved_by
         FOREIGN KEY (approved_by) REFERENCES admin (id),
     CONSTRAINT chk_admin_role
-        CHECK (role IN ('ROLE_SUPER_ADMIN', 'ROLE_COMPANY_ADMIN')),
+        CHECK (role IN ('ROLE_SUPER_ADMIN', 'ROLE_ADMIN')),
     CONSTRAINT chk_admin_status
         CHECK (status IN ('PENDING', 'ACTIVE', 'REJECTED', 'SUSPENDED'))
 );
@@ -278,7 +279,7 @@ fatigue_threshold 21건
 ```text
 company 1~2건
 ROLE_SUPER_ADMIN 1건
-ROLE_COMPANY_ADMIN 1~2건
+ROLE_ADMIN 1~2건
 vehicle 10건에 company_id 포함
 driver 10건에 company_id 포함
 fatigue_threshold 21건
@@ -309,7 +310,7 @@ INSERT INTO admin (
     '{BCrypt_HASH}',
     '업체관리자',
     '010-1111-1111',
-    'ROLE_COMPANY_ADMIN',
+    'ROLE_ADMIN',
     'ACTIVE',
     NOW(),
     1
@@ -351,10 +352,10 @@ SUSPENDED → 로그인 불가, 정지 메시지
 
 | 메서드 | 경로 | 기능 | 권한 |
 |---|---|---|---|
-| GET | `/api/company/me` | 내 업체 정보 조회 | `ROLE_COMPANY_ADMIN` |
-| GET | `/api/vehicles` | 자기 업체 차량 목록 조회 | `ROLE_COMPANY_ADMIN` |
-| GET | `/api/drivers` | 자기 업체 운전자 목록 조회 | `ROLE_COMPANY_ADMIN` |
-| GET | `/api/drive-logs` | 자기 업체 운행 이력 조회 | `ROLE_COMPANY_ADMIN` |
+| GET | `/api/companies/me` | 내 업체 정보 조회 | `ROLE_ADMIN` |
+| GET | `/api/vehicles` | 자기 업체 차량 목록 조회 | `ROLE_ADMIN` |
+| GET | `/api/drivers` | 자기 업체 운전자 목록 조회 | `ROLE_ADMIN` |
+| GET | `/api/drive-logs` | 자기 업체 운행 이력 조회 | `ROLE_ADMIN` |
 
 ---
 
@@ -395,7 +396,7 @@ JWT에는 아래 정보를 포함하는 것을 권장한다.
 {
   "adminId": 1,
   "companyId": 1,
-  "role": "ROLE_COMPANY_ADMIN"
+  "role": "ROLE_ADMIN"
 }
 ```
 
@@ -420,13 +421,13 @@ JWT에는 아래 정보를 포함하는 것을 권장한다.
 /signup                  → 비인증 접근 가능
 /login                   → 비인증 접근 가능
 /super/**                → ROLE_SUPER_ADMIN
-/dashboard               → ROLE_COMPANY_ADMIN
-/vehicles                → ROLE_COMPANY_ADMIN
-/drivers                 → ROLE_COMPANY_ADMIN
-/simulation              → ROLE_COMPANY_ADMIN
-/drive-logs              → ROLE_COMPANY_ADMIN
-/stats                   → ROLE_COMPANY_ADMIN
-/thresholds              → ROLE_COMPANY_ADMIN
+/dashboard               → ROLE_ADMIN
+/vehicles                → ROLE_ADMIN
+/drivers                 → ROLE_ADMIN
+/simulation              → ROLE_ADMIN
+/drive-logs              → ROLE_ADMIN
+/stats                   → ROLE_ADMIN
+/thresholds              → ROLE_ADMIN
 ```
 
 ### 9.3 Pinia authStore 변경

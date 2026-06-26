@@ -8,3 +8,7 @@ spring:
     hibernate:
       ddl-auto: none
     database-platform: org.hibernate.dialect.H2Dialect
+
+jwt:
+  secret: test-logmile-jwt-secret-key-for-hs256-context-load
+  expiration-ms: 86400000

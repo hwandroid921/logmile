@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Logmile Dashboard Style Guide Example</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@kfonts/line-seed-sans-kr@0.1.0/index.css');
+
+:root {
+  --slate-900: #515F7A;
+  --slate-700: #747F95;
+  --slate-500: #979EAE;
+  --slate-300: #B8BFC9;
+  --slate-100: #DCDFE4;
+  --slate-50: #E6E9EE;
+  --slate-25: #DEE2E8;
+  --slate-0: #EBEEF2;
+  --ink: #1F2630;
+  --ink-2: #3B4453;
+  --ink-3: #5A6371;
+  --bg-0: #DEE2E8;
+  --bg-1: #F1F3F6;
+  --bg-2: #E6E9EE;
+  --bg-3: #D4D9E0;
+  --line-1: #C9CFD8;
+  --line-2: #BCC3CD;
+  --line-3: #B8BFC9;
+  --text-1: var(--ink);
+  --text-2: var(--ink-2);
+  --text-3: var(--ink-3);
+  --text-4: #6F7A8A;
+  --accent: var(--slate-900);
+  --accent-hover: var(--ink);
+  --accent-soft: rgba(81,95,122,0.10);
+  --accent-line: rgba(81,95,122,0.28);
+  --ok: #5E8A6F;
+  --ok-soft: rgba(94,138,111,0.12);
+  --warn: #C58A3A;
+  --warn-soft: rgba(197,138,58,0.12);
+  --danger: #B5544A;
+  --danger-soft: rgba(181,84,74,0.12);
+  --info: var(--slate-700);
+  --info-soft: rgba(116,127,149,0.14);
+  --font-sans: "LINE Seed Sans KR", sans-serif;
+  --font-point: var(--font-sans);
+  --font-mono: "IBM Plex Mono", monospace;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --shadow-1: 0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(31,38,48,0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; border: none; background: none; color: inherit; cursor: pointer; }
+.mono { font-family: var(--font-mono); }
+.page {
+  width: min(100%, 1440px);
+  margin: 0 auto;
+  padding: 20px 16px 36px;
+}
+.page-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.eyebrow {
+  font: 700 14px/1.4 var(--font-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+h1 {
+  font: 700 24px/1.25 var(--font-point);
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+.page-meta {
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.connected {
+  font: 700 14px/1.2 var(--font-mono);
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.divider-v { width: 1px; height: 22px; background: var(--line-2); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .12s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-ghost { background: var(--bg-2); color: var(--text-2); border: 1px solid var(--line-2); }
+.card {
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+}
+.label-sm {
+  font: 700 14px/1.2 var(--font-mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.dot-ok { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+.dot-warn { background: var(--warn); box-shadow: 0 0 0 3px var(--warn-soft); }
+.dot-danger { background: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.dot-brand { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.blink { animation: blink-soft 2s infinite; }
+@keyframes blink-soft { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+.pulse-ring { animation: pulse-ring 2s infinite; }
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(181,84,74,.45); }
+  70% { box-shadow: 0 0 0 8px rgba(181,84,74,0); }
+  100% { box-shadow: 0 0 0 0 rgba(181,84,74,0); }
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font: 700 14px/1.2 var(--font-mono);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.chip-ok { background: var(--ok-soft); color: var(--ok); border-color: rgba(94,138,111,.32); }
+.chip-warn { background: var(--warn-soft); color: var(--warn); border-color: rgba(197,138,58,.32); }
+.chip-danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(181,84,74,.32); }
+.chip-info { background: var(--info-soft); color: var(--info); border-color: var(--accent-line); }
+.chip-mute { background: var(--bg-3); color: var(--text-2); border-color: var(--line-2); }
+
+.kpi-strip {
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  box-shadow: var(--shadow-1);
+  margin-bottom: 14px;
+}
+.kpi-tile {
+  padding: 14px 16px;
+  border-right: 1px solid var(--line-1);
+  min-width: 0;
+}
+.kpi-tile:last-child { border-right: none; }
+.tile-hdr { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tile-label {
+  font: 700 14px/1 var(--font-mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.tile-meta { font: 400 14px/1 var(--font-mono); color: var(--text-3); }
+.tile-val { display: flex; align-items: baseline; gap: 5px; margin-top: 8px; min-width: 0; }
+.tile-number {
+  font: 800 30px/1 var(--font-mono);
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.tile-unit { font: 400 14px/1 var(--font-mono); color: var(--text-3); }
+.tile-delta {
+  margin-left: auto;
+  font: 700 14px/1.2 var(--font-mono);
+  padding: 3px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.tile-delta.bad { color: var(--danger); background: var(--danger-soft); }
+.tile-delta.good { color: var(--ok); background: var(--ok-soft); }
+.mini-axis {
+  display: flex;
+  justify-content: space-between;
+  font: 700 14px/1 var(--font-mono);
+  color: var(--text-3);
+  margin-top: 5px;
+}
+.gauge {
+  position: relative;
+  height: 12px;
+  background: var(--bg-3);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+.gauge-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--ok), var(--warn) 45%, var(--danger) 82%);
+}
+.composition {
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  background: var(--bg-3);
+  margin-top: 14px;
+}
+.health-row {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 7px;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 35fr 25fr 35fr;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: stretch;
+}
+.left-col, .center-col, .right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+.section-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.vehicle-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.plate-thumb, .vrow-plate {
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #DCDFE4, #B8BFC9);
+  border: 1px solid var(--line-3);
+  position: relative;
+  overflow: hidden;
+}
+.plate-thumb { width: 100px; height: 66px; }
+.vrow-plate { width: 70px; height: 52px; }
+.plate-label {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid rgba(81,95,122,.28);
+  border-radius: 2px;
+  padding: 2px 5px;
+  font: 700 14px/1 var(--font-mono);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.drill-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+.drill-plate {
+  font: 800 16px/1.2 var(--font-mono);
+  color: var(--text-1);
+}
+.drill-meta {
+  font: 400 14px/1.4 var(--font-mono);
+  color: var(--text-2);
+}
+.factor-list {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.factor-card {
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  border-top: 2px solid var(--accent);
+}
+.factor-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+.factor-title { font-size: 16px; color: var(--text-1); font-weight: 700; }
+.factor-sub { font: 400 14px/1.4 var(--font-mono); color: var(--text-3); margin-top: 2px; }
+.factor-value {
+  font: 800 24px/1 var(--font-mono);
+  letter-spacing: -0.015em;
+}
+.factor-unit { font: 400 14px/1 var(--font-mono); color: var(--text-3); }
+.fb-bar-wrap {
+  position: relative;
+  height: 10px;
+  background: var(--bg-3);
+  border-radius: 5px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.fb-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--ok), var(--warn) 50%, var(--danger) 85%);
+}
+.factor-flags {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font: 700 14px/1.3 var(--font-mono);
+}
+.rest-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.rest-card {
+  padding: 9px;
+  border-radius: 4px;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-top: 2px solid var(--accent);
+}
+.rest-label { font: 700 14px/1.2 var(--font-mono); letter-spacing: .08em; }
+.rest-count { font: 800 24px/1 var(--font-mono); margin-top: 4px; }
+.rest-hint { font: 400 14px/1.3 var(--font-mono); color: var(--text-3); margin-top: 3px; }
+
+.timeline-svg { width: 100%; height: 170px; display: block; }
+.map-tabs { display: flex; gap: 5px; }
+.map-tab {
+  padding: 6px 10px;
+  font: 700 14px/1.2 var(--font-mono);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-2);
+  background: var(--bg-2);
+  color: var(--text-2);
+}
+.map-tab.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent-line);
+}
+.map-panel {
+  position: relative;
+  min-height: 344px;
+  flex: 1;
+  background:
+    linear-gradient(90deg, rgba(81,95,122,.07) 1px, transparent 1px),
+    linear-gradient(rgba(81,95,122,.07) 1px, transparent 1px),
+    linear-gradient(135deg, var(--bg-2), var(--bg-0));
+  background-size: 42px 42px, 42px 42px, 100% 100%;
+  overflow: hidden;
+}
+.map-marker {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font: 800 14px/1 var(--font-mono);
+  border: 2px solid rgba(255,255,255,.9);
+  box-shadow: 0 8px 22px rgba(31,38,48,.16);
+}
+.map-badges {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+}
+.map-legend {
+  position: absolute;
+  bottom: 16px;
+  right: 12px;
+  background: rgba(241,243,246,.92);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: 8px 10px;
+  font: 700 14px/1.35 var(--font-mono);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  backdrop-filter: blur(4px);
+}
+.v-list {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 330px;
+  overflow-y: auto;
+}
+.vrow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: stretch;
+  padding: 9px;
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+}
+.vrow.selected {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.v-info { min-width: 0; display: flex; flex-direction: column; gap: 5px; justify-content: space-between; }
+.v-title { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.v-plate { font: 800 16px/1.2 var(--font-mono); color: var(--text-1); }
+.v-meta { font: 400 14px/1.35 var(--font-mono); color: var(--text-2); }
+.mini-factor {
+  display: grid;
+  grid-template-columns: 38px 1fr 36px;
+  gap: 5px;
+  align-items: center;
+}
+.mini-factor-name { font: 700 14px/1 var(--font-mono); color: var(--text-3); }
+.mini-track { position: relative; height: 5px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
+.mini-fill { position: absolute; inset: 0 auto 0 0; }
+.mini-factor-val { font: 700 14px/1 var(--font-mono); text-align: right; }
+.v-score {
+  min-width: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.score-number { font: 800 24px/1 var(--font-mono); }
+.score-unit { font: 400 14px/1 var(--font-mono); color: var(--text-3); }
+.spark { width: 78px; height: 24px; display: block; }
+.delta { font: 700 14px/1 var(--font-mono); }
+
+.right-scroll {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  overflow-y: auto;
+}
+.alert-card {
+  padding: 10px 12px;
+  border-left: 3px solid var(--danger);
+  background: var(--danger-soft);
+  border-radius: 0 4px 4px 0;
+}
+.alert-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.alert-plate { font: 800 16px/1.2 var(--font-mono); }
+.alert-time { font: 400 14px/1 var(--font-mono); color: var(--text-3); }
+.alert-desc { margin-top: 6px; font-size: 14px; color: var(--text-1); }
+.alert-action { margin-top: 5px; font-size: 14px; color: var(--text-2); }
+.event-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.event-table td { padding: 9px 10px; border-bottom: 1px solid var(--line-1); vertical-align: middle; }
+.event-time { font: 400 14px/1 var(--font-mono); color: var(--text-2); white-space: nowrap; }
+.event-plate { font: 800 14px/1 var(--font-mono); white-space: nowrap; }
+.event-text { color: var(--text-2); }
+
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.ranking-list { display: flex; flex-direction: column; gap: 10px; }
+.ranking-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 64px;
+  gap: 14px;
+  align-items: center;
+}
+.ranking-name { font-size: 16px; font-weight: 700; color: var(--text-1); }
+.ranking-sub { font: 400 14px/1.3 var(--font-mono); color: var(--text-3); margin-top: 3px; }
+.rank-track { position: relative; height: 18px; background: var(--bg-2); border-radius: 3px; overflow: hidden; }
+.rank-fill { height: 100%; }
+.rank-score {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+  font: 800 14px/1 var(--font-mono);
+  color: var(--bg-1);
+}
+.rank-tag { font: 800 14px/1 var(--font-mono); text-align: right; }
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.heat-row {
+  display: grid;
+  grid-template-columns: 112px repeat(24, 1fr);
+  gap: 2px;
+  align-items: center;
+}
+.heat-head {
+  font: 700 14px/1 var(--font-mono);
+  color: var(--text-3);
+  text-align: center;
+}
+.heat-driver { font-size: 14px; }
+.heat-name { font-weight: 700; color: var(--text-1); }
+.heat-plate { font: 400 14px/1.2 var(--font-mono); color: var(--text-3); margin-top: 2px; }
+.heat-cell { height: 20px; border-radius: 2px; }
+
+@media (max-width: 1240px) {
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+  .main-grid, .bottom-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+  <main class="page">
+    <section class="page-hdr">
+      <div>
+        <div class="eyebrow">OPERATIONS / LIVE</div>
+        <h1>관제 대시보드</h1>
+        <div class="page-meta">오늘 · 2026.05.21 (수) · 한라물류센터 · 가상 시뮬레이션 환경</div>
+      </div>
+      <div class="head-actions">
+        <span class="connected"><span class="dot dot-ok blink"></span>connected · 17:42:18</span>
+        <div class="divider-v"></div>
+        <button class="btn btn-ghost">필터</button>
+        <button class="btn btn-ghost">CSV</button>
+        <button class="btn btn-primary">새로고침</button>
+      </div>
+    </section>
+
+    <section class="kpi-strip">
+      <article class="kpi-tile" style="border-top:2px solid var(--accent);">
+        <div class="tile-hdr"><span class="tile-label" style="color:var(--accent);">AVG FATIGUE</span><span class="tile-meta">n=8 · σ=15.4</span></div>
+        <div class="tile-val"><span class="tile-number">42.8</span><span class="tile-unit">/100</span><span class="tile-delta bad">▲ +3.4</span></div>
+        <svg viewBox="0 0 200 36" preserveAspectRatio="none" style="width:100%;height:34px;display:block;margin-top:12px;">
+          <rect x="0" y="0" width="80" height="36" fill="rgba(94,138,111,.10)"></rect>
+          <rect x="80" y="0" width="60" height="36" fill="rgba(197,138,58,.10)"></rect>
+          <rect x="140" y="0" width="60" height="36" fill="rgba(181,84,74,.10)"></rect>
+          <rect x="18" y="20" width="10" height="16" fill="var(--text-3)"></rect>
+          <rect x="42" y="12" width="10" height="24" fill="var(--text-3)"></rect>
+          <rect x="68" y="8" width="10" height="28" fill="var(--text-3)"></rect>
+          <rect x="96" y="16" width="10" height="20" fill="var(--text-3)"></rect>
+          <rect x="128" y="22" width="10" height="14" fill="var(--text-3)"></rect>
+          <rect x="156" y="14" width="10" height="22" fill="var(--text-3)"></rect>
+          <line x1="86" y1="0" x2="86" y2="36" stroke="var(--accent)" stroke-width="1.6"></line>
+        </svg>
+        <div class="mini-axis"><span>0</span><span style="color:var(--warn);">40</span><span style="color:var(--danger);">70</span><span>100</span></div>
+      </article>
+
+      <article class="kpi-tile">
+        <div class="tile-hdr"><span class="tile-label">MAX CONT. DRIVE</span><span class="tile-meta">limit 240m</span></div>
+        <div class="tile-val"><span class="tile-number" style="color:var(--danger);">4:20</span><span class="tile-unit">h:m</span><span class="tile-delta bad">+18점</span></div>
+        <div class="gauge"><div class="gauge-fill" style="width:86%;"></div></div>
+        <div class="mini-axis"><span>0</span><span style="color:var(--warn);">90m</span><span style="color:var(--danger);">180m</span><span style="color:var(--danger);">240m</span></div>
+      </article>
+
+      <article class="kpi-tile">
+        <div class="tile-hdr"><span class="tile-label" style="color:var(--danger);">DANGER UNITS</span><span class="tile-meta">7d μ=1.43</span></div>
+        <div class="tile-val"><span class="tile-number" style="color:var(--danger);">1</span><span class="tile-unit">/ 10</span><span class="tile-delta bad">▲ +1</span></div>
+        <svg viewBox="0 0 200 36" preserveAspectRatio="none" style="width:100%;height:34px;display:block;margin-top:12px;">
+          <rect x="4" y="24" width="18" height="12" fill="var(--danger)" opacity=".42"></rect>
+          <rect x="34" y="16" width="18" height="20" fill="var(--danger)" opacity=".42"></rect>
+          <rect x="64" y="36" width="18" height="0" fill="var(--danger)" opacity=".42"></rect>
+          <rect x="94" y="16" width="18" height="20" fill="var(--danger)" opacity=".42"></rect>
+          <rect x="124" y="6" width="18" height="30" fill="var(--danger)" opacity=".42"></rect>
+          <rect x="154" y="24" width="18" height="12" fill="var(--danger)" opacity=".42"></rect>
+          <rect x="184" y="24" width="12" height="12" fill="var(--danger)"></rect>
+          <line x1="0" y1="20" x2="200" y2="20" stroke="var(--text-3)" stroke-dasharray="2 3"></line>
+        </svg>
+        <div class="mini-axis"><span>월</span><span>수</span><span>금</span><span>오늘</span></div>
+      </article>
+
+      <article class="kpi-tile">
+        <div class="tile-hdr"><span class="tile-label">FLEET COMPOSITION</span><span class="tile-meta">8/10 run</span></div>
+        <div class="tile-val"><span class="tile-number">62.5</span><span class="tile-unit">% NORMAL</span><span class="tile-delta good">정상 비중</span></div>
+        <div class="composition">
+          <div style="width:50%;background:var(--ok);"></div>
+          <div style="width:20%;background:var(--warn);"></div>
+          <div style="width:10%;background:var(--danger);"></div>
+          <div style="width:20%;background:var(--text-4);opacity:.35;"></div>
+        </div>
+        <div class="mini-axis"><span style="color:var(--ok);">정상 5</span><span style="color:var(--warn);">주의 2</span><span style="color:var(--danger);">위험 1</span><span>대기 2</span></div>
+      </article>
+
+      <article class="kpi-tile">
+        <div class="tile-hdr"><span class="tile-label" style="color:var(--accent);">FLEET HEALTH</span><span class="chip chip-info"><span class="dot dot-brand blink"></span>LIVE</span></div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:12px;">
+          <svg width="82" height="82" viewBox="0 0 82 82">
+            <circle cx="41" cy="41" r="30" fill="none" stroke="var(--bg-3)" stroke-width="10"></circle>
+            <circle cx="41" cy="41" r="30" fill="none" stroke="var(--ok)" stroke-width="10" stroke-dasharray="118 188" transform="rotate(-90 41 41)"></circle>
+            <circle cx="41" cy="41" r="30" fill="none" stroke="var(--warn)" stroke-width="10" stroke-dasharray="38 188" stroke-dashoffset="-118" transform="rotate(-90 41 41)"></circle>
+            <circle cx="41" cy="41" r="30" fill="none" stroke="var(--danger)" stroke-width="10" stroke-dasharray="19 188" stroke-dashoffset="-156" transform="rotate(-90 41 41)"></circle>
+            <text x="41" y="42" text-anchor="middle" font-family="var(--font-mono)" font-size="18" font-weight="800" fill="var(--text-1)">42.8</text>
+            <text x="41" y="56" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--text-3)">AVG</text>
+          </svg>
+          <div style="display:grid;gap:6px;flex:1;">
+            <div class="health-row"><span style="width:12px;height:12px;background:var(--ok);"></span><span>정상</span><strong style="color:var(--ok);">5</strong></div>
+            <div class="health-row"><span style="width:12px;height:12px;background:var(--warn);"></span><span>주의</span><strong style="color:var(--warn);">2</strong></div>
+            <div class="health-row"><span style="width:12px;height:12px;background:var(--danger);"></span><span>위험</span><strong style="color:var(--danger);">1</strong></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="main-grid">
+      <div class="left-col">
+        <article class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+          <div class="section-head">
+            <div class="vehicle-hero">
+              <div class="plate-thumb">
+                <svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;">
+                  <rect width="200" height="130" fill="#E3E6EB"></rect><rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE"></rect><circle cx="55" cy="98" r="8" fill="#747F95"></circle><circle cx="160" cy="98" r="8" fill="#747F95"></circle>
+                </svg>
+                <div class="plate-label">7721</div>
+              </div>
+              <div>
+                <div class="drill-title">
+                  <span class="drill-plate">경기31다7721</span>
+                  <span class="chip chip-danger">위험 · 74점</span>
+                  <span class="chip chip-mute">박도윤</span>
+                  <span class="chip chip-info">DL-20260521-08</span>
+                </div>
+                <div class="drill-meta">경부고속도로 · 시작 08:20 · 82km/h · 냉장탑차</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-ghost">전화 권고</button>
+              <button class="btn btn-ghost">휴게 안내</button>
+              <button class="btn btn-primary">운행 상세</button>
+            </div>
+          </div>
+
+          <div style="padding:10px 16px 0;display:flex;justify-content:space-between;align-items:center;">
+            <div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand"></span>FATIGUE BREAKDOWN</div>
+            <span class="mono" style="font-size:14px;color:var(--text-3);">score = Σ(factor · weight)</span>
+          </div>
+
+          <div class="factor-list">
+            <div class="factor-card" style="border-top-color:var(--danger);">
+              <div class="factor-top"><div><div class="factor-title">연속 운행 시간</div><div class="factor-sub">max 300m · 임계 90 / 180m</div></div><div><span class="factor-value" style="color:var(--danger);">260.0</span><span class="factor-unit">m</span></div></div>
+              <div class="fb-bar-wrap"><div class="fb-bar-fill" style="width:86%;"></div></div>
+              <div class="factor-flags"><span style="color:var(--warn);">▲ 주의 초과</span><span style="color:var(--danger);">▲ 위험 초과</span></div>
+            </div>
+            <div class="factor-card" style="border-top-color:var(--warn);">
+              <div class="factor-top"><div><div class="factor-title">일일 운행 시간</div><div class="factor-sub">max 720m · 임계 480 / 600m</div></div><div><span class="factor-value" style="color:var(--warn);">540.0</span><span class="factor-unit">m</span></div></div>
+              <div class="fb-bar-wrap"><div class="fb-bar-fill" style="width:75%;"></div></div>
+              <div class="factor-flags"><span style="color:var(--warn);">▲ 장시간 운행</span><span style="color:var(--text-3);">○ 위험 미만</span></div>
+            </div>
+            <div class="factor-card" style="border-top-color:var(--warn);">
+              <div class="factor-top"><div><div class="factor-title">야간 운행 시간</div><div class="factor-sub">max 300m · 임계 120 / 180m</div></div><div><span class="factor-value" style="color:var(--warn);">155.0</span><span class="factor-unit">m</span></div></div>
+              <div class="fb-bar-wrap"><div class="fb-bar-fill" style="width:52%;"></div></div>
+              <div class="factor-flags"><span style="color:var(--warn);">▲ 야간 운행</span><span style="color:var(--text-3);">○ 위험 미만</span></div>
+            </div>
+            <div class="factor-card" style="border-top-color:var(--danger);">
+              <div class="factor-top"><div><div class="factor-title">휴식 위반</div><div class="factor-sub">max 4건 · 임계 1 / 2건</div></div><div><span class="factor-value" style="color:var(--danger);">2.0</span><span class="factor-unit">건</span></div></div>
+              <div class="fb-bar-wrap"><div class="fb-bar-fill" style="width:50%;"></div></div>
+              <div class="factor-flags"><span style="color:var(--warn);">▲ 휴식 필요</span><span style="color:var(--danger);">▲ 위반 누적</span></div>
+            </div>
+          </div>
+
+          <div style="padding:12px 16px;border-top:1px solid var(--line-1);">
+            <div class="label-sm" style="margin-bottom:8px;">REST EVENTS</div>
+            <div class="rest-grid">
+              <div class="rest-card" style="border-top-color:var(--ok);"><div class="rest-label" style="color:var(--ok);">REST</div><div class="rest-count">1</div><div class="rest-hint">정상 휴식</div></div>
+              <div class="rest-card" style="border-top-color:var(--warn);"><div class="rest-label" style="color:var(--warn);">MISS</div><div class="rest-count">2</div><div class="rest-hint">휴식 누락</div></div>
+              <div class="rest-card" style="border-top-color:var(--danger);"><div class="rest-label" style="color:var(--danger);">NIGHT</div><div class="rest-count">3</div><div class="rest-hint">야간 이벤트</div></div>
+              <div class="rest-card" style="border-top-color:var(--accent);"><div class="rest-label" style="color:var(--accent);">GATE</div><div class="rest-count">4</div><div class="rest-hint">입출차</div></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card" style="padding:0;overflow:hidden;">
+          <div class="section-head">
+            <div><div class="label-sm">DRIVE TIMELINE</div><div style="font-size:14px;color:var(--text-2);margin-top:3px;">시간대별 누적 피로 점수</div></div>
+            <div style="display:flex;gap:12px;"><div><div class="label-sm">현재</div><div class="tile-number" style="font-size:24px;">74</div></div><div><div class="label-sm">최고</div><div class="tile-number" style="font-size:24px;">78</div></div></div>
+          </div>
+          <div style="padding:12px 14px;">
+            <svg class="timeline-svg" viewBox="0 0 760 200" preserveAspectRatio="none">
+              <rect x="30" y="10" width="720" height="66" fill="rgba(181,84,74,.07)"></rect><rect x="30" y="76" width="720" height="54" fill="rgba(197,138,58,.07)"></rect><rect x="30" y="130" width="720" height="52" fill="rgba(94,138,111,.06)"></rect>
+              <line x1="30" y1="76" x2="750" y2="76" stroke="var(--danger)" stroke-dasharray="3 5"></line><line x1="30" y1="130" x2="750" y2="130" stroke="var(--warn)" stroke-dasharray="3 5"></line>
+              <polyline points="30,165 120,148 210,132 300,116 390,94 480,86 570,62 660,68 750,52" fill="none" stroke="var(--accent)" stroke-width="3"></polyline>
+              <polygon points="30,165 120,148 210,132 300,116 390,94 480,86 570,62 660,68 750,52 750,182 30,182" fill="rgba(81,95,122,.18)"></polygon>
+              <circle cx="570" cy="62" r="5" fill="var(--danger)" stroke="var(--bg-1)" stroke-width="2"></circle><text x="580" y="54" font-family="var(--font-mono)" font-size="14" fill="var(--text-2)">휴식 누락</text>
+              <circle cx="390" cy="94" r="5" fill="var(--warn)" stroke="var(--bg-1)" stroke-width="2"></circle><text x="400" y="86" font-family="var(--font-mono)" font-size="14" fill="var(--text-2)">야간</text>
+              <text x="30" y="196" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">0h</text><text x="390" y="196" text-anchor="middle" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+6h</text><text x="750" y="196" text-anchor="end" font-family="var(--font-mono)" font-size="14" fill="var(--text-3)">+12h</text>
+            </svg>
+          </div>
+        </article>
+      </div>
+
+      <div class="center-col">
+        <article class="card" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+          <div class="section-head">
+            <div><div class="label-sm" style="display:flex;align-items:center;gap:7px;"><span class="dot dot-brand blink"></span>FLEET MAP · LIVE</div><div style="font-size:14px;color:var(--text-2);margin-top:3px;">운행 <strong style="color:var(--text-1);">8</strong>대 / 전체 10대</div></div>
+            <div class="map-tabs"><button class="map-tab active">전체 <span>8</span></button><button class="map-tab">위험 <span>1</span></button><button class="map-tab">주의 <span>2</span></button><button class="map-tab">정상 <span>5</span></button></div>
+          </div>
+          <div class="map-panel">
+            <svg viewBox="0 0 420 320" preserveAspectRatio="none" style="position:absolute;inset:26px;width:calc(100% - 52px);height:calc(100% - 52px);">
+              <path d="M20 250 C90 90 165 270 235 146 S340 60 400 120" fill="none" stroke="rgba(81,95,122,.38)" stroke-width="8" stroke-linecap="round"></path>
+              <path d="M20 250 C90 90 165 270 235 146 S340 60 400 120" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="12 10" stroke-linecap="round"></path>
+            </svg>
+            <div class="map-marker" style="left:72%;top:34%;background:var(--danger);">74</div>
+            <div class="map-marker" style="left:48%;top:48%;background:var(--warn);">58</div>
+            <div class="map-marker" style="left:23%;top:69%;background:var(--accent);">28</div>
+            <div class="map-badges"><span class="chip chip-info"><span class="dot dot-brand"></span>8대 운행중</span><span class="chip chip-danger"><span class="dot dot-danger"></span>1 위험</span><span class="chip chip-warn"><span class="dot dot-warn"></span>2 주의</span></div>
+            <div class="map-legend"><div style="font-size:14px;letter-spacing:.1em;color:var(--text-3);">LEGEND</div><div><span class="dot dot-danger"></span> 위험 70+</div><div><span class="dot dot-warn"></span> 주의 40~69</div><div><span class="dot dot-brand"></span> 정상 0~39</div></div>
+          </div>
+        </article>
+
+        <article class="card" style="padding:0;overflow:hidden;">
+          <div class="section-head"><div class="label-sm">RUNNING VEHICLES · 8대</div><span class="mono" style="font-size:14px;color:var(--text-3);">점수 높은 순</span></div>
+          <div class="v-list">
+            <div class="vrow selected">
+              <div class="vrow-plate"><svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;"><rect width="200" height="130" fill="#E3E6EB"></rect><rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE"></rect></svg><div class="plate-label">7721</div></div>
+              <div class="v-info"><div class="v-title"><span class="v-plate">경기31다7721</span><span class="chip chip-danger">위험 74</span></div><div class="v-meta">박도윤 · 경부고속도로</div><div class="mini-factor"><span class="mini-factor-name">CONT</span><div class="mini-track"><div class="mini-fill" style="width:86%;background:var(--danger);"></div></div><span class="mini-factor-val" style="color:var(--danger);">4:20</span></div><div class="mini-factor"><span class="mini-factor-name">DAY</span><div class="mini-track"><div class="mini-fill" style="width:75%;background:var(--warn);"></div></div><span class="mini-factor-val" style="color:var(--warn);">9:00</span></div></div>
+              <div class="v-score"><div><span class="score-number" style="color:var(--danger);">74</span><span class="score-unit">/100</span></div><svg class="spark" viewBox="0 0 78 24"><polyline points="0,18 16,14 32,12 48,8 64,9 78,5" fill="none" stroke="var(--danger)" stroke-width="2"></polyline></svg><span class="delta" style="color:var(--danger);">▲ +8</span></div>
+            </div>
+            <div class="vrow">
+              <div class="vrow-plate"><svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;"><rect width="200" height="130" fill="#E3E6EB"></rect><rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE"></rect></svg><div class="plate-label">9012</div></div>
+              <div class="v-info"><div class="v-title"><span class="v-plate">서울88바9012</span><span class="chip chip-warn">주의 58</span></div><div class="v-meta">이서연 · 중부내륙선</div><div class="mini-factor"><span class="mini-factor-name">CONT</span><div class="mini-track"><div class="mini-fill" style="width:58%;background:var(--warn);"></div></div><span class="mini-factor-val" style="color:var(--warn);">2:55</span></div><div class="mini-factor"><span class="mini-factor-name">NIGHT</span><div class="mini-track"><div class="mini-fill" style="width:52%;background:var(--warn);"></div></div><span class="mini-factor-val" style="color:var(--warn);">2:35</span></div></div>
+              <div class="v-score"><div><span class="score-number" style="color:var(--warn);">58</span><span class="score-unit">/100</span></div><svg class="spark" viewBox="0 0 78 24"><polyline points="0,20 16,16 32,13 48,15 64,10 78,11" fill="none" stroke="var(--warn)" stroke-width="2"></polyline></svg><span class="delta" style="color:var(--warn);">▲ +4</span></div>
+            </div>
+            <div class="vrow">
+              <div class="vrow-plate"><svg width="100%" height="100%" viewBox="0 0 200 130" preserveAspectRatio="xMidYMid slice" style="opacity:.4;display:block;"><rect width="200" height="130" fill="#E3E6EB"></rect><rect x="30" y="40" width="120" height="50" fill="#CCD2DA" stroke="#979EAE"></rect></svg><div class="plate-label">3456</div></div>
+              <div class="v-info"><div class="v-title"><span class="v-plate">부산12가3456</span><span class="chip chip-ok">정상 28</span></div><div class="v-meta">김민준 · 남해고속도로</div><div class="mini-factor"><span class="mini-factor-name">CONT</span><div class="mini-track"><div class="mini-fill" style="width:32%;background:var(--ok);"></div></div><span class="mini-factor-val" style="color:var(--ok);">1:36</span></div><div class="mini-factor"><span class="mini-factor-name">REST</span><div class="mini-track"><div class="mini-fill" style="width:25%;background:var(--ok);"></div></div><span class="mini-factor-val" style="color:var(--ok);">완료</span></div></div>
+              <div class="v-score"><div><span class="score-number" style="color:var(--ok);">28</span><span class="score-unit">/100</span></div><svg class="spark" viewBox="0 0 78 24"><polyline points="0,14 16,12 32,17 48,16 64,18 78,15" fill="none" stroke="var(--ok)" stroke-width="2"></polyline></svg><span class="delta" style="color:var(--ok);">▼ -2</span></div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="right-col">
+        <article class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+          <div class="section-head"><div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-danger pulse-ring"></span>ACTIVE ALERTS</div><span class="chip chip-danger">3 active</span></div>
+          <div class="right-scroll">
+            <div class="alert-card"><div class="alert-top"><span class="alert-plate" style="color:var(--danger);">경기31다7721</span><span class="alert-time">17:39</span></div><div class="alert-desc">연속 운행 4시간 초과 및 휴식 위반 누적</div><div class="alert-action">휴게소 진입 안내 및 전화 권고</div></div>
+            <div class="alert-card" style="border-left-color:var(--warn);background:var(--warn-soft);"><div class="alert-top"><span class="alert-plate" style="color:var(--warn);">서울88바9012</span><span class="alert-time">17:31</span></div><div class="alert-desc">야간 운행 비율 증가로 주의 등급 진입</div><div class="alert-action">다음 휴게 지점 안내</div></div>
+            <div class="alert-card" style="border-left-color:var(--info);background:var(--info-soft);"><div class="alert-top"><span class="alert-plate" style="color:var(--info);">인천45아1208</span><span class="alert-time">17:10</span></div><div class="alert-desc">A/B/C 시나리오 이벤트 반영 완료</div><div class="alert-action">대시보드 갱신 확인</div></div>
+          </div>
+        </article>
+
+        <article class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;">
+          <div class="section-head"><div><div class="label-sm" style="display:flex;align-items:center;gap:8px;"><span class="dot dot-brand blink"></span>EVENT STREAM</div><div style="font-size:14px;color:var(--text-2);margin-top:3px;">시간 역순</div></div><span class="chip chip-info">9 events</span></div>
+          <div style="flex:1;overflow-y:auto;">
+            <table class="event-table"><tbody>
+              <tr><td class="event-time"><span class="dot dot-danger"></span> 17:39</td><td class="event-plate" style="color:var(--danger);">경기31다7721</td><td class="event-text">휴식 위반 감지</td></tr>
+              <tr><td class="event-time"><span class="dot dot-warn"></span> 17:31</td><td class="event-plate" style="color:var(--warn);">서울88바9012</td><td class="event-text">야간 운행 시간 증가</td></tr>
+              <tr><td class="event-time"><span class="dot dot-brand"></span> 17:22</td><td class="event-plate" style="color:var(--accent);">부산12가3456</td><td class="event-text">휴게소 진입 확인</td></tr>
+              <tr><td class="event-time"><span class="dot dot-danger"></span> 17:08</td><td class="event-plate" style="color:var(--danger);">경기31다7721</td><td class="event-text">피로도 위험 기준 초과</td></tr>
+              <tr><td class="event-time"><span class="dot dot-ok"></span> 16:44</td><td class="event-plate" style="color:var(--ok);">인천45아1208</td><td class="event-text">운행 재개</td></tr>
+            </tbody></table>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="card" style="padding:0;overflow:hidden;">
+        <div class="section-head"><div><div class="label-sm">DRIVER RANKING · TODAY</div><div style="font-size:14px;color:var(--text-2);margin-top:3px;">현재 누적 피로 점수</div></div><span class="mono" style="font-size:14px;color:var(--text-3);">상위 6명</span></div>
+        <div style="padding:16px 18px;"><div class="ranking-list">
+          <div class="ranking-row"><div><div class="ranking-name">박도윤</div><div class="ranking-sub">경기31다7721</div></div><div class="rank-track"><div class="rank-fill" style="width:74%;background:var(--danger);"></div><span class="rank-score">74</span></div><span class="rank-tag" style="color:var(--danger);">위험</span></div>
+          <div class="ranking-row"><div><div class="ranking-name">이서연</div><div class="ranking-sub">서울88바9012</div></div><div class="rank-track"><div class="rank-fill" style="width:58%;background:var(--warn);"></div><span class="rank-score">58</span></div><span class="rank-tag" style="color:var(--warn);">주의</span></div>
+          <div class="ranking-row"><div><div class="ranking-name">김민준</div><div class="ranking-sub">부산12가3456</div></div><div class="rank-track"><div class="rank-fill" style="width:28%;background:var(--ok);"></div><span class="rank-score">28</span></div><span class="rank-tag" style="color:var(--ok);">정상</span></div>
+        </div></div>
+      </article>
+
+      <article class="card" style="padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div><div class="label-sm">DRIVER × HOUR HEATMAP</div><div style="font-size:14px;color:var(--text-2);margin-top:3px;">오늘 시간대별 누적 피로 점수</div></div><span class="chip chip-mute">2026.05.21</span></div>
+        <div class="heatmap">
+          <div class="heat-row"><div></div><div class="heat-head">00</div><div class="heat-head">01</div><div class="heat-head">02</div><div class="heat-head">03</div><div class="heat-head">04</div><div class="heat-head">05</div><div class="heat-head">06</div><div class="heat-head">07</div><div class="heat-head">08</div><div class="heat-head">09</div><div class="heat-head">10</div><div class="heat-head">11</div><div class="heat-head">12</div><div class="heat-head">13</div><div class="heat-head">14</div><div class="heat-head">15</div><div class="heat-head">16</div><div class="heat-head">17</div><div class="heat-head">18</div><div class="heat-head">19</div><div class="heat-head">20</div><div class="heat-head">21</div><div class="heat-head">22</div><div class="heat-head">23</div></div>
+          <div class="heat-row"><div class="heat-driver"><div class="heat-name">박도윤</div><div class="heat-plate">7721</div></div><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--ok);opacity:.35;"></span><span class="heat-cell" style="background:var(--ok);opacity:.55;"></span><span class="heat-cell" style="background:var(--warn);opacity:.55;"></span><span class="heat-cell" style="background:var(--warn);opacity:.75;"></span><span class="heat-cell" style="background:var(--danger);opacity:.85;"></span><span class="heat-cell" style="background:var(--danger);"></span><span class="heat-cell" style="background:var(--danger);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--ok);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--danger);"></span><span class="heat-cell" style="background:var(--danger);"></span><span class="heat-cell" style="background:var(--danger);"></span><span class="heat-cell" style="background:var(--danger);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span></div>
+          <div class="heat-row"><div class="heat-driver"><div class="heat-name">이서연</div><div class="heat-plate">9012</div></div><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--ok);opacity:.55;"></span><span class="heat-cell" style="background:var(--ok);"></span><span class="heat-cell" style="background:var(--warn);opacity:.7;"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--ok);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--ok);"></span><span class="heat-cell" style="background:var(--ok);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--warn);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span><span class="heat-cell" style="background:var(--bg-2);"></span></div>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;font:700 14px/1 var(--font-mono);color:var(--text-2);"><span>0</span><div style="display:flex;gap:2px;"><span style="width:16px;height:12px;background:var(--bg-2);border:1px solid var(--line-2);display:inline-block;"></span><span style="width:16px;height:12px;background:var(--ok);display:inline-block;"></span><span style="width:16px;height:12px;background:var(--warn);display:inline-block;"></span><span style="width:16px;height:12px;background:var(--danger);display:inline-block;"></span></div><span>100</span></div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
